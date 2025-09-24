@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 class SellController extends Controller
 {
     // Show Sell Your Car page
-    public function index()
+    public function showSellPage()
     {
         return view('sell');
     }

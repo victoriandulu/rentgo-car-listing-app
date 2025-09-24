@@ -19,11 +19,11 @@
     {{-- Search Filters --}}
     <div class="search-section">
         <form action="{{ route('search.vehicle') }}" method="GET">
-            <input 
-                type="text" 
+            <input
+                type="text"
                 name="query"
-                placeholder="Search vehicle name" 
-                class="search-box" 
+                placeholder="Search vehicle name"
+                class="search-box"
             />
             <button type="submit" class="search-btn">Search Vehicle</button>
         </form>
@@ -52,11 +52,11 @@
         <h2>Stay Up to Date</h2>
         <form action="{{ route('newsletter.subscribe') }}" method="POST">
             @csrf
-            <input 
-                type="email" 
+            <input
+                type="email"
                 name="email"
-                placeholder="Your email address" 
-                class="email-input" 
+                placeholder="Your email address"
+                class="email-input"
                 required
             />
             <button type="submit" class="subscribe-btn">Subscribe</button>

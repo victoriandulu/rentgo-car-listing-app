@@ -1,22 +1,33 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Models;
 
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class UserProfileController extends Controller
+class User extends Authenticatable
 {
-    // Show static profile page
-    public function index()
-    {
-        return view('user-profile');
-    }
+    use HasApiTokens, HasFactory, Notifiable;
 
-    // Handle form submission (for now, just dump request data)
-    public function update(Request $request)
-    {
-        // You can just log or dump data for now
-        // Later you will save it in DB when auth is ready
-        return back()->with('success', 'Profile updated successfully (static mode)');
-    }
+    protected $fillable = [
+        'name',
+        'first_name',
+        'last_name',
+        'email',
+        'password',
+        'google_id',
+        'avatar',
+        'email_verified_at',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
 }

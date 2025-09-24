@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="container">
+    <!-- Hero Section -->
+
 <div class="sell-car-container">
     <div class="sell-car-hero">
         <div class="hero-content">
@@ -24,79 +27,167 @@
         <div class="car-illustration"></div>
     </div>
 
-    <div class="signup-section">
-        <div class="signup-container">
-            {{-- Tabs --}}
-            <div class="tabs">
-                <button class="tab active">Sign Up</button>
-                <button class="tab">Log In</button>
-            </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="form-section">
+            <div class="card">
+                @if(session('success'))
+                    <div class="success-message show">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-            {{-- Google Signup/Login (placeholder) --}}
-            <div class="social-signup">
-                <button class="google-btn">
-                    <span class="google-icon"></span>
-                    Sign up with Google
-                </button>
-            </div>
+                @if($errors->any())
+                    <div class="error-message show">
+                        @foreach($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                @endif
 
-            <div class="divider">
-                <span>or</span>
-            </div>
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab {{ !session('login_tab') ? 'active' : '' }}" onclick="switchTab('signup')">Sign Up</button>
+                    <button class="tab {{ session('login_tab') ? 'active' : '' }}" onclick="switchTab('login')">Log In</button>
+                </div>
 
-            {{-- Signup Form --}}
-            <form method="POST" action="{{ route('sell.store') }}" class="signup-form">
-                @csrf
+                <!-- Google Auth Button -->
+                <a href="{{ route('auth.google') }}" class="btn btn-google">
+                    <i class="fab fa-google"></i>
+                    <span id="googleText">Continue with Google</span>
+                </a>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="firstName">First Name</label>
-                        <input type="text" name="firstName" value="{{ old('firstName') }}">
-                        @error('firstName') <div class="error-message">{{ $message }}</div> @enderror
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <!-- Sign Up Form -->
+                <form class="auth-form {{ !session('login_tab') ? 'active' : '' }}" id="signupForm" method="POST" action="{{ route('auth.register') }}">
+                    @csrf
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" name="firstName" value="{{ old('firstName') }}" required
+                                   class="{{ $errors->has('firstName') ? 'error' : '' }}">
+                            @error('firstName')
+                                <div class="error-message">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" value="{{ old('lastName') }}" required
+                                   class="{{ $errors->has('lastName') ? 'error' : '' }}">
+                            @error('lastName')
+                                <div class="error-message">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="lastName">Last Name</label>
-                        <input type="text" name="lastName" value="{{ old('lastName') }}">
-                        @error('lastName') <div class="error-message">{{ $message }}</div> @enderror
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="{{ old('email') }}" required
+                               class="{{ $errors->has('email') ? 'error' : '' }}">
+                        @error('email')
+                            <div class="error-message">{{ $message }}</div>
+                        @enderror
                     </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-container">
+                            <input type="password" id="password" name="password" required
+                                   class="{{ $errors->has('password') ? 'error' : '' }}">
+                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        @error('password')
+                            <div class="error-message">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password_confirmation">Confirm Password</label>
+                        <div class="input-container">
+                            <input type="password" id="password_confirmation" name="password_confirmation" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('password_confirmation')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Sign Up & Sell Your Car
+                    </button>
+                </form>
+
+                <!-- Login Form -->
+                <form class="auth-form {{ session('login_tab') ? 'active' : '' }}" id="loginForm" method="POST" action="{{ route('auth.login') }}">
+                    @csrf
+                    <div class="form-group">
+                        <label for="login_email">Email</label>
+                        <input type="email" id="login_email" name="email" value="{{ old('email') }}" required
+                               class="{{ $errors->has('email') ? 'error' : '' }}">
+                        @error('email')
+                            <div class="error-message">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login_password">Password</label>
+                        <div class="input-container">
+                            <input type="password" id="login_password" name="password" required
+                                   class="{{ $errors->has('password') ? 'error' : '' }}">
+                            <button type="button" class="password-toggle" onclick="togglePassword('login_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        @error('password')
+                            <div class="error-message">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Log In & Start Selling
+                    </button>
+                </form>
+
+                <!-- Form Footer -->
+                <div class="form-footer">
+                    <p id="switchText">
+                        {{ !session('login_tab') ? 'Already have an account?' : "Don't have an account?" }}
+                        <a href="#" class="text-link" onclick="switchTab('{{ !session('login_tab') ? 'login' : 'signup' }}')">
+                            {{ !session('login_tab') ? 'Log In' : 'Sign Up' }}
+                        </a>
+                    </p>
                 </div>
-
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" name="email" value="{{ old('email') }}">
-                    @error('email') <div class="error-message">{{ $message }}</div> @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" name="password">
-                    @error('password') <div class="error-message">{{ $message }}</div> @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="password_confirmation">Confirm Password</label>
-                    <input type="password" name="password_confirmation">
-                </div>
-
-                <button type="submit" class="submit-button">Sign Up & Sell Your Car</button>
-            </form>
-
-            {{-- Switch to login --}}
-            <div class="form-footer">
-                <p>Already have an account? <a href="#">Log In</a></p>
             </div>
         </div>
 
-        {{-- Benefits Sidebar --}}
-        <div class="benefits-sidebar">
+        <!-- Benefits Sidebar -->
+        <div class="benefits">
             <h3>Why Sell With Us?</h3>
             <ul class="benefits-list">
-                <li><span class="benefit-icon check"></span> Free basic listings with no hidden fees</li>
-                <li><span class="benefit-icon money"></span> Get up to 15% more than dealer trade-in value</li>
-                <li><span class="benefit-icon shield"></span> Verified buyers and secure payment process</li>
-                <li><span class="benefit-icon chart"></span> Market analysis tools to price your car right</li>
-                <li><span class="benefit-icon star"></span> Premium listing options for faster selling</li>
+                <li>
+                    <div class="benefit-icon"><i class="fas fa-check"></i></div>
+                    Free basic listings with no hidden fees
+                </li>
+                <li>
+                    <div class="benefit-icon"><i class="fas fa-dollar-sign"></i></div>
+                    Get up to 15% more than dealer trade-in value
+                </li>
+                <li>
+                    <div class="benefit-icon"><i class="fas fa-shield-alt"></i></div>
+                    Verified buyers and secure payment process
+                </li>
+                <li>
+                    <div class="benefit-icon"><i class="fas fa-chart-line"></i></div>
+                    Market analysis tools to price your car right
+                </li>
+                <li>
+                    <div class="benefit-icon"><i class="fas fa-star"></i></div>
+                    Premium listing options for faster selling
+                </li>
             </ul>
 
             <div class="testimonial">
@@ -113,19 +204,17 @@
     </div>
 </div>
 
-{{-- Leave CSS empty so you can add styles --}}
 <style>
-/* RENT=GO Sell Your Car Page - Enhanced Design */
-
 :root {
-  --rentgo-red: #e53e3e;
-  --rentgo-yellow: #ffd700;
-  --rentgo-dark: #4a5568;
-  --rentgo-light-red: #fed7d7;
-  --rentgo-light-yellow: #fffacd;
-  --shadow-soft: 0 10px 30px rgba(229, 62, 62, 0.1);
-  --shadow-strong: 0 20px 40px rgba(229, 62, 62, 0.15);
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --rentgo-red: #e53e3e;
+    --rentgo-yellow: #ffd700;
+    --rentgo-dark: #4a5568;
+    --rentgo-light-red: #fed7d7;
+    --rentgo-light-yellow: #fffacd;
+    --shadow-soft: 0 10px 30px rgba(229, 62, 62, 0.1);
+    --shadow-strong: 0 20px 40px rgba(229, 62, 62, 0.15);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --border-radius: 20px;
 }
 
 .sell-car-container {
@@ -230,439 +319,447 @@
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-20px); }
 }
-
-/* Main Content Layout */
-.signup-section {
-  display: flex;
-  gap: 40px;
-  padding: 60px 40px;
-}
-
-/* Form Container */
-.signup-container, .car-listing-container {
-  background: white;
-  border-radius: 30px;
-  box-shadow: var(--shadow-strong);
-  padding: 40px;
-  border: 1px solid rgba(229, 62, 62, 0.05);
-}
-
-.signup-container {
-  flex: 2;
-  max-width: 600px;
-}
-
-.car-listing-container {
-  max-width: 800px;
-  margin: 40px auto;
-}
-
-/* Tabs */
-.tabs {
-  display: flex;
-  margin-bottom: 30px;
-  background: var(--rentgo-light-red);
-  border-radius: 20px;
-  padding: 4px;
-}
-
-.tab {
-  flex: 1;
-  background: none;
-  border: none;
-  padding: 16px 20px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--rentgo-dark);
-  cursor: pointer;
-  border-radius: 16px;
-  transition: var(--transition);
-}
-
-.tab.active {
-  background: var(--rentgo-red);
-  color: white;
-  box-shadow: var(--shadow-soft);
-}
-
-/* Buttons */
-.google-btn, .submit-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 16px;
-  border-radius: 20px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  border: none;
-}
-
-.google-btn {
-  background: white;
-  color: var(--rentgo-dark);
-  border: 2px solid var(--rentgo-light-red);
-  margin-bottom: 30px;
-}
-
-.google-btn:hover {
-  background: var(--rentgo-light-red);
-  border-color: var(--rentgo-red);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-soft);
-}
-
-.submit-button {
-  background: linear-gradient(135deg, var(--rentgo-red), var(--rentgo-yellow));
-  color: white;
-  margin-top: 20px;
-  box-shadow: var(--shadow-soft);
-}
-
-.submit-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-strong);
-}
-
-.google-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 12px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23FFC107' d='M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z'/%3E%3Cpath fill='%23FF3D00' d='M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z'/%3E%3Cpath fill='%234CAF50' d='M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z'/%3E%3Cpath fill='%231976D2' d='M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z'/%3E%3C/svg%3E");
-  background-size: contain;
-}
-
-/* Divider */
-.divider {
-  position: relative;
-  text-align: center;
-  margin: 30px 0;
-}
-
-.divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--rentgo-light-red), transparent);
-}
-
-.divider span {
-  background: white;
-  padding: 0 20px;
-  color: var(--rentgo-dark);
-  font-weight: 500;
-}
-
-/* Form Elements */
-.form-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.form-row .form-group {
-  flex: 1;
-}
-
-.form-group {
-  margin-bottom: 25px;
-}
-
-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: var(--rentgo-dark);
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-input {
-  width: 100%;
-  padding: 16px 20px;
-  border: 2px solid var(--rentgo-light-red);
-  border-radius: 15px;
-  font-size: 16px;
-  transition: var(--transition);
-  background: rgba(255, 255, 255, 0.8);
-}
-
-input:focus {
-  outline: none;
-  border-color: var(--rentgo-red);
-  box-shadow: 0 0 0 4px rgba(229, 62, 62, 0.1);
-  background: white;
-}
-
-input.error {
-  border-color: var(--rentgo-red);
-  background: var(--rentgo-light-red);
-}
-
-.error-message {
-  color: var(--rentgo-red);
-  font-size: 14px;
-  margin-top: 8px;
-  font-weight: 500;
-}
-
-.password-input-container {
-  position: relative;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 8px;
-  border-radius: 8px;
-  transition: var(--transition);
-}
-
-.toggle-password:hover {
-  background: var(--rentgo-light-red);
-}
-
-.text-button {
-  background: none;
-  border: none;
-  color: var(--rentgo-red);
-  cursor: pointer;
-  font-weight: 600;
-  transition: var(--transition);
-}
-
-.text-button:hover {
-  color: var(--rentgo-yellow);
-  text-decoration: underline;
-}
-
-.form-footer {
-  margin-top: 30px;
-  text-align: center;
-  color: var(--rentgo-dark);
-}
-
-/* Benefits Sidebar */
-.benefits-sidebar {
-  flex: 1;
-  padding: 40px;
-  background: linear-gradient(135deg, var(--rentgo-light-yellow) 0%, var(--rentgo-light-red) 100%);
-  border-radius: 30px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(255, 215, 0, 0.2);
-}
-
-.benefits-sidebar h3 {
-  font-size: 28px;
-  font-weight: 800;
-  margin-bottom: 30px;
-  color: var(--rentgo-red);
-  text-align: center;
-}
-
-.benefits-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 40px 0;
-}
-
-.benefits-list li {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  font-size: 16px;
-  color: var(--rentgo-dark);
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 15px;
-  transition: var(--transition);
-}
-
-.benefits-list li:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateX(5px);
-}
-
-.benefit-icon {
-  width: 40px;
-  height: 40px;
-  margin-right: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--rentgo-red);
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.benefit-icon.check::before { content: "✓"; }
-.benefit-icon.money::before { content: "$"; }
-.benefit-icon.shield::before { content: "🛡️"; }
-.benefit-icon.chart::before { content: "📊"; }
-.benefit-icon.star::before { content: "⭐"; }
-
-/* Testimonial */
-.testimonial {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: var(--shadow-soft);
-  margin-top: auto;
-  border: 1px solid rgba(229, 62, 62, 0.1);
-}
-
-.testimonial p {
-  font-style: italic;
-  margin-bottom: 20px;
-  color: var(--rentgo-dark);
-  line-height: 1.6;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-}
-
-.avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--rentgo-red), var(--rentgo-yellow));
-  margin-right: 15px;
-}
-
-.rating {
-  color: var(--rentgo-yellow);
-  font-size: 16px;
-  font-weight: bold;
-}
-
-/* Car Listing Specific */
-.car-listing-container h1 {
-  font-size: 32px;
-  font-weight: 800;
-  margin-bottom: 20px;
-  color: var(--rentgo-red);
-}
-
-.success-message {
-  background: var(--rentgo-light-yellow);
-  color: var(--rentgo-red);
-  padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 30px;
-  border: 2px solid var(--rentgo-yellow);
-  font-weight: 600;
-}
-
-.listing-steps {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 40px;
-}
-
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  color: var(--rentgo-dark);
-  opacity: 0.5;
-  position: relative;
-  flex: 1;
-  transition: var(--transition);
-}
-
-.step.active {
-  opacity: 1;
-  color: var(--rentgo-red);
-}
-
-.step-number {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--rentgo-light-red);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  margin-bottom: 10px;
-  transition: var(--transition);
-}
-
-.step.active .step-number {
-  background: var(--rentgo-red);
-  color: white;
-  box-shadow: var(--shadow-soft);
-}
-
-.form-placeholder {
-  padding: 60px 40px;
-  border: 3px dashed var(--rentgo-light-red);
-  border-radius: 20px;
-  text-align: center;
-  color: var(--rentgo-dark);
-  opacity: 0.7;
-}
-
-/* Responsive Design */
-@media (max-width: 992px) {
+/* SMALL SELL HERO */
+/* Responsive for small screens */
+@media (max-width: 768px) {
   .sell-car-hero {
     flex-direction: column;
-    padding: 60px 30px;
-    text-align: center;
+    padding: 40px 20px;
+    margin-top: 68px;
+    border-radius: 0 0 30px 30px;
   }
 
   .hero-content {
-    margin-bottom: 40px;
+    max-width: 100%;
+    text-align: center;
+    margin-bottom: 30px;
   }
 
-  .hero-stats {
-    justify-content: center;
-    flex-wrap: wrap;
+  .hero-content h1 {
+    font-size: clamp(28px, 6vw, 36px);
   }
 
-  .signup-section {
-    flex-direction: column;
-    padding: 40px 20px;
+  .hero-content p {
+    font-size: 16px;
+    margin-bottom: 30px;
   }
 
-  .form-row {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 576px) {
   .hero-stats {
     flex-direction: column;
     gap: 20px;
     align-items: center;
   }
 
-  .signup-container, .benefits-sidebar, .car-listing-container {
-    padding: 25px 20px;
+  .stat-item {
+    width: 100%;
+    max-width: 280px;
   }
 
-  .listing-steps {
-    flex-direction: column;
-    gap: 20px;
+  .car-illustration {
+    width: 100%;
+    height: 250px;
+    border-radius: 20px;
+  }
+
+  .car-illustration::after {
+    font-size: 80px;
   }
 }
+
+@media (max-width: 480px) {
+  .sell-car-hero {
+    padding: 30px 15px;
+  }
+
+  .hero-content h1 {
+    font-size: 24px;
+  }
+
+  .hero-content p {
+    font-size: 14px;
+  }
+
+  .stat-number {
+    font-size: 24px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+}
+
+
+
+.main-content {
+    display: flex;
+    gap: 40px;
+    padding: 60px 0;
+}
+
+.form-section {
+    flex: 2;
+    max-width: 600px;
+}
+
+.card {
+    background: white;
+    border-radius: 30px;
+    box-shadow: var(--shadow-strong);
+    padding: 40px;
+    border: 1px solid rgba(229, 62, 62, 0.05);
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 30px;
+    background: var(--rentgo-light-red);
+    border-radius: var(--border-radius);
+    padding: 4px;
+}
+
+.tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 16px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--rentgo-dark);
+    cursor: pointer;
+    border-radius: 16px;
+    transition: var(--transition);
+}
+
+.tab.active {
+    background: var(--rentgo-red);
+    color: white;
+    box-shadow: var(--shadow-soft);
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 16px;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    text-decoration: none;
+}
+
+.btn-google {
+    background: white;
+    color: var(--rentgo-dark);
+    border: 2px solid var(--rentgo-light-red);
+    margin-bottom: 30px;
+    gap: 12px;
+}
+
+.btn-google:hover {
+    background: var(--rentgo-light-red);
+    border-color: var(--rentgo-red);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+    text-decoration: none;
+    color: var(--rentgo-dark);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--rentgo-red), var(--rentgo-yellow));
+    color: white;
+    margin-top: 20px;
+    box-shadow: var(--shadow-soft);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-strong);
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 30px 0;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--rentgo-light-red), transparent);
+}
+
+.divider span {
+    background: white;
+    padding: 0 20px;
+    color: var(--rentgo-dark);
+    font-weight: 500;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+    flex: 1;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--rentgo-dark);
+    font-size: 14px;
+}
+
+.input-container {
+    position: relative;
+}
+
+input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid var(--rentgo-light-red);
+    border-radius: 15px;
+    font-size: 16px;
+    transition: var(--transition);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--rentgo-red);
+    box-shadow: 0 0 0 4px rgba(229, 62, 62, 0.1);
+    background: white;
+}
+
+input.error {
+    border-color: var(--rentgo-red);
+    background: var(--rentgo-light-red);
+}
+
+.password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--rentgo-dark);
+    opacity: 0.6;
+    padding: 8px;
+}
+
+.password-toggle:hover {
+    opacity: 1;
+}
+
+.error-message {
+    color: var(--rentgo-red);
+    font-size: 14px;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+.success-message {
+    background: var(--rentgo-light-yellow);
+    color: var(--rentgo-red);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    border: 2px solid var(--rentgo-yellow);
+    font-weight: 600;
+    display: none;
+}
+
+.success-message.show {
+    display: block;
+}
+
+.form-footer {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.text-link {
+    color: var(--rentgo-red);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.text-link:hover {
+    color: var(--rentgo-yellow);
+}
+
+.benefits {
+    flex: 1;
+    background: linear-gradient(135deg, var(--rentgo-light-yellow) 0%, var(--rentgo-light-red) 100%);
+    border-radius: 30px;
+    padding: 40px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.benefits h3 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    color: var(--rentgo-red);
+    text-align: center;
+}
+
+.benefits-list {
+    list-style: none;
+    margin-bottom: 40px;
+}
+
+.benefits-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 15px;
+    transition: var(--transition);
+}
+
+.benefits-list li:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
+}
+
+.benefit-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--rentgo-red);
+    color: white;
+    font-size: 16px;
+}
+
+.testimonial {
+    background: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(229, 62, 62, 0.1);
+}
+
+.testimonial p {
+    font-style: italic;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--rentgo-red), var(--rentgo-yellow));
+}
+
+.rating {
+    color: var(--rentgo-yellow);
+    font-size: 16px;
+}
+
+@media (max-width: 992px) {
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .main-content {
+        flex-direction: column;
+        padding: 40px 0;
+    }
+
+    .stats {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .stats {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card, .benefits {
+        padding: 25px 20px;
+    }
+}
 </style>
+
+<script>
+function switchTab(tab) {
+    // Update tabs
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.tab:nth-child(${tab === 'signup' ? '1' : '2'})`).classList.add('active');
+
+    // Update forms
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    document.getElementById(tab === 'signup' ? 'signupForm' : 'loginForm').classList.add('active');
+
+    // Update footer text and Google text
+    const switchText = document.getElementById('switchText');
+    const googleText = document.getElementById('googleText');
+
+    if (tab === 'signup') {
+        switchText.innerHTML = 'Already have an account? <a href="#" class="text-link" onclick="switchTab(\'login\')">Log In</a>';
+        googleText.textContent = 'Sign up with Google';
+    } else {
+        switchText.innerHTML = 'Don\'t have an account? <a href="#" class="text-link" onclick="switchTab(\'signup\')">Sign Up</a>';
+        googleText.textContent = 'Log in with Google';
+    }
+}
+
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling.querySelector('i');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
 @endsection
