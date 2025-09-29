@@ -11,31 +11,40 @@ use App\Http\Controllers\{
     CarController,
     ProfileController
 };
+use App\Http\Controllers\Admin\{
+    AdminController,
+    AdminAuthController
+};
 
-// ----------------------------------------------------
-// 🌍 Public Routes
-// ----------------------------------------------------
+/*
+|--------------------------------------------------------------------------
+| Public Pages
+|--------------------------------------------------------------------------
+*/
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
 Route::get('/faqs', [FaqController::class, 'index'])->name('faqs');
 
-// Vehicles (public)
+// Vehicles Public
 Route::get('/vehicles', [CarController::class, 'publicIndex'])->name('vehicles');
+Route::get('/vehicles/{car}', [CarController::class, 'show'])->name('vehicles.show');
 Route::post('/vehicles/{id}/buy-report', [CarController::class, 'buyReport'])->name('vehicles.buyReport');
 
-// Search & newsletter
+// Search & Newsletter
 Route::get('/search', [HomeController::class, 'search'])->name('search.vehicle');
 Route::post('/subscribe', [HomeController::class, 'subscribe'])->name('newsletter.subscribe');
 
-// Static/demo pages
-Route::get('/welcome', fn () => view('welcome'))->name('welcome');
-Route::get('/listings', fn () => view('listed-vehicles'))->name('listings');
+// Static / Demo Pages
+Route::view('/welcome', 'welcome')->name('welcome');
+Route::view('/listings', 'listed-vehicles')->name('listings');
 
-// ----------------------------------------------------
-// 🔑 Authentication (Public)
-// ----------------------------------------------------
+/*
+|--------------------------------------------------------------------------
+| Authentication (Public)
+|--------------------------------------------------------------------------
+*/
 Route::get('/login', [AuthController::class, 'showSellPage'])->name('login');
 Route::get('/sell', [AuthController::class, 'showSellPage'])->name('sell');
 Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
@@ -45,29 +54,62 @@ Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
-// ----------------------------------------------------
-// 🔒 Authenticated Routes (Requires login)
-// ----------------------------------------------------
+/*
+|--------------------------------------------------------------------------
+| Authenticated User Routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth'])->group(function () {
-
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
-    // Dashboard & Profile
-    Route::get('/dashboard', fn () => redirect()->route('cars.create'))->name('dashboard');
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    // Dashboard
+    Route::get('/dashboard', fn() => redirect()->route('cars.create'))->name('dashboard');
 
-    // Cars Management
+    // Profile
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'show'])->name('show');
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+        Route::put('/', [ProfileController::class, 'update'])->name('update');
+    });
+
+    // Cars Management (User)
     Route::prefix('cars')->name('cars.')->group(function () {
         Route::get('/my', [CarController::class, 'index'])->name('my');
         Route::get('/create', [CarController::class, 'create'])->name('create');
         Route::post('/', [CarController::class, 'store'])->name('store');
         Route::get('/{car}/edit', [CarController::class, 'edit'])->name('edit');
-        Route::put('/{car}', [CarController::class, 'update'])->name('update');
+        Route::match(['put', 'patch'], '/{car}', [CarController::class, 'update'])->name('update'); // Accept PUT & PATCH
         Route::delete('/{car}', [CarController::class, 'destroy'])->name('destroy');
     });
 
-    // Authenticated Sell Page
+    // Sell Dashboard
     Route::get('/sell/dashboard', [SellController::class, 'showSellPage'])->name('sell.auth');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')->group(function () {
+    // Admin Auth
+    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+
+    // Admin Protected Routes
+    Route::middleware(['auth', 'admin'])->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+
+        // Users Management
+        Route::get('/users/{id}/verify', [AdminController::class, 'verifyUser'])->name('admin.users.verify');
+        Route::get('/users/{id}/unverify', [AdminController::class, 'unverifyUser'])->name('admin.users.unverify');
+        Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+
+        // Cars Management (Admin)
+        Route::get('/cars/{car}/edit', [CarController::class, 'edit'])->name('admin.cars.edit');
+        Route::match(['put', 'patch'], '/cars/{car}', [CarController::class, 'update'])->name('admin.cars.update');
+        Route::delete('/cars/{id}', [AdminController::class, 'deleteCar'])->name('admin.cars.delete');
+    });
 });

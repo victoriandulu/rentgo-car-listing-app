@@ -38,7 +38,13 @@ return new class extends Migration
             $table->json('running_cost')->nullable();    // insurance, fuel, etc.
 
             // Images
-            $table->string('image')->nullable(); // main image
+            $table->string('image')->nullable();         // main image
+            $table->json('images')->nullable();          // all uploaded images
+
+            // Tracking / Stats
+            $table->integer('views')->default(0);
+            $table->integer('inquiries')->default(0);
+
             $table->timestamps();
         });
     }

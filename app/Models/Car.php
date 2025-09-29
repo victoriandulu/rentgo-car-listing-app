@@ -9,6 +9,9 @@ class Car extends Model
 {
     use HasFactory;
 
+    /**
+     * Mass assignable attributes
+     */
     protected $fillable = [
         // Basic info
         'name',
@@ -18,9 +21,9 @@ class Car extends Model
         'mileage',
         'price',
         'description',
-        'image',
         'status',
         'availability',
+        'car_type',   // NEW: e.g., SUV, Sedan, Truck
 
         // Specs
         'engine_size',
@@ -34,23 +37,66 @@ class Car extends Model
         'inquiries',
         'user_id',
 
+        // Media & reports
+        'image',      // first/main image
+        'images',     // all uploaded images (JSON)
+        'report',     // PDF report path
+
         // JSON / structured fields
         'specification',
-        'running_Cost',
+        'running_cost',
 
         // Origin info
-        'origin', // 'import' or 'kenya'
-        'source', // dealer or origin details, e.g., 'Nairobi Auto Mart'
+        'origin',     // 'kenya' or 'import'
+        'source',     // dealer/source info
     ];
 
+    /**
+     * Attribute casting
+     */
     protected $casts = [
         'specification' => 'array',
-        'running_Cost'  => 'array',
+        'running_cost'  => 'array',
+        'images'        => 'array',  // all uploaded images
+        'year'          => 'integer',
+        'mileage'       => 'integer',
+        'price'         => 'decimal:2',
     ];
 
-    // Relation: a car belongs to a user
+    /**
+     * Relation: a car belongs to a user
+     */
+    // In your Car model
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Accessor: Get main image URL
+     */
+    public function getMainImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
+
+    /**
+     * Accessor: Get all image URLs
+     */
+    public function getImageUrlsAttribute()
+    {
+        if ($this->images && is_array($this->images)) {
+            return array_map(fn($img) => asset('storage/' . $img), $this->images);
+        }
+        return [];
+    }
+
+    /**
+     * Accessor: Get report URL
+     */
+    public function getReportUrlAttribute()
+    {
+        return $this->report ? asset('storage/' . $this->report) : null;
     }
 }

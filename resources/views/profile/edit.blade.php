@@ -1,7 +1,6 @@
 @extends('layouts.dashboard')
 @section('dashboard-content')
 <div class="profile-page">
-    <!-- Header -->
     <div class="page-header">
         <div class="header-icon">
             <i class="fas fa-user"></i>
@@ -12,7 +11,6 @@
         </div>
     </div>
 
-    <!-- Messages -->
     @if(session('success'))
         <div class="alert success">
             <i class="fas fa-check-circle"></i>
@@ -44,123 +42,85 @@
                 <i class="fas fa-user-edit"></i>
                 <h3>Personal Information</h3>
             </div>
-
             <div class="form-grid">
                 <div class="form-group">
                     <label for="first_name">First Name *</label>
-                    <input type="text" id="first_name" name="first_name"
-                           value="{{ old('first_name', auth()->user()->first_name) }}" required>
-                    @error('first_name')<span class="error-text">{{ $message }}</span>@enderror
+                    <input type="text" name="first_name" value="{{ old('first_name', auth()->user()->first_name) }}" required>
                 </div>
-
                 <div class="form-group">
                     <label for="last_name">Last Name *</label>
-                    <input type="text" id="last_name" name="last_name"
-                           value="{{ old('last_name', auth()->user()->last_name) }}" required>
-                    @error('last_name')<span class="error-text">{{ $message }}</span>@enderror
+                    <input type="text" name="last_name" value="{{ old('last_name', auth()->user()->last_name) }}" required>
                 </div>
-
                 <div class="form-group">
                     <label for="email">Email *</label>
-                    <input type="email" id="email" name="email"
-                           value="{{ old('email', auth()->user()->email) }}" required>
-                    @error('email')<span class="error-text">{{ $message }}</span>@enderror
+                    <input type="email" name="email" value="{{ old('email', auth()->user()->email) }}" required>
                 </div>
-
                 <div class="form-group">
                     <label for="phone">Phone</label>
-                    <input type="text" id="phone" name="phone"
-                           value="{{ old('phone', auth()->user()->phone) }}"
-                           placeholder="+1 (555) 123-4567">
-                    @error('phone')<span class="error-text">{{ $message }}</span>@enderror
+                    <input type="text" name="phone" value="{{ old('phone', auth()->user()->phone) }}">
                 </div>
             </div>
         </div>
 
-        <!-- Document Verification -->
+        <!-- Documents -->
         <div class="form-section">
             <div class="section-header">
                 <i class="fas fa-file-shield"></i>
                 <h3>Document Verification</h3>
             </div>
-
             <div class="upload-grid">
+
                 <!-- Driver License -->
                 <div class="upload-item">
-                    <div class="upload-info">
-                        <i class="fas fa-id-card"></i>
-                        <div>
-                            <h4>Driver's License / ID</h4>
-                            <p>Government-issued photo ID</p>
-                        </div>
-                    </div>
-
-                    @if(auth()->user()->driver_license)
-                        <div class="file-uploaded">
-                            <i class="fas fa-check-circle"></i>
-                            {{ basename(auth()->user()->driver_license) }}
-                        </div>
-                    @endif
-
+                    <h4>Driver's License / ID</h4>
                     <input type="file" name="driver_license" accept=".pdf,.jpg,.jpeg,.png">
                 </div>
 
                 <!-- Proof of Address -->
                 <div class="upload-item">
-                    <div class="upload-info">
-                        <i class="fas fa-home"></i>
-                        <div>
-                            <h4>Proof of Address</h4>
-                            <p>Utility bill or bank statement</p>
-                        </div>
-                    </div>
-
-                    @if(auth()->user()->proof_of_address)
-                        <div class="file-uploaded">
-                            <i class="fas fa-check-circle"></i>
-                            {{ basename(auth()->user()->proof_of_address) }}
-                        </div>
-                    @endif
-
+                    <h4>Proof of Address</h4>
                     <input type="file" name="proof_of_address" accept=".pdf,.jpg,.jpeg,.png">
                 </div>
 
-                <!-- Additional Document -->
+                <!-- Additional Documents (Multiple) -->
                 <div class="upload-item">
-                    <div class="upload-info">
-                        <i class="fas fa-file-alt"></i>
-                        <div>
-                            <h4>Additional Document</h4>
-                            <p>Optional supporting document</p>
-                        </div>
-                    </div>
-
-                    @if(auth()->user()->additional_doc)
-                        <div class="file-uploaded">
-                            <i class="fas fa-check-circle"></i>
-                            {{ basename(auth()->user()->additional_doc) }}
-                        </div>
+                    <h4>Additional Documents</h4>
+                    <input type="file" name="additional_docs[]" multiple accept=".pdf,.jpg,.jpeg,.png">
+                    @if(auth()->user()->additional_docs)
+                        <ul>
+                            @foreach(json_decode(auth()->user()->additional_docs, true) as $doc)
+                                <li>{{ basename($doc) }}</li>
+                            @endforeach
+                        </ul>
                     @endif
+                </div>
 
-                    <input type="file" name="additional_doc" accept=".pdf,.jpg,.jpeg,.png">
+                <!-- National ID -->
+                <div class="upload-item">
+                    <h4>National ID / Passport</h4>
+                    <input type="file" name="national_id" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+
+                <!-- Photo -->
+                <div class="upload-item">
+                    <h4>Profile Photo</h4>
+                    <input type="file" name="photo" accept=".jpg,.jpeg,.png">
+                </div>
+
+                <!-- Video -->
+                <div class="upload-item">
+                    <h4>Verification Video</h4>
+                    <input type="file" name="verification_video" accept=".mp4,.mov,.avi">
                 </div>
             </div>
         </div>
 
-        <!-- Actions -->
         <div class="form-actions">
-            <button type="submit" class="btn primary">
-                <i class="fas fa-save"></i>
-                Save Changes
-            </button>
-            <a href="{{ url()->previous() }}" class="btn secondary">
-                <i class="fas fa-arrow-left"></i>
-                Cancel
-            </a>
+            <button type="submit" class="btn primary"><i class="fas fa-save"></i> Save Changes</button>
+            <a href="{{ url()->previous() }}" class="btn secondary"><i class="fas fa-arrow-left"></i> Cancel</a>
         </div>
     </form>
 </div>
-
 <style>
 .profile-page {
     font-family: 'Inter', sans-serif;
@@ -396,5 +356,8 @@
         flex-direction: column;
     }
 }
+
 </style>
+
+
 @endsection

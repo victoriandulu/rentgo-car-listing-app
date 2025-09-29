@@ -12,7 +12,7 @@ class CarPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Users can view their own cars
+        // Any authenticated user can view cars
         return true;
     }
 
@@ -21,8 +21,8 @@ class CarPolicy
      */
     public function view(User $user, Car $car): bool
     {
-        // Only allow the owner to view
-        return $user->id === $car->user_id;
+        // Admins can view any car, users can view their own
+        return $user->is_admin || $user->id === $car->user_id;
     }
 
     /**
@@ -39,8 +39,8 @@ class CarPolicy
      */
     public function update(User $user, Car $car): bool
     {
-        // Only allow the owner to update
-        return $user->id === $car->user_id;
+        // Admins can update any car, users can update their own
+        return $user->is_admin || $user->id === $car->user_id;
     }
 
     /**
@@ -48,7 +48,7 @@ class CarPolicy
      */
     public function delete(User $user, Car $car): bool
     {
-        // Only allow the owner to delete
-        return $user->id === $car->user_id;
+        // Admins can delete any car, users can delete their own
+        return $user->is_admin || $user->id === $car->user_id;
     }
 }

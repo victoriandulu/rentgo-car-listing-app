@@ -11,6 +11,9 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    /**
+     * Mass assignable attributes
+     */
     protected $fillable = [
         'name',
         'first_name',
@@ -20,14 +23,72 @@ class User extends Authenticatable
         'google_id',
         'avatar',
         'email_verified_at',
+        'is_admin',
+        'is_verified',
     ];
 
+    /**
+     * Hidden attributes
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * Attribute casting
+     */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_admin' => 'boolean',
+        'is_verified' => 'boolean',
     ];
+
+    /**
+     * Boot model events
+     */
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            $user->email = trim($user->email);
+
+            // Auto-verify admins
+            if ($user->is_admin) {
+                $user->is_verified = true;
+            }
+        });
+
+        static::updating(function ($user) {
+            $user->email = trim($user->email);
+
+            // Ensure admins always stay verified
+            if ($user->is_admin) {
+                $user->is_verified = true;
+            }
+        });
+    }
+
+    /**
+     * Check if user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin;
+    }
+
+    /**
+     * Check if user is verified by admin
+     */
+    public function isVerified(): bool
+    {
+        return $this->is_verified;
+    }
+
+    /**
+     * Relation to verification documents
+     */
+    public function verification()
+    {
+        return $this->hasOne(UserVerification::class);
+    }
 }
