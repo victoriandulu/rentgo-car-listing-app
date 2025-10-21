@@ -26,28 +26,36 @@ h2 { font-size: 2.4rem; margin: 0; color: #1f2937; font-weight: bold; }
 }
 .card:hover { transform: translateY(-6px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
 
-.image-container {
-    width: 100%;
-    height: 300px;
+.image-wrapper {
     position: relative;
+    width: 100%;
+    height: 280px;
+    background: #f8f9fa;
     overflow: hidden;
-    background: #f9fafb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.image-container img {
+
+.image-wrapper img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    display: block;
 }
-.image-container .car-name {
+
+.image-wrapper .car-name {
     position: absolute;
-    bottom: 8px;
+    bottom: 12px;
     left: 12px;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.75);
     color: #fff;
-    padding: 6px 12px;
+    padding: 8px 14px;
     border-radius: 6px;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 600;
+    z-index: 10;
+    backdrop-filter: blur(4px);
 }
 
 .details {
@@ -78,6 +86,35 @@ h2 { font-size: 2.4rem; margin: 0; color: #1f2937; font-weight: bold; }
 .details button.edit:hover { background: #1d4ed8; }
 .details button.delete { background: #ef4444; color: #fff; }
 .details button.delete:hover { background: #b91c1c; }
+
+.success-message {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #10b981;
+    color: white;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.empty-state {
+    padding: 60px 40px;
+    text-align: center;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+.empty-state p {
+    font-size: 1.1rem;
+    color: #6b7280;
+}
+.empty-state a {
+    color: #ef4444;
+    font-weight: 600;
+    text-decoration: none;
+}
+.empty-state a:hover {
+    text-decoration: underline;
+}
 </style>
 
 <div class="container">
@@ -86,16 +123,16 @@ h2 { font-size: 2.4rem; margin: 0; color: #1f2937; font-weight: bold; }
     </div>
 
     @if(session('success'))
-        <div class="mb-4 p-3 bg-green-500 text-white rounded">
+        <div class="success-message">
             {{ session('success') }}
         </div>
     @endif
 
     @if($cars->isEmpty())
-        <div class="card p-10 text-center">
-            <p class="text-gray-600 text-lg">
-                You haven’t listed any cars yet.
-                <a href="{{ route('cars.create') }}" class="text-red-600 font-semibold">
+        <div class="empty-state">
+            <p>
+                You haven't listed any cars yet.
+                <a href="{{ route('cars.create') }}">
                     List your first car
                 </a>.
             </p>
@@ -104,7 +141,7 @@ h2 { font-size: 2.4rem; margin: 0; color: #1f2937; font-weight: bold; }
         <div class="grid">
             @foreach($cars as $car)
                 <div class="card">
-                    <div class="image-container">
+                    <div class="image-wrapper">
                         <img src="{{ $car->image ? asset('storage/' . $car->image) : 'https://placehold.co/600x400?text=Car' }}" alt="{{ $car->name }}">
                         <span class="car-name">{{ $car->name }}</span>
                     </div>
@@ -115,7 +152,6 @@ h2 { font-size: 2.4rem; margin: 0; color: #1f2937; font-weight: bold; }
                         </div>
                         <h3>{{ $car->name }}</h3>
                         <p>{{ $car->engine_size ?? 'N/A' }}, {{ $car->transmission ?? 'N/A' }}</p>
-                        <!-- Correct dealer/source field -->
                         <p class="dealer">{{ $car->source ?? 'Dealer Unknown' }}</p>
 
                         <div class="actions">

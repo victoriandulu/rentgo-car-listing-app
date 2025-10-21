@@ -1,4 +1,5 @@
 {{-- resources/views/cars/show.blade.php --}}
+{{-- this is the page when you go to vihecles and click view --}}
 @extends('layouts.app')
 
 @section('content')

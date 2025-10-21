@@ -79,7 +79,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [CarController::class, 'create'])->name('create');
         Route::post('/', [CarController::class, 'store'])->name('store');
         Route::get('/{car}/edit', [CarController::class, 'edit'])->name('edit');
-        Route::match(['put', 'patch'], '/{car}', [CarController::class, 'update'])->name('update'); // Accept PUT & PATCH
+        Route::match(['put', 'patch'], '/{car}', [CarController::class, 'update'])->name('update');
         Route::delete('/{car}', [CarController::class, 'destroy'])->name('destroy');
     });
 
@@ -92,24 +92,33 @@ Route::middleware(['auth'])->group(function () {
 | Admin Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('admin')->group(function () {
-    // Admin Auth
-    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
-    Route::post('/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+Route::prefix('admin')->name('admin.')->group(function () {
+    // Admin Auth (Public)
+    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
     // Admin Protected Routes
     Route::middleware(['auth', 'admin'])->group(function () {
-        Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+        // Dashboard
+        Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
         // Users Management
-        Route::get('/users/{id}/verify', [AdminController::class, 'verifyUser'])->name('admin.users.verify');
-        Route::get('/users/{id}/unverify', [AdminController::class, 'unverifyUser'])->name('admin.users.unverify');
-        Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+        Route::get('/users', [AdminController::class, 'userIndex'])->name('users.index');
+        Route::get('/users/{id}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
+        Route::get('/users/{id}/unverify', [AdminController::class, 'unverifyUser'])->name('users.unverify');
+        Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('users.delete');
 
         // Cars Management (Admin)
-        Route::get('/cars/{car}/edit', [CarController::class, 'edit'])->name('admin.cars.edit');
-        Route::match(['put', 'patch'], '/cars/{car}', [CarController::class, 'update'])->name('admin.cars.update');
-        Route::delete('/cars/{id}', [AdminController::class, 'deleteCar'])->name('admin.cars.delete');
+        Route::get('/cars', [AdminController::class, 'carIndex'])->name('cars.index');
+        Route::get('/cars/{car}/edit', [CarController::class, 'edit'])->name('cars.edit');
+        Route::match(['put', 'patch'], '/cars/{car}', [CarController::class, 'update'])->name('cars.update');
+        Route::delete('/cars/{id}', [AdminController::class, 'deleteCar'])->name('cars.delete');
+
+        // Verifications Management
+        Route::get('/verifications', [AdminController::class, 'verificationIndex'])->name('verifications.index');
+
+        // Reports Management
+        Route::get('/reports', [AdminController::class, 'reportIndex'])->name('reports.index');
     });
 });
