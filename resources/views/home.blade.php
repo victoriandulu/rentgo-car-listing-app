@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .car-showcase {
     width: 100%;
     padding: 3rem 2rem;
-    background: #ffffff;
+
     display: flex;
     justify-content: center;
     align-items: center;
@@ -396,34 +396,48 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Responsive Design */
 @media (max-width: 768px) {
     .hero-section {
-        min-height: 90vh;
-        padding: 1.5rem 1rem;
-    }
+    min-height: 50vh;
+    padding: 1.8rem 1rem 2.5rem; /* extra bottom padding to push buttons lower */
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* positions content toward the bottom */
+}
 
-    .hero-watermark {
-        font-size: clamp(6rem, 15vw, 10rem);
-    }
+.hero-watermark {
+    font-size: clamp(6rem, 15vw, 10rem);
+    margin-block-start: 0;
+}
 
-    .hero-content h1 {
-        font-size: clamp(1.75rem, 6vw, 2.5rem);
-        margin-bottom: 2rem;
-    }
+.hero-content h1 {
+    font-size: 52px;
+    margin-bottom: 1rem;
+}
 
-    .hero-buttons {
-        flex-direction: column;
-        width: 100%;
-        max-width: 280px;
-        margin: 0 auto 2rem;
-    }
+.hero-buttons {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 280px;
+    margin: 3rem auto 1rem; /* moves buttons farther down */
+    gap: 8px;
+}
 
-    .btn-primary,
-    .btn-secondary {
-        width: 100%;
-    }
+/* ✅ Maintain breathing space below last button */
+.hero-buttons .btn-secondary:last-child {
+    margin-top: 26px;
+}
 
-    .car-showcase {
-        padding: 2rem 1rem;
-    }
+.btn-primary,
+.btn-secondary {
+    width: 100%;
+}
+
+/* ✅ Pull the car showcase closer to the hero */
+.car-showcase {
+    padding: 0.8rem 1rem;
+    margin-top: -30px; /* negative margin lifts the section upward */
+}
 
     .search-form {
         flex-direction: column;
