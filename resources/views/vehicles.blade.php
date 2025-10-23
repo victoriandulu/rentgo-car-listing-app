@@ -73,12 +73,12 @@
             <a href="{{ route('vehicles', ['category' => 'All Vehicles']) }}"
                class="filter-btn {{ ($category ?? '') === 'All Vehicles' ? 'active' : '' }}"
                onclick="filterByCategory('all')">
-                All Vehicles
+                All
             </a>
             <a href="{{ route('vehicles', ['category' => 'Vehicles in Kenya']) }}"
                class="filter-btn {{ ($category ?? '') === 'Vehicles in Kenya' ? 'active' : '' }}"
                onclick="filterByCategory('local')">
-                Local Vehicles
+                Local
             </a>
             <a href="{{ route('vehicles', ['category' => 'Imports']) }}"
                class="filter-btn {{ ($category ?? '') === 'Imports' ? 'active' : '' }}"
