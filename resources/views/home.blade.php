@@ -11,6 +11,8 @@
 
         <div class="hero-content">
             <h1>The safest Way to <span class="highlight">Buy and Sell</span> Your Car in Kenya</h1>
+                       <p>Find what fits you</p>
+        <p>We help you find a car that fits your personality, dream, and pocket!</p>
 
             <div class="hero-buttons">
                 <a href="{{ url('/vehicles') }}" class="btn-primary">Explore Vehicles</a>
@@ -374,6 +376,155 @@ document.addEventListener('DOMContentLoaded', function() {
     background: #fdd835;
 }
 
+
+.hero-content p {
+    font-size: 1.25rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-content p:first-of-type {
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 0.5rem;
+}
+
+.hero-content p:last-of-type {
+    font-size: 1.1rem;
+    color: #777;
+    margin-bottom: 2.5rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .hero-content p {
+        font-size: 1.1rem;
+        padding: 0 1rem;
+    }
+
+    .hero-content p:first-of-type {
+        font-size: 1.15rem;
+    }
+
+    .hero-content p:last-of-type {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content p {
+        font-size: 1rem;
+        padding: 0 0.5rem;
+    }
+
+    .hero-content p:first-of-type {
+        font-size: 1.1rem;
+    }
+
+    .hero-content p:last-of-type {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1366px) {
+    .hero-section {
+        min-height: 70vh;
+        padding: 1rem;
+    }
+     .hero-watermark {
+        display: none;
+    }
+
+    .hero-content {
+        padding: 1rem 0;
+    }
+
+    .hero-content h1 {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+        line-height: 1.2;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        gap: 4rem;
+        margin-bottom: 2rem;
+        width: 100%;
+        max-width: 280px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        padding: 1.25rem 2rem;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .btn-primary {
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-secondary {
+        margin-top: 0.5rem;
+    }
+
+    .scroll-indicator {
+        margin-top: 20rem;
+    }
+
+    .car-showcase {
+        padding: 2rem 1rem;
+    }
+
+    .search-section {
+        padding: 2rem 1rem;
+    }
+
+    .search-form {
+        flex-direction: column;
+    }
+
+    .search-button {
+        width: 100%;
+    }
+
+    .filters-section {
+        padding: 2rem 1rem 3rem;
+    }
+
+    .filter-grid {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .filter-btn {
+        width: 100%;
+        max-width: 280px;
+        min-width: unset;
+    }
+
+    .filter-secondary {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .filter-dropdown {
+        width: 100%;
+        max-width: 280px;
+        min-width: unset;
+    }
+}
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .hero-section {

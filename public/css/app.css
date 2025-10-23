@@ -14,13 +14,15 @@
 
 /* Hero Section */
 .hero {
-    margin-top: 0;
+
     padding-top: 2rem;
     max-width: 800px;
 }
 
 .hero h1 {
-    font-size: 3.5rem;
+
+    font-size: 3rem;
+    margin-top: 20px;
     font-weight: 700;
     line-height: 1.2;
 }
@@ -31,23 +33,25 @@
 }
 
 /* Image Container - with increased height for bigger image */
-.image-container {
+/* .image-container {
     width: 100%;
-    height: 450px; /* Increased height for larger image display */
+    height: 450px;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
-    margin-top: 40px;
+    margin-top: 100px;
     z-index: 1;
     overflow: hidden;
-  }
+  } */
 
   /* Background Image - with increased dimensions */
   .background-image {
     width: 95%; /* Wider percentage for larger display */
     max-width: 900px; /* Increased maximum width */
     height: auto;
+    margin-top: 90px;
+
     object-fit: cover;
     border-radius: 10px;
     /* Initial state for animation */
@@ -144,6 +148,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 12rem;
+    margin-top: 70px;
     font-weight: 900;
     color: rgba(0, 0, 0, 0.05);
     text-transform: uppercase;
