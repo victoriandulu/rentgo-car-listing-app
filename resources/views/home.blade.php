@@ -2,22 +2,18 @@
 
 @section('content')
 <div class="home-container">
-
-    {{-- Hero Section with Watermark --}}
+    {{-- Hero Section --}}
     <div class="hero-section">
-        {{-- Watermark Background --}}
         <div class="hero-watermark">
             <span>Rent</span>
             <span>Go</span>
         </div>
 
-        {{-- Hero Content --}}
         <div class="hero-content">
             <h1>The safest Way to <span class="highlight">Buy and Sell</span> Your Car in Kenya</h1>
 
             <div class="hero-buttons">
                 <a href="{{ url('/vehicles') }}" class="btn-primary">Explore Vehicles</a>
-
                 @auth
                     <a href="{{ route('cars.create') }}" class="btn-secondary">Sell Your Car</a>
                 @endauth
@@ -92,14 +88,11 @@
             </div>
         </div>
     </div>
-
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Price filter buttons
     const filterButtons = document.querySelectorAll('.filter-btn');
-    const searchInput = document.getElementById('search-input');
     const brandFilter = document.getElementById('brand-filter');
     const bodyFilter = document.getElementById('body-filter');
 
@@ -107,20 +100,16 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const minPrice = this.dataset.min;
             const maxPrice = this.dataset.max;
-
-            // Redirect to vehicles page with price filter
             window.location.href = `{{ url('/vehicles') }}?min_price=${minPrice}&max_price=${maxPrice}`;
         });
     });
 
-    // Brand filter
     brandFilter.addEventListener('change', function() {
         if (this.value) {
             window.location.href = `{{ url('/vehicles') }}?make=${this.value}`;
         }
     });
 
-    // Body type filter
     bodyFilter.addEventListener('change', function() {
         if (this.value) {
             window.location.href = `{{ url('/vehicles') }}?body_type=${this.value}`;
@@ -140,7 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
     background: #ffffff;
 }
 
-/* Hero Section */
 .hero-section {
     position: relative;
     min-height: 100vh;
@@ -152,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function() {
     overflow: hidden;
 }
 
-/* Watermark - Fixed positioning */
 .hero-watermark {
     position: absolute;
     top: 50%;
@@ -175,7 +162,6 @@ document.addEventListener('DOMContentLoaded', function() {
     display: block;
 }
 
-/* Hero Content */
 .hero-content {
     position: relative;
     z-index: 2;
@@ -195,10 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .hero-content h1 .highlight {
     font-weight: 700;
-
 }
 
-/* Hero Buttons */
 .hero-buttons {
     display: flex;
     gap: 1rem;
@@ -232,14 +216,15 @@ document.addEventListener('DOMContentLoaded', function() {
 .btn-secondary {
     background: white;
     color: #000000;
+    border: 2px solid #000000;
 }
 
 .btn-secondary:hover {
     background: #fdd835;
     transform: translateY(-2px);
+    border-color: #fdd835;
 }
 
-/* Scroll Indicator */
 .scroll-indicator {
     display: flex;
     flex-direction: column;
@@ -258,11 +243,9 @@ document.addEventListener('DOMContentLoaded', function() {
     50% { transform: translateY(8px); }
 }
 
-/* Car Showcase */
 .car-showcase {
     width: 100%;
     padding: 3rem 2rem;
-
     display: flex;
     justify-content: center;
     align-items: center;
@@ -285,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
-/* Search Section */
 .search-section {
     padding: 3rem 2rem;
     background: #f5f5f5;
@@ -329,7 +311,6 @@ document.addEventListener('DOMContentLoaded', function() {
     background: #cc0000;
 }
 
-/* Filters Section */
 .filters-section {
     padding: 3rem 2rem 5rem;
     background: #ffffff;
@@ -393,51 +374,64 @@ document.addEventListener('DOMContentLoaded', function() {
     background: #fdd835;
 }
 
-/* Responsive Design */
+/* Mobile Responsive */
 @media (max-width: 768px) {
     .hero-section {
-    min-height: 50vh;
-    padding: 1.8rem 1rem 2.5rem; /* extra bottom padding to push buttons lower */
-    margin-bottom: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end; /* positions content toward the bottom */
-}
+        min-height: 60vh;
+        padding: 1rem;
+    }
 
-.hero-watermark {
-    font-size: clamp(6rem, 15vw, 10rem);
-    margin-block-start: 0;
-}
+    .hero-watermark {
+        display: none;
+    }
 
-.hero-content h1 {
-    font-size: 52px;
-    margin-bottom: 1rem;
-}
+    .hero-content {
+        padding: 1rem 0;
+    }
 
-.hero-buttons {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 280px;
-    margin: 3rem auto 1rem; /* moves buttons farther down */
-    gap: 8px;
-}
+    .hero-content h1 {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+        line-height: 1.2;
+    }
 
-/* ✅ Maintain breathing space below last button */
-.hero-buttons .btn-secondary:last-child {
-    margin-top: 26px;
-}
+    .hero-buttons {
+        flex-direction: column;
+        gap: 4rem;
+        margin-bottom: 2rem;
+        width: 100%;
+        max-width: 280px;
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-.btn-primary,
-.btn-secondary {
-    width: 100%;
-}
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        padding: 1.25rem 2rem;
+        font-size: 1.1rem;
+        margin: 0;
+    }
 
-/* ✅ Pull the car showcase closer to the hero */
-.car-showcase {
-    padding: 0.8rem 1rem;
-    margin-top: -30px; /* negative margin lifts the section upward */
-}
+    .btn-primary {
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-secondary {
+        margin-top: 0.5rem;
+    }
+
+    .scroll-indicator {
+        margin-top: 20rem;
+    }
+
+    .car-showcase {
+        padding: 2rem 1rem;
+    }
+
+    .search-section {
+        padding: 2rem 1rem;
+    }
 
     .search-form {
         flex-direction: column;
@@ -447,36 +441,75 @@ document.addEventListener('DOMContentLoaded', function() {
         width: 100%;
     }
 
+    .filters-section {
+        padding: 2rem 1rem 3rem;
+    }
+
     .filter-grid {
         flex-direction: column;
-        align-items: stretch;
-        max-width: 280px;
+        align-items: center;
+        gap: 0.75rem;
     }
 
     .filter-btn {
         width: 100%;
+        max-width: 280px;
+        min-width: unset;
     }
 
     .filter-secondary {
         flex-direction: column;
-        max-width: 280px;
+        align-items: center;
+        gap: 0.75rem;
     }
 
     .filter-dropdown {
         width: 100%;
+        max-width: 280px;
         min-width: unset;
     }
 }
 
 @media (max-width: 480px) {
     .hero-content h1 {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .hero-section {
+        padding: 0.5rem;
+    }
+
+    .hero-buttons {
+        gap: 1.25rem;
+        margin-bottom: 2.5rem;
     }
 
     .btn-primary,
     .btn-secondary {
-        padding: 0.875rem 1.5rem;
-        font-size: 0.9375rem;
+        padding: 1.1rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .scroll-indicator {
+        margin-top: 1.5rem;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+    .hero-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .hero-buttons {
+        max-width: 100%;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 1rem 1.25rem;
+        font-size: 0.95rem;
     }
 }
 </style>
