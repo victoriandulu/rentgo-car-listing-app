@@ -15,7 +15,8 @@ use App\Http\Controllers\Admin\{
     AdminController,
     AdminAuthController
 };
-
+Route::patch('/admin/cars/{car}/update-report-price', [AdminController::class, 'updateReportPrice'])
+    ->name('admin.cars.update-report-price');
 /*
 |--------------------------------------------------------------------------
 | Public Pages

@@ -202,6 +202,103 @@ class AdminController extends Controller
     }
 
     /**
+     * Update Report Price for a Car
+     */
+    public function updateReportPrice(Request $request, $id)
+    {
+        $car = Car::findOrFail($id);
+
+        $validated = $request->validate([
+            'report_price' => 'nullable|numeric|min:0'
+        ]);
+
+        $car->update([
+            'report_price' => $validated['report_price']
+        ]);
+
+        return redirect()->back()->with('success', 'Report price updated successfully!');
+    }
+
+    /**
+     * Upload Report for a Car
+     */
+    public function uploadReport(Request $request, $id)
+    {
+        $car = Car::findOrFail($id);
+
+        $request->validate([
+            'report' => 'required|file|mimes:pdf|max:10240',
+            'report_price' => 'nullable|numeric|min:0'
+        ]);
+
+        // Delete old report if exists
+        if ($car->report) {
+            Storage::disk('public')->delete($car->report);
+        }
+
+        $reportPath = $request->file('report')->store('reports', 'public');
+
+        $car->update([
+            'report' => $reportPath,
+            'report_price' => $request->report_price
+        ]);
+
+        return redirect()->back()->with('success', 'Report uploaded successfully!');
+    }
+
+    /**
+     * Delete Report from a Car
+     */
+    public function deleteReport($id)
+    {
+        $car = Car::findOrFail($id);
+
+        if ($car->report) {
+            Storage::disk('public')->delete($car->report);
+            $car->update([
+                'report' => null,
+                'report_price' => null
+            ]);
+
+            return redirect()->back()->with('success', 'Report deleted successfully!');
+        }
+
+        return redirect()->back()->with('error', 'No report found to delete!');
+    }
+
+    /**
+     * Toggle Car Status
+     */
+    public function toggleCarStatus($id)
+    {
+        $car = Car::findOrFail($id);
+        $newStatus = $car->status === 'available' ? 'sold' : 'available';
+        $car->update(['status' => $newStatus]);
+
+        return redirect()->back()->with('success', "Car status changed to {$newStatus}!");
+    }
+
+    /**
+     * Bulk Delete Cars
+     */
+    public function bulkDeleteCars(Request $request)
+    {
+        $request->validate([
+            'car_ids' => 'required|array',
+            'car_ids.*' => 'exists:cars,id'
+        ]);
+
+        $cars = Car::whereIn('id', $request->car_ids)->get();
+
+        foreach ($cars as $car) {
+            $this->deleteCarFiles($car);
+            $car->delete();
+        }
+
+        return redirect()->back()->with('success', count($request->car_ids) . ' cars deleted successfully!');
+    }
+
+    /**
      * Helper: Delete all files associated with a car
      */
     private function deleteCarFiles($car)

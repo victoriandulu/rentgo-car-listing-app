@@ -41,6 +41,7 @@ class Car extends Model
         'image',      // first/main image
         'images',     // all uploaded images (JSON)
         'report',     // PDF report path
+        'report_price', // NEW: Price for the report
 
         // JSON / structured fields
         'specification',
@@ -61,13 +62,12 @@ class Car extends Model
         'year'          => 'integer',
         'mileage'       => 'integer',
         'price'         => 'decimal:2',
+        'report_price'  => 'decimal:2', // NEW: Cast report price
     ];
 
     /**
      * Relation: a car belongs to a user
      */
-    // In your Car model
-
     public function user()
     {
         return $this->belongsTo(User::class);

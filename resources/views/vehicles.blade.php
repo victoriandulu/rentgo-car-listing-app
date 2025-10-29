@@ -349,7 +349,11 @@
                                         <line x1="16" y1="17" x2="8" y2="17"/>
                                         <polyline points="10 9 9 9 8 9"/>
                                     </svg>
-                                    Buy Report: KSh {{ number_format($car->report_price ?? 2500) }}
+                                    @if($car->report_price)
+                                        Buy Report: KSh {{ number_format($car->report_price) }}
+                                    @else
+                                        Buy Report: N/A
+                                    @endif
                                 </button>
                             </div>
                         @endif

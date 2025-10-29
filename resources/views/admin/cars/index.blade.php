@@ -45,6 +45,7 @@
                         <th>Price</th>
                         <th>Status</th>
                         <th>Report</th>
+                        <th>Report Price</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -97,6 +98,29 @@
                             @endif
                         </td>
                         <td>
+                            <form action="{{ route('admin.cars.update-report-price', $car->id) }}" method="POST" class="report-price-form">
+                                @csrf
+                                @method('PATCH')
+                                <div class="price-input-group">
+                                    <span class="currency-prefix">KSh</span>
+                                    <input
+                                        type="number"
+                                        name="report_price"
+                                        value="{{ $car->report_price ?? '' }}"
+                                        placeholder="N/A"
+                                        class="report-price-input"
+                                        min="0"
+                                        step="1"
+                                    >
+                                    <button type="submit" class="btn-save-price">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
+                        <td>
                             <div class="action-buttons">
                                 <form action="{{ route('admin.cars.delete', $car->id) }}" method="POST" style="display:inline;">
                                     @csrf @method('DELETE')
@@ -109,7 +133,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="no-data">
+                        <td colspan="7" class="no-data">
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                 <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"></path>
                                 <circle cx="6.5" cy="16.5" r="2.5"></circle>
@@ -363,6 +387,79 @@
     color: #991b1b;
 }
 
+/* Report Price Input Styles */
+.report-price-form {
+    display: inline-block;
+}
+
+.price-input-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: all 0.3s ease;
+}
+
+.price-input-group:focus-within {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.currency-prefix {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.report-price-input {
+    width: 100px;
+    border: none;
+    background: transparent;
+    padding: 6px 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    outline: none;
+}
+
+.report-price-input::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+.report-price-input::-webkit-outer-spin-button,
+.report-price-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.report-price-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.btn-save-price {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.btn-save-price:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
 .action-buttons {
     display: flex;
     gap: 8px;
@@ -437,6 +534,10 @@
     .data-table td {
         padding: 12px 15px;
         font-size: 13px;
+    }
+
+    .report-price-input {
+        width: 80px;
     }
 
     .action-buttons {
