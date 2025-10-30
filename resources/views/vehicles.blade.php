@@ -5,11 +5,6 @@
     <!-- Enhanced Top Bar -->
     <div class="top-navigation">
         <div class="container-wrapper">
-            {{-- <div class="breadcrumb">
-                <a href="{{ url('/') }}">Home</a>
-                <span>/</span>
-                <span>Browse Vehicles</span>
-            </div> --}}
             <div class="currency-selector">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
@@ -628,26 +623,8 @@ body {
 
 .top-navigation .container-wrapper {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-}
-
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--text-light);
-}
-
-.breadcrumb a {
-    color: var(--text-medium);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.breadcrumb a:hover {
-    color: var(--primary);
 }
 
 .currency-selector {
@@ -945,11 +922,11 @@ body {
     box-shadow: var(--shadow-sm);
 }
 
-/* VEHICLES GRID - SMALLER CARDS */
+/* VEHICLES GRID - 4 CARDS PER ROW */
 .vehicles-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
     margin-bottom: 48px;
 }
 
@@ -957,7 +934,7 @@ body {
     grid-template-columns: 1fr;
 }
 
-/* VEHICLE CARD - COMPACT SIZE */
+/* VEHICLE CARD */
 .vehicle-card {
     background: var(--bg-white);
     border-radius: 8px;
@@ -965,6 +942,8 @@ body {
     box-shadow: var(--shadow-sm);
     transition: var(--transition);
     border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
 }
 
 .vehicle-card:hover {
@@ -975,17 +954,25 @@ body {
 .list-view .vehicle-card {
     display: grid;
     grid-template-columns: 350px 1fr;
+    flex-direction: row;
 }
 
+/* FIXED IMAGE CONTAINER - NO CROPPING */
 .card-image-wrapper {
     position: relative;
     background: var(--bg-light);
     overflow: hidden;
-    height: 160px;
+    width: 100%;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .list-view .card-image-wrapper {
+    aspect-ratio: auto;
     height: 100%;
+    min-height: 250px;
 }
 
 .image-link {
@@ -1083,10 +1070,11 @@ body {
 }
 
 .card-body {
-    padding: 14px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    flex: 1;
 }
 
 .card-top {
@@ -1103,7 +1091,7 @@ body {
 }
 
 .vehicle-title {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     line-height: 1.3;
     flex: 1;
@@ -1127,7 +1115,7 @@ body {
 }
 
 .vehicle-price {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--primary);
 }
@@ -1135,7 +1123,7 @@ body {
 .vehicle-specs {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     padding: 10px 0;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -1145,7 +1133,7 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-medium);
     font-weight: 500;
 }
@@ -1168,7 +1156,7 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-medium);
 }
 
@@ -1195,8 +1183,9 @@ body {
 
 /* BUY REPORT SECTION */
 .report-section {
-    padding-top: 10px;
+    padding-top: 12px;
     border-top: 1px solid var(--border);
+    margin-top: auto;
 }
 
 .report-btn {
@@ -1206,7 +1195,7 @@ body {
     border: none;
     padding: 10px 12px;
     border-radius: 6px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
@@ -1233,10 +1222,6 @@ body {
 
 .list-view .card-body {
     padding: 24px;
-}
-
-.list-view .card-image-wrapper {
-    height: auto;
 }
 
 .list-view .vehicle-title {
@@ -1357,13 +1342,19 @@ body {
 }
 
 /* RESPONSIVE DESIGN */
+@media (max-width: 1400px) {
+    .vehicles-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
 @media (max-width: 1200px) {
     .filters-row {
         grid-template-columns: repeat(3, 1fr);
     }
 
     .vehicles-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
@@ -1373,7 +1364,7 @@ body {
     }
 
     .vehicles-grid {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .list-view .vehicle-card {
@@ -1381,7 +1372,9 @@ body {
     }
 
     .list-view .card-image-wrapper {
-        height: 220px;
+        aspect-ratio: 4/3;
+        height: auto;
+        min-height: auto;
     }
 }
 
@@ -1461,26 +1454,26 @@ body {
     }
 
     .vehicles-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 12px;
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .card-image-wrapper {
-        height: 140px;
+        aspect-ratio: 4/3;
     }
 
     .card-body {
-        padding: 12px;
+        padding: 14px;
     }
 
     .vehicle-specs {
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
         align-items: flex-start;
     }
 
     .vehicle-price {
-        font-size: 15px;
+        font-size: 16px;
     }
 }
 
@@ -1495,10 +1488,6 @@ body {
 
     .hero-subtitle {
         font-size: 15px;
-    }
-
-    .breadcrumb {
-        font-size: 12px;
     }
 
     .filters-card {
@@ -1516,31 +1505,31 @@ body {
     }
 
     .vehicles-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        grid-template-columns: 1fr;
+        gap: 14px;
     }
 
     .card-image-wrapper {
-        height: 130px;
+        aspect-ratio: 4/3;
     }
 
     .vehicle-title {
-        font-size: 13px;
+        font-size: 14px;
     }
 
     .card-body {
-        padding: 10px;
+        padding: 14px;
     }
 
     .report-btn {
-        font-size: 10px;
-        padding: 8px 10px;
+        font-size: 11px;
+        padding: 10px 12px;
     }
 }
 
 @media (min-width: 1600px) {
     .vehicles-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
     }
 
     .container-wrapper {
