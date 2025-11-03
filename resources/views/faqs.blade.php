@@ -3,19 +3,21 @@
 @section('content')
 <div>
     {{-- Hero Section --}}
-    <div class="hero-section">
+    <section class="hero-section">
         <div class="hero-content">
             <h1>
                 Frequently Asked
                 <span class="subtitle-highlight">Questions</span>
             </h1>
-            <p>Everything you need to know about our premium vehicle services and exceptional customer experience</p>
+            <p>
+                Everything you need to know about our premium vehicle services and exceptional customer experience.
+            </p>
         </div>
         <div class="decorative-circle"></div>
-    </div>
+    </section>
 
-    {{-- FAQ Container --}}
-    <div class="faq-container">
+    {{-- FAQ Section --}}
+    <section class="faq-container">
         <div class="faq-list">
             @php
                 $faqs = [
@@ -33,17 +35,13 @@
             @endphp
 
             @foreach($faqs as $index => $faq)
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFAQ({{ $index }})">
+            <div class="faq-item" onclick="toggleFAQ({{ $index }})">
+                <div class="faq-question">
                     <span class="question-text">{{ $faq[0] }}</span>
-                    <div class="toggle-icon" id="icon-{{ $index }}">+</div>
+                    <button class="toggle-btn" id="icon-{{ $index }}" aria-label="Toggle FAQ">+</button>
                 </div>
-                <div class="faq-answer" id="answer-{{ $index }}" style="display: none;">
-                    <div class="faq-answer-content">
-                        <div class="faq-answer-inner">
-                            <p>{{ $faq[1] }}</p>
-                        </div>
-                    </div>
+                <div class="faq-answer" id="answer-{{ $index }}">
+                    <p>{{ $faq[1] }}</p>
                 </div>
             </div>
             @endforeach
@@ -54,7 +52,7 @@
             <div class="contact-card">
                 <div class="contact-content">
                     <h2>Still Have Questions?</h2>
-                    <p>Our expert team is here to help you find the perfect vehicle solution</p>
+                    <p>Our expert team is here to help you find the perfect vehicle solution.</p>
                     <a href="tel:+254720063956" class="contact-button">
                         <svg fill="currentColor" viewBox="0 0 20 20">
                             <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
@@ -62,252 +60,154 @@
                         Call Our Support Team
                     </a>
                 </div>
-                <div class="contact-decoration"></div>
             </div>
         </div>
-    </div>
+    </section>
 </div>
 
 <script>
     function toggleFAQ(index) {
+        const item = document.querySelectorAll('.faq-item')[index];
         const answer = document.getElementById('answer-' + index);
         const icon = document.getElementById('icon-' + index);
 
-        if (answer.style.display === 'none') {
-            answer.style.display = 'block';
+        const isActive = item.classList.contains('active');
+
+        // Close all
+        document.querySelectorAll('.faq-item').forEach(i => {
+            i.classList.remove('active');
+            i.querySelector('.faq-answer').style.maxHeight = null;
+            i.querySelector('.toggle-btn').innerHTML = '+';
+        });
+
+        // Toggle selected
+        if (!isActive) {
+            item.classList.add('active');
+            answer.style.maxHeight = answer.scrollHeight + 'px';
             icon.innerHTML = '−';
-        } else {
-            answer.style.display = 'none';
-            icon.innerHTML = '+';
         }
     }
 </script>
 
 <style>
-/* Beautiful FAQ Styles using RENT=GO brand colors */
-
-* {
-  box-sizing: border-box;
-}
-
+/* === GENERAL === */
 body {
-  margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #fff5f5 50%, #fef7e0 100%);
-  min-height: 100vh;
+  margin: 0;
+  background: #fff;
 }
 
-/* Hero Section */
+/* === HERO SECTION === */
 .hero-section {
   background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #facc15 100%);
   padding: 80px 20px;
   text-align: center;
+  color: white;
   position: relative;
   overflow: hidden;
-  margin-bottom: 60px;
-}
-
-.hero-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: 1;
-}
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 800px;
-  margin: 0 auto;
 }
 
 .hero-section h1 {
-  font-size: 4rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 20px;
-  line-height: 1.1;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
 }
 
 .hero-section .subtitle-highlight {
-  color: white;
-  display: block;
+  display: inline-block;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 .hero-section p {
-  font-size: 1.3rem;
-  color: white;
+  font-size: 1.2rem;
   opacity: 0.95;
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
-  line-height: 1.6;
-}
-
-/* Decorative elements */
-.hero-section::after {
-  content: '';
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 80px;
-  height: 80px;
-  background: #facc15;
-  border-radius: 50%;
-  opacity: 0.3;
-  animation: pulse 3s infinite;
 }
 
 .decorative-circle {
   position: absolute;
   bottom: 20px;
-  right: 20px;
-  width: 120px;
-  height: 120px;
-  background: rgba(255, 255, 255, 0.1);
+  right: 30px;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 50%;
-  animation: bounce 2s infinite;
+  animation: float 4s ease-in-out infinite;
 }
 
-/* Main FAQ Container */
+/* === FAQ CONTAINER === */
 .faq-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 30px 60px;
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 0 20px;
 }
 
-.faq-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* FAQ Items */
 .faq-item {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   border-left: 6px solid transparent;
-  position: relative;
-}
-
-.faq-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-  border-left-color: #facc15;
 }
 
 .faq-item.active {
   border-left-color: #dc2626;
   transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(220, 38, 38, 0.15);
 }
 
-/* FAQ Question */
 .faq-question {
-  padding: 32px;
-  cursor: pointer;
+  padding: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s ease;
-  background: white;
-  position: relative;
-}
-
-.faq-question:hover {
-  background: linear-gradient(135deg, #fef7e0 0%, #fff5f5 100%);
-}
-
-.faq-item.active .faq-question {
-  background: linear-gradient(135deg, #fef2f2 0%, #fef7e0 100%);
-}
-
-.question-text {
-  font-size: 1.25rem;
+  cursor: pointer;
   font-weight: 600;
   color: #1f2937;
-  line-height: 1.4;
   transition: color 0.3s ease;
-  flex: 1;
 }
 
-.faq-item.active .question-text {
+.faq-item:hover .faq-question {
   color: #dc2626;
 }
 
-.faq-item:hover .question-text {
-  color: #dc2626;
-}
-
-/* Toggle Icon */
-.toggle-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+.toggle-btn {
   background: #facc15;
+  border: none;
   color: #dc2626;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.4rem;
+  cursor: pointer;
   font-weight: bold;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-left: 24px;
-  flex-shrink: 0;
+  transition: all 0.3s ease;
 }
 
-.faq-item:hover .toggle-icon {
+.faq-item.active .toggle-btn {
   background: #dc2626;
-  color: white;
-  transform: scale(1.1);
+  color: #fff;
+  transform: rotate(180deg);
 }
 
-.faq-item.active .toggle-icon {
-  background: #dc2626;
-  color: white;
-  transform: rotate(45deg) scale(1.1);
-}
-
-/* FAQ Answer */
 .faq-answer {
   max-height: 0;
   overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
-}
-
-.faq-item.active .faq-answer {
-  max-height: 500px;
-  opacity: 1;
-}
-
-.faq-answer-content {
-  padding: 0 32px 32px;
-}
-
-.faq-answer-inner {
-  background: linear-gradient(135deg, #fef2f2 0%, #fef7e0 100%);
-  padding: 24px;
-  border-radius: 16px;
-  border-left: 4px solid #dc2626;
-  position: relative;
+  transition: max-height 0.4s ease;
+  background: linear-gradient(135deg, #fff5f5 0%, #fffbea 100%);
 }
 
 .faq-answer p {
+  padding: 0 24px 24px;
+  font-size: 1.05rem;
   color: #374151;
-  font-size: 1.1rem;
-  line-height: 1.7;
-  margin: 0;
+  line-height: 1.6;
 }
 
-/* Contact Section */
+/* === CONTACT SECTION === */
 .faq-footer {
   margin-top: 80px;
   text-align: center;
@@ -316,187 +216,57 @@ body {
 .contact-card {
   background: linear-gradient(135deg, #dc2626 0%, #facc15 100%);
   padding: 60px 40px;
-  border-radius: 24px;
+  border-radius: 20px;
   color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.contact-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: 1;
-}
-
-.contact-content {
-  position: relative;
-  z-index: 2;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .contact-card h2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: white;
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
 }
 
 .contact-card p {
   font-size: 1.2rem;
-  margin-bottom: 32px;
-  opacity: 0.95;
+  margin-bottom: 2rem;
 }
 
 .contact-button {
   display: inline-flex;
   align-items: center;
-  padding: 16px 32px;
-  background: white;
+  background: #fff;
   color: #dc2626;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1.1rem;
+  padding: 14px 28px;
   border-radius: 50px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .contact-button:hover {
   background: #fef7e0;
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
 }
 
 .contact-button svg {
-  width: 24px;
-  height: 24px;
-  margin-right: 12px;
+  width: 22px;
+  height: 22px;
+  margin-right: 10px;
 }
 
-/* Contact card decorative elements */
-.contact-card::after {
-  content: '';
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 100px;
-  height: 100px;
-  background: #facc15;
-  border-radius: 50%;
-  opacity: 0.3;
-  z-index: 1;
+/* === ANIMATIONS === */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
-.contact-decoration {
-  position: absolute;
-  bottom: -20px;
-  left: -20px;
-  width: 140px;
-  height: 140px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  z-index: 1;
-}
-
-/* Animations */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.1);
-  }
-}
-
-@keyframes bounce {
-  0%, 20%, 53%, 80%, 100% {
-    transform: translate3d(0,0,0);
-  }
-  40%, 43% {
-    transform: translate3d(0, -8px, 0);
-  }
-  70% {
-    transform: translate3d(0, -4px, 0);
-  }
-  90% {
-    transform: translate3d(0, -2px, 0);
-  }
-}
-
-/* Responsive Design */
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
-  .hero-section {
-    padding: 60px 20px;
-  }
-
-  .hero-section h1 {
-    font-size: 2.5rem;
-  }
-
-  .hero-section p {
-    font-size: 1.1rem;
-  }
-
-  .faq-container {
-    padding: 0 20px 40px;
-  }
-
-  .faq-question {
-    padding: 24px 20px;
-  }
-
-  .question-text {
-    font-size: 1.1rem;
-  }
-
-  .toggle-icon {
-    width: 40px;
-    height: 40px;
-    margin-left: 16px;
-  }
-
-  .faq-answer-content {
-    padding: 0 20px 24px;
-  }
-
-  .contact-card {
-    padding: 40px 24px;
-  }
-
-  .contact-card h2 {
-    font-size: 2rem;
-  }
-
-  .contact-button {
-    padding: 14px 28px;
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-section h1 {
-    font-size: 2rem;
-  }
-
-  .faq-question {
-    padding: 20px 16px;
-  }
-
-  .question-text {
-    font-size: 1rem;
-  }
-
-  .toggle-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 1.2rem;
-  }
+  .hero-section h1 { font-size: 2.2rem; }
+  .faq-question { padding: 20px; }
+  .toggle-btn { width: 36px; height: 36px; }
+  .contact-card { padding: 40px 24px; }
+  .contact-card h2 { font-size: 1.8rem; }
 }
 </style>
 @endsection
