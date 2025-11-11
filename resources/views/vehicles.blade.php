@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- Hero Search Section with Filters -->
+    <!-- Hero Search Section with Collapsible Filters -->
     <div class="hero-search">
         <div class="container-wrapper">
             <h1 class="hero-title">Find Your Perfect Vehicle</h1>
@@ -40,136 +40,251 @@
                 </div>
             </div>
 
-            <!-- Advanced Filters Card -->
+            <!-- Collapsible Filters Card -->
             <div class="filters-card">
-                <!-- Primary Filters Row -->
-                <div class="filters-row primary-filters">
-                    <div class="filter-group">
-                        <label class="filter-label">Make</label>
-                        <select id="make-filter" class="filter-select" onchange="filterVehicles()">
-                            <option value="">All Makes</option>
-                            <option value="toyota">Toyota</option>
-                            <option value="honda">Honda</option>
-                            <option value="nissan">Nissan</option>
-                            <option value="mazda">Mazda</option>
-                            <option value="subaru">Subaru</option>
-                            <option value="mercedes">Mercedes-Benz</option>
-                            <option value="bmw">BMW</option>
-                            <option value="audi">Audi</option>
-                            <option value="volkswagen">Volkswagen</option>
-                            <option value="ford">Ford</option>
-                            <option value="landrover">Land Rover</option>
-                            <option value="mitsubishi">Mitsubishi</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Body Type</label>
-                        <select id="body-type-filter" class="filter-select" onchange="filterVehicles()">
-                            <option value="">All Types</option>
-                            <option value="suv">SUV</option>
-                            <option value="sedan">Sedan</option>
-                            <option value="hatchback">Hatchback</option>
-                            <option value="pickup">Pickup</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Min Price</label>
-                        <select id="price-min" class="filter-select" onchange="filterVehicles()">
-                            <option value="0">No Min</option>
-                            <option value="500000">KSh 500,000</option>
-                            <option value="1000000">KSh 1,000,000</option>
-                            <option value="2000000">KSh 2,000,000</option>
-                            <option value="3000000">KSh 3,000,000</option>
-                            <option value="5000000">KSh 5,000,000</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Max Price</label>
-                        <select id="price-max" class="filter-select" onchange="filterVehicles()">
-                            <option value="20000000">No Max</option>
-                            <option value="1000000">KSh 1,000,000</option>
-                            <option value="2000000">KSh 2,000,000</option>
-                            <option value="3000000">KSh 3,000,000</option>
-                            <option value="5000000">KSh 5,000,000</option>
-                            <option value="10000000">KSh 10,000,000</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Secondary Filters Row -->
-                <div class="filters-row secondary-filters">
-                    <div class="filter-group">
-                        <label class="filter-label">Year From</label>
-                        <select id="year-from" class="filter-select" onchange="filterVehicles()">
-                            <option value="">Any Year</option>
-                            @for($y = 2024; $y >= 2000; $y--)
-                                <option value="{{ $y }}">{{ $y }}</option>
-                            @endfor
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Year To</label>
-                        <select id="year-to" class="filter-select" onchange="filterVehicles()">
-                            <option value="">Any Year</option>
-                            @for($y = 2024; $y >= 2000; $y--)
-                                <option value="{{ $y }}">{{ $y }}</option>
-                            @endfor
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Transmission</label>
-                        <select id="transmission-filter" class="filter-select" onchange="filterVehicles()">
-                            <option value="">All</option>
-                            <option value="automatic">Automatic</option>
-                            <option value="manual">Manual</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Fuel Type</label>
-                        <select id="fuel-filter" class="filter-select" onchange="filterVehicles()">
-                            <option value="">All</option>
-                            <option value="petrol">Petrol</option>
-                            <option value="diesel">Diesel</option>
-                            <option value="hybrid">Hybrid</option>
-                            <option value="electric">Electric</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Mileage Filter Row -->
-                <div class="filters-row mileage-filters">
-                    <div class="filter-group">
-                        <label class="filter-label">Min Mileage (km)</label>
-                        <input type="number" id="mileage-from" class="filter-input" placeholder="e.g., 0" onchange="filterVehicles()">
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Max Mileage (km)</label>
-                        <input type="number" id="mileage-to" class="filter-input" placeholder="e.g., 150000" onchange="filterVehicles()">
-                    </div>
-
-                    <div class="filter-group filter-spacer"></div>
-                    <div class="filter-group filter-spacer"></div>
-                </div>
-
-                <!-- Quick Filters -->
-                <div class="quick-filters">
-                    <button class="quick-filter-btn active" data-filter="all" onclick="quickFilter('all')">All Vehicles</button>
-                    <button class="quick-filter-btn" data-filter="local" onclick="quickFilter('local')">In Kenya</button>
-                    <button class="quick-filter-btn" data-filter="imports" onclick="quickFilter('imports')">Imports</button>
-                    <button class="quick-filter-btn" data-filter="verified" onclick="quickFilter('verified')">Verified Dealers</button>
-                    <button class="clear-btn" onclick="clearAllFilters()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                <!-- Quick Filters - Always Visible -->
+                <div class="quick-filters-section">
+                    <button class="quick-filter-btn active" data-filter="all" onclick="quickFilter('all')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1"/>
                         </svg>
-                        Clear All
+                        All Vehicles
                     </button>
+                    <button class="quick-filter-btn" data-filter="local" onclick="quickFilter('local')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        In Kenya
+                    </button>
+                    <button class="quick-filter-btn" data-filter="imports" onclick="quickFilter('imports')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        </svg>
+                        Imports
+                    </button>
+                    <button class="quick-filter-btn" data-filter="verified" onclick="quickFilter('verified')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Verified
+                    </button>
+                </div>
+
+                <!-- Advanced Filters Toggle Button -->
+                <button class="advanced-toggle-btn" onclick="toggleAdvancedFilters()" id="advanced-toggle">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="4" y1="21" x2="4" y2="14"/>
+                        <line x1="4" y1="10" x2="4" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12" y2="3"/>
+                        <line x1="20" y1="21" x2="20" y2="16"/>
+                        <line x1="20" y1="12" x2="20" y2="3"/>
+                        <line x1="1" y1="14" x2="7" y2="14"/>
+                        <line x1="9" y1="8" x2="15" y2="8"/>
+                        <line x1="17" y1="16" x2="23" y2="16"/>
+                    </svg>
+                    <span class="toggle-text">Advanced Filters</span>
+                    <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </button>
+
+                <!-- Advanced Filters - Collapsible -->
+                <div class="advanced-filters" id="advanced-filters">
+                    <!-- Primary Filters Row -->
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                </svg>
+                                Make
+                            </label>
+                            <select id="make-filter" class="filter-select" onchange="filterVehicles()">
+                                <option value="">All Makes</option>
+                                <option value="toyota">Toyota</option>
+                                <option value="honda">Honda</option>
+                                <option value="nissan">Nissan</option>
+                                <option value="mazda">Mazda</option>
+                                <option value="subaru">Subaru</option>
+                                <option value="mercedes">Mercedes-Benz</option>
+                                <option value="bmw">BMW</option>
+                                <option value="audi">Audi</option>
+                                <option value="volkswagen">Volkswagen</option>
+                                <option value="ford">Ford</option>
+                                <option value="landrover">Land Rover</option>
+                                <option value="mitsubishi">Mitsubishi</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                </svg>
+                                Body Type
+                            </label>
+                            <select id="body-type-filter" class="filter-select" onchange="filterVehicles()">
+                                <option value="">All Types</option>
+                                <option value="suv">SUV</option>
+                                <option value="sedan">Sedan</option>
+                                <option value="hatchback">Hatchback</option>
+                                <option value="pickup">Pickup</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"/>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                                Min Price
+                            </label>
+                            <select id="price-min" class="filter-select" onchange="filterVehicles()">
+                                <option value="0">No Min</option>
+                                <option value="500000">KSh 500K</option>
+                                <option value="1000000">KSh 1M</option>
+                                <option value="2000000">KSh 2M</option>
+                                <option value="3000000">KSh 3M</option>
+                                <option value="5000000">KSh 5M</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"/>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                                Max Price
+                            </label>
+                            <select id="price-max" class="filter-select" onchange="filterVehicles()">
+                                <option value="20000000">No Max</option>
+                                <option value="1000000">KSh 1M</option>
+                                <option value="2000000">KSh 2M</option>
+                                <option value="3000000">KSh 3M</option>
+                                <option value="5000000">KSh 5M</option>
+                                <option value="10000000">KSh 10M</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Secondary Filters Row -->
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                Year From
+                            </label>
+                            <select id="year-from" class="filter-select" onchange="filterVehicles()">
+                                <option value="">Any Year</option>
+                                @for($y = 2024; $y >= 2000; $y--)
+                                    <option value="{{ $y }}">{{ $y }}</option>
+                                @endfor
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                Year To
+                            </label>
+                            <select id="year-to" class="filter-select" onchange="filterVehicles()">
+                                <option value="">Any Year</option>
+                                @for($y = 2024; $y >= 2000; $y--)
+                                    <option value="{{ $y }}">{{ $y }}</option>
+                                @endfor
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                Transmission
+                            </label>
+                            <select id="transmission-filter" class="filter-select" onchange="filterVehicles()">
+                                <option value="">All</option>
+                                <option value="automatic">Automatic</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                Fuel Type
+                            </label>
+                            <select id="fuel-filter" class="filter-select" onchange="filterVehicles()">
+                                <option value="">All</option>
+                                <option value="petrol">Petrol</option>
+                                <option value="diesel">Diesel</option>
+                                <option value="hybrid">Hybrid</option>
+                                <option value="electric">Electric</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Mileage Filter Row -->
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                Min Mileage (km)
+                            </label>
+                            <input type="number" id="mileage-from" class="filter-input" placeholder="e.g., 0" onchange="filterVehicles()">
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                Max Mileage (km)
+                            </label>
+                            <input type="number" id="mileage-to" class="filter-input" placeholder="e.g., 150000" onchange="filterVehicles()">
+                        </div>
+
+                        <div class="filter-group"></div>
+                        <div class="filter-group"></div>
+                    </div>
+
+                    <!-- Clear Button -->
+                    <div class="filters-actions">
+                        <button class="clear-btn" onclick="clearAllFilters()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Clear All Filters
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -185,7 +300,7 @@
 
             <div class="toolbar-controls">
                 <div class="sort-wrapper">
-                    <label>Sort by:</label>
+                    <label>Sort:</label>
                     <select id="sort-select" class="toolbar-select" onchange="sortVehicles()">
                         <option value="featured">Featured</option>
                         <option value="price-low">Price: Low to High</option>
@@ -394,6 +509,28 @@ let currentCurrency = 'KES';
 let currentRate = 1;
 let currentSymbol = 'KSh';
 let currentQuickFilter = 'all';
+let filtersExpanded = false;
+
+// Toggle advanced filters
+function toggleAdvancedFilters() {
+    filtersExpanded = !filtersExpanded;
+    const advancedFilters = document.getElementById('advanced-filters');
+    const toggleBtn = document.getElementById('advanced-toggle');
+    const chevron = toggleBtn.querySelector('.chevron');
+    const toggleText = toggleBtn.querySelector('.toggle-text');
+
+    if (filtersExpanded) {
+        advancedFilters.style.maxHeight = advancedFilters.scrollHeight + 'px';
+        advancedFilters.classList.add('expanded');
+        chevron.style.transform = 'rotate(180deg)';
+        toggleText.textContent = 'Hide Filters';
+    } else {
+        advancedFilters.style.maxHeight = '0';
+        advancedFilters.classList.remove('expanded');
+        chevron.style.transform = 'rotate(0deg)';
+        toggleText.textContent = 'Advanced Filters';
+    }
+}
 
 // Currency conversion
 function updateCurrency() {
@@ -651,7 +788,7 @@ body {
     border-color: var(--primary);
 }
 
-/* HERO SEARCH WITH FILTERS */
+/* HERO SEARCH */
 .hero-search {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     padding: 50px 24px 70px;
@@ -707,14 +844,95 @@ body {
     color: var(--text-light);
 }
 
-/* FILTERS CARD */
+/* COLLAPSIBLE FILTERS CARD */
 .filters-card {
     max-width: 1100px;
     margin: 0 auto;
     background: white;
     border-radius: 12px;
-    padding: 32px;
+    padding: 24px;
     box-shadow: var(--shadow-xl);
+}
+
+/* Quick Filters Section - Always Visible */
+.quick-filters-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.quick-filter-btn {
+    padding: 12px 20px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-medium);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quick-filter-btn svg {
+    flex-shrink: 0;
+}
+
+.quick-filter-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.quick-filter-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Advanced Toggle Button */
+.advanced-toggle-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: var(--bg-light);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 0;
+}
+
+.advanced-toggle-btn:hover {
+    background: var(--bg-white);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.advanced-toggle-btn .chevron {
+    transition: transform 0.3s ease;
+    margin-left: auto;
+}
+
+/* Advanced Filters - Collapsible Section */
+.advanced-filters {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.advanced-filters.expanded {
+    padding-top: 24px;
 }
 
 .filters-row {
@@ -734,16 +952,19 @@ body {
     gap: 8px;
 }
 
-.filter-group.filter-spacer {
-    visibility: hidden;
-}
-
 .filter-label {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-dark);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-label svg {
+    color: var(--text-light);
 }
 
 .filter-select,
@@ -769,48 +990,23 @@ body {
 .filter-input:hover,
 .filter-input:focus {
     border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
 }
 
-/* Quick Filters */
-.quick-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-    padding-top: 24px;
+/* Clear Button */
+.filters-actions {
+    padding-top: 20px;
     border-top: 1px solid var(--border);
-    margin-top: 24px;
-}
-
-.quick-filter-btn {
-    padding: 10px 20px;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    background: white;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    color: var(--text-medium);
-}
-
-.quick-filter-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-    transform: translateY(-1px);
-}
-
-.quick-filter-btn.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .clear-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: 2px solid var(--border);
     border-radius: 8px;
-    background: var(--bg-light);
+    background: var(--bg-white);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -819,13 +1015,14 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-left: auto;
 }
 
 .clear-btn:hover {
     background: var(--text-dark);
     color: white;
     border-color: var(--text-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 /* RESULTS TOOLBAR */
@@ -922,7 +1119,7 @@ body {
     box-shadow: var(--shadow-sm);
 }
 
-/* VEHICLES GRID - 4 CARDS PER ROW */
+/* VEHICLES GRID */
 .vehicles-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -957,7 +1154,7 @@ body {
     flex-direction: row;
 }
 
-/* FIXED IMAGE CONTAINER - NO CROPPING */
+/* IMAGE CONTAINER */
 .card-image-wrapper {
     position: relative;
     background: var(--bg-light);
@@ -1190,7 +1387,7 @@ body {
 
 .report-btn {
     width: 100%;
-    background: #a16207;
+    background: #92400e;
     color: white;
     border: none;
     padding: 10px 12px;
@@ -1206,7 +1403,7 @@ body {
 }
 
 .report-btn:hover {
-    background: #000;
+    background: #78350f;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -1376,6 +1573,10 @@ body {
         height: auto;
         min-height: auto;
     }
+
+    .quick-filters-section {
+        justify-content: center;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1402,7 +1603,29 @@ body {
     }
 
     .filters-card {
-        padding: 24px 20px;
+        padding: 20px 16px;
+    }
+
+    .quick-filters-section {
+        gap: 8px;
+    }
+
+    .quick-filter-btn {
+        font-size: 13px;
+        padding: 10px 16px;
+        flex: 1;
+        min-width: calc(50% - 4px);
+        justify-content: center;
+    }
+
+    .quick-filter-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .advanced-toggle-btn {
+        font-size: 14px;
+        padding: 12px 18px;
     }
 
     .filters-row {
@@ -1411,24 +1634,26 @@ body {
         margin-bottom: 16px;
     }
 
-    .filter-group.filter-spacer {
-        display: none;
+    .filter-label {
+        font-size: 11px;
     }
 
-    .quick-filters {
-        padding-top: 20px;
-        margin-top: 20px;
-    }
-
-    .quick-filter-btn, .clear-btn {
+    .filter-select,
+    .filter-input {
+        padding: 10px 12px;
         font-size: 13px;
-        padding: 9px 16px;
+    }
+
+    .filters-actions {
+        padding-top: 16px;
+        margin-top: 16px;
     }
 
     .clear-btn {
-        margin-left: 0;
         width: 100%;
         justify-content: center;
+        font-size: 13px;
+        padding: 10px 20px;
     }
 
     .results-toolbar {
@@ -1436,6 +1661,10 @@ body {
         align-items: stretch;
         gap: 16px;
         padding: 18px 20px;
+    }
+
+    .results-info {
+        justify-content: center;
     }
 
     .toolbar-controls {
@@ -1451,6 +1680,10 @@ body {
     .toolbar-select {
         flex: 1;
         min-width: auto;
+    }
+
+    .view-toggle {
+        align-self: center;
     }
 
     .vehicles-grid {
@@ -1475,6 +1708,17 @@ body {
     .vehicle-price {
         font-size: 16px;
     }
+
+    .pagination-wrapper {
+        padding: 32px 0;
+        gap: 6px;
+    }
+
+    .page-nav, .page-num {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1490,18 +1734,52 @@ body {
         font-size: 15px;
     }
 
-    .filters-card {
-        padding: 20px 16px;
+    .search-box {
+        padding: 12px 16px;
     }
 
-    .quick-filters {
+    .search-box input {
+        font-size: 15px;
+        padding: 12px 0;
+    }
+
+    .filters-card {
+        padding: 16px 12px;
+    }
+
+    .quick-filters-section {
         flex-direction: column;
-        align-items: stretch;
     }
 
     .quick-filter-btn {
         width: 100%;
+        min-width: 100%;
         justify-content: center;
+    }
+
+    .advanced-toggle-btn {
+        padding: 12px 16px;
+    }
+
+    .advanced-filters.expanded {
+        padding-top: 20px;
+    }
+
+    .filters-row {
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .results-toolbar {
+        padding: 16px;
+    }
+
+    .results-info .count {
+        font-size: 24px;
+    }
+
+    .results-info .text {
+        font-size: 14px;
     }
 
     .vehicles-grid {
@@ -1517,19 +1795,75 @@ body {
         font-size: 14px;
     }
 
+    .vehicle-price {
+        font-size: 15px;
+    }
+
     .card-body {
-        padding: 14px;
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .vehicle-specs {
+        gap: 6px;
+        padding: 8px 0;
+    }
+
+    .spec {
+        font-size: 11px;
     }
 
     .report-btn {
         font-size: 11px;
-        padding: 10px 12px;
+        padding: 9px 10px;
+    }
+
+    .pagination-wrapper {
+        flex-wrap: wrap;
+        padding: 28px 0;
+    }
+
+    .page-nav, .page-num {
+        width: 36px;
+        height: 36px;
+    }
+
+    .page-ellipsis {
+        padding: 0 4px;
     }
 }
 
+/* Extra Small Devices */
+@media (max-width: 360px) {
+    .hero-title {
+        font-size: 22px;
+    }
+
+    .hero-subtitle {
+        font-size: 14px;
+    }
+
+    .quick-filter-btn {
+        font-size: 12px;
+        padding: 9px 14px;
+    }
+
+    .advanced-toggle-btn {
+        font-size: 13px;
+        padding: 11px 14px;
+    }
+
+    .filter-select,
+    .filter-input {
+        padding: 9px 10px;
+        font-size: 12px;
+    }
+}
+
+/* Large Screens */
 @media (min-width: 1600px) {
     .vehicles-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
     }
 
     .container-wrapper {
@@ -1538,6 +1872,86 @@ body {
 
     .filters-card {
         max-width: 1300px;
+    }
+}
+
+/* Ultra Wide Screens */
+@media (min-width: 1920px) {
+    .vehicles-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 24px;
+    }
+
+    .container-wrapper {
+        max-width: 1800px;
+    }
+
+    .filters-card {
+        max-width: 1400px;
+    }
+
+    .hero-title {
+        font-size: 48px;
+    }
+
+    .hero-subtitle {
+        font-size: 20px;
+    }
+}
+
+/* Animation for smooth transitions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.vehicle-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Focus states for accessibility */
+.filter-select:focus,
+.filter-input:focus,
+.toolbar-select:focus,
+.currency-dropdown:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .top-navigation,
+    .hero-search,
+    .results-toolbar,
+    .pagination-wrapper,
+    .wishlist-icon,
+    .report-btn {
+        display: none;
+    }
+
+    .vehicles-page {
+        padding-top: 0;
+    }
+
+    .vehicles-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .vehicle-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid var(--border);
     }
 }
 </style>
