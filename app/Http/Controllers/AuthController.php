@@ -20,64 +20,64 @@ class AuthController extends Controller
 
     // Register a new user
     public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'firstName' => 'required|string|max:255',
-            'lastName' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+{
+    $validated = $request->validate([
+        'firstName' => 'required|string|max:255',
+        'lastName'  => 'required|string|max:255',
+        'email'     => 'required|email|unique:users,email',
+        'password'  => 'required|min:8|confirmed',
+    ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('login_tab', false);
-        }
+    $user = \App\Models\User::create([
+        'name'     => $validated['firstName'] . ' ' . $validated['lastName'],
+        'email'    => $validated['email'],
+        'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+    ]);
 
-        $user = User::create([
-            'name' => $request->firstName . ' ' . $request->lastName,
-            'first_name' => $request->firstName,
-            'last_name' => $request->lastName,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+    Auth::login($user);
 
-        Auth::login($user);
+    $request->session()->regenerate();
 
-        return redirect()->route('dashboard')
-            ->with('success', 'Account created successfully! Welcome to RENT-GO.');
+    // ✅ Has redirect param → go back there after registration
+    if ($request->query('redirect')) {
+        return redirect()->to($request->query('redirect'));
     }
 
+    return redirect()->route('cars.create')
+        ->with('success', 'Welcome! Your account has been created.');
+}
     // Login an existing user
-    public function login(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+   public function login(Request $request)
+{
+    $credentials = $request->validate([
+        'email'    => 'required|email',
+        'password' => 'required',
+    ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('login_tab', true);
+    if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+
+        // ✅ Admin → go to admin dashboard
+        if ($user->is_admin) {
+            return redirect()->route('admin.dashboard');
         }
 
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->route('dashboard')
-                ->with('success', 'Login successful! Welcome back to RENT-GO.');
+        // ✅ Has redirect param (came from vehicles page) → go back there
+        if ($request->query('redirect')) {
+            return redirect()->to($request->query('redirect'));
         }
 
-        return redirect()->back()
-            ->withErrors(['email' => 'Invalid credentials. Please check your email and password.'])
-            ->withInput()
-            ->with('login_tab', true);
+        // ✅ Normal user → go to sell/create car page
+        return redirect()->route('cars.create');
     }
 
+    return back()
+        ->withErrors(['email' => 'These credentials do not match our records.'])
+        ->withInput($request->only('email'))
+        ->with('login_tab', true);
+}
     // Logout the user
     public function logout(Request $request)
     {
@@ -96,46 +96,41 @@ class AuthController extends Controller
     }
 
     // Handle Google OAuth callback
-    public function handleGoogleCallback()
-    {
-        try {
-            $googleUser = Socialite::driver('google')->user();
+   public function handleGoogleCallback(Request $request)
+{
+    try {
+        $googleUser = Socialite::driver('google')->user();
 
-            $user = User::where('email', $googleUser->getEmail())->first();
+        $user = \App\Models\User::updateOrCreate(
+            ['email' => $googleUser->getEmail()],
+            [
+                'name'              => $googleUser->getName(),
+                'google_id'         => $googleUser->getId(),
+                'password'          => \Illuminate\Support\Facades\Hash::make(
+                    \Illuminate\Support\Str::random(24)
+                ),
+                'email_verified_at' => now(),
+            ]
+        );
 
-            if ($user) {
-                // Update Google ID if not set
-                if (!$user->google_id) {
-                    $user->update(['google_id' => $googleUser->getId()]);
-                }
-                Auth::login($user);
+        Auth::login($user);
+        $request->session()->regenerate();
 
-                return redirect()->route('dashboard')
-                    ->with('success', 'Welcome back! Logged in with Google.');
-            } else {
-                // Create new user
-                $nameParts = explode(' ', $googleUser->getName(), 2);
-                $firstName = $nameParts[0];
-                $lastName = $nameParts[1] ?? '';
-
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'avatar' => $googleUser->getAvatar(),
-                    'email_verified_at' => now(),
-                ]);
-
-                Auth::login($user);
-
-                return redirect()->route('dashboard')
-                    ->with('success', 'Account created successfully with Google! Welcome to RENT-GO.');
-            }
-        } catch (Exception $e) {
-            return redirect()->route('sell')
-                ->withErrors(['google' => 'Something went wrong with Google authentication. Please try again.']);
+        // ✅ Admin check
+        if ($user->is_admin) {
+            return redirect()->route('admin.dashboard');
         }
+
+        // ✅ Redirect param
+        if ($request->query('redirect')) {
+            return redirect()->to($request->query('redirect'));
+        }
+
+        return redirect()->route('cars.create');
+
+    } catch (\Exception $e) {
+        return redirect()->route('sell')
+            ->withErrors(['email' => 'Google login failed. Please try again.']);
     }
+}
 }

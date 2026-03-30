@@ -9,14 +9,14 @@ use App\Http\Controllers\{
     FaqController,
     AuthController,
     CarController,
+    VehicleController,
     ProfileController
 };
 use App\Http\Controllers\Admin\{
     AdminController,
     AdminAuthController
 };
-Route::patch('/admin/cars/{car}/update-report-price', [AdminController::class, 'updateReportPrice'])
-    ->name('admin.cars.update-report-price');
+
 /*
 |--------------------------------------------------------------------------
 | Public Pages
@@ -28,18 +28,19 @@ Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
 Route::get('/faqs', [FaqController::class, 'index'])->name('faqs');
 
-// Vehicles Public
-Route::get('/vehicles', [CarController::class, 'publicIndex'])->name('vehicles');
-Route::get('/vehicles/{car}', [CarController::class, 'show'])->name('vehicles.show');
-Route::post('/vehicles/{id}/buy-report', [CarController::class, 'buyReport'])->name('vehicles.buyReport');
-
-// Search & Newsletter
 Route::get('/search', [HomeController::class, 'search'])->name('search.vehicle');
 Route::post('/subscribe', [HomeController::class, 'subscribe'])->name('newsletter.subscribe');
 
-// Static / Demo Pages
 Route::view('/welcome', 'welcome')->name('welcome');
 Route::view('/listings', 'listed-vehicles')->name('listings');
+
+/*
+|--------------------------------------------------------------------------
+| Vehicles — Public listing, protected report access
+|--------------------------------------------------------------------------
+*/
+Route::get('/vehicles', [CarController::class, 'publicIndex'])->name('vehicles');
+Route::get('/vehicles/{car}', [CarController::class, 'show'])->name('vehicles.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -51,9 +52,9 @@ Route::get('/sell', [AuthController::class, 'showSellPage'])->name('sell');
 Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
 
-// Google OAuth
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
-Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])
+    ->name('auth.google.callback');
 
 /*
 |--------------------------------------------------------------------------
@@ -61,10 +62,9 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
-    // Logout
+
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
-    // Dashboard
     Route::get('/dashboard', fn() => redirect()->route('cars.create'))->name('dashboard');
 
     // Profile
@@ -74,7 +74,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/', [ProfileController::class, 'update'])->name('update');
     });
 
-    // Cars Management (User)
+    // Cars Management
     Route::prefix('cars')->name('cars.')->group(function () {
         Route::get('/my', [CarController::class, 'index'])->name('my');
         Route::get('/create', [CarController::class, 'create'])->name('create');
@@ -84,8 +84,17 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{car}', [CarController::class, 'destroy'])->name('destroy');
     });
 
-    // Sell Dashboard
     Route::get('/sell/dashboard', [SellController::class, 'showSellPage'])->name('sell.auth');
+
+    // ✅ Report routes — ALL require login
+    Route::post('/vehicles/{car}/submit-report-payment', [VehicleController::class, 'submitReportPayment'])
+        ->name('vehicles.submitReportPayment');
+
+    Route::get('/vehicles/{car}/report-status', [VehicleController::class, 'reportStatus'])
+        ->name('vehicles.report-status');
+
+    Route::get('/vehicles/{car}/report', [VehicleController::class, 'viewReport'])
+        ->name('vehicles.report');
 });
 
 /*
@@ -94,32 +103,33 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->name('admin.')->group(function () {
-    // Admin Auth (Public)
+
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-    // Admin Protected Routes
     Route::middleware(['auth', 'admin'])->group(function () {
-        // Dashboard
+
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
-        // Users Management
         Route::get('/users', [AdminController::class, 'userIndex'])->name('users.index');
         Route::get('/users/{id}/verify', [AdminController::class, 'verifyUser'])->name('users.verify');
         Route::get('/users/{id}/unverify', [AdminController::class, 'unverifyUser'])->name('users.unverify');
         Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('users.delete');
 
-        // Cars Management (Admin)
         Route::get('/cars', [AdminController::class, 'carIndex'])->name('cars.index');
         Route::get('/cars/{car}/edit', [CarController::class, 'edit'])->name('cars.edit');
-        Route::match(['put', 'patch'], '/cars/{car}', [CarController::class, 'update'])->name('cars.update');
+        Route::match(['put', 'patch'], '/cars/{car}', [CarController::class, 'update'])
+            ->name('cars.update');
         Route::delete('/cars/{id}', [AdminController::class, 'deleteCar'])->name('cars.delete');
+        Route::patch('/cars/{car}/update-report-price', [AdminController::class, 'updateReportPrice'])
+            ->name('cars.update-report-price');
 
-        // Verifications Management
-        Route::get('/verifications', [AdminController::class, 'verificationIndex'])->name('verifications.index');
-
-        // Reports Management
+        Route::get('/verifications', [AdminController::class, 'verificationIndex'])
+            ->name('verifications.index');
         Route::get('/reports', [AdminController::class, 'reportIndex'])->name('reports.index');
+
+        Route::post('/report-payments/{payment}/verify', [AdminController::class, 'verifyReportPayment'])
+            ->name('report-payments.verify');
     });
 });

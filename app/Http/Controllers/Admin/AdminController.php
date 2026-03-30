@@ -6,47 +6,58 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Car;
 use App\Models\UserVerification;
+use App\Models\ReportPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
     /**
-     * Display the admin dashboard with users, cars, reports, and verifications.
-     * This is the main dashboard with only stat cards.
+     * Admin Dashboard
      */
     public function index()
     {
-        // Users (deduplicated by email)
         $users = User::select('id', 'name', 'email', 'is_verified', 'is_admin')
             ->orderBy('created_at', 'desc')
             ->get()
             ->unique('email')
             ->values();
 
-        // Cars with their owners
         $cars = Car::with('user')->get();
 
-        // Reports = cars that have a report file
         $reports = $cars->filter(fn($car) => !empty($car->report));
 
-        // User verification documents
         $verifications = UserVerification::with('user')->latest()->get();
 
-        return view('admin.dashboard', compact('users', 'cars', 'reports', 'verifications'));
+        $pendingPayments = ReportPayment::with('car')
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        $allPayments = ReportPayment::with('car')
+            ->latest()
+            ->get();
+
+        return view('admin.dashboard', compact(
+            'users',
+            'cars',
+            'reports',
+            'verifications',
+            'pendingPayments',
+            'allPayments'
+        ));
     }
 
     /**
-     * Users Management Page with Pagination and Search
+     * Users Management
      */
     public function userIndex(Request $request)
     {
         $query = User::query();
 
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
                   ->orWhere('email', 'like', '%' . $search . '%');
             });
@@ -58,20 +69,17 @@ class AdminController extends Controller
     }
 
     /**
-     * Cars Management Page with Pagination and Search
+     * Cars Management
      */
     public function carIndex(Request $request)
     {
         $query = Car::with('user');
 
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', '%' . $search . '%');
-                  });
+                  ->orWhereHas('user', fn($u) => $u->where('name', 'like', '%' . $search . '%'));
             });
         }
 
@@ -81,18 +89,15 @@ class AdminController extends Controller
     }
 
     /**
-     * Verifications Management Page with Pagination and Search
+     * Verifications Management
      */
     public function verificationIndex(Request $request)
     {
         $query = UserVerification::with('user');
 
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('user', function($userQuery) use ($search) {
-                $userQuery->where('name', 'like', '%' . $search . '%');
-            });
+            $query->whereHas('user', fn($u) => $u->where('name', 'like', '%' . $search . '%'));
         }
 
         $verifications = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -101,20 +106,17 @@ class AdminController extends Controller
     }
 
     /**
-     * Reports Management Page with Pagination and Search
+     * Reports Management
      */
     public function reportIndex(Request $request)
     {
         $query = Car::whereNotNull('report')->with('user');
 
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', '%' . $search . '%');
-                  });
+                  ->orWhereHas('user', fn($u) => $u->where('name', 'like', '%' . $search . '%'));
             });
         }
 
@@ -124,7 +126,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Verify a user.
+     * Verify a user
      */
     public function verifyUser($id)
     {
@@ -140,7 +142,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Unverify a user.
+     * Unverify a user
      */
     public function unverifyUser($id)
     {
@@ -156,53 +158,45 @@ class AdminController extends Controller
     }
 
     /**
-     * Delete a user and all associated data.
+     * Delete a user and all associated data
      */
     public function deleteUser($id)
     {
         $user = User::findOrFail($id);
 
-        // Prevent deleting admin users
         if ($user->is_admin) {
             return back()->with('error', 'Cannot delete admin users!');
         }
 
-        // Delete user's cars and associated files
         foreach ($user->cars as $car) {
             $this->deleteCarFiles($car);
             $car->delete();
         }
 
-        // Delete user's verification documents
         if ($user->verification) {
             $this->deleteVerificationFiles($user->verification);
             $user->verification->delete();
         }
 
-        // Delete the user
         $user->delete();
 
         return back()->with('success', 'User deleted successfully!');
     }
 
     /**
-     * Delete a car and all its files.
+     * Delete a car
      */
     public function deleteCar($id)
     {
         $car = Car::findOrFail($id);
-
-        // Delete all car files
         $this->deleteCarFiles($car);
-
-        // Delete the car record
         $car->delete();
 
         return back()->with('success', 'Car deleted successfully!');
     }
 
     /**
-     * Update Report Price for a Car
+     * Update report price for a car
      */
     public function updateReportPrice(Request $request, $id)
     {
@@ -212,26 +206,23 @@ class AdminController extends Controller
             'report_price' => 'nullable|numeric|min:0'
         ]);
 
-        $car->update([
-            'report_price' => $validated['report_price']
-        ]);
+        $car->update(['report_price' => $validated['report_price']]);
 
-        return redirect()->back()->with('success', 'Report price updated successfully!');
+        return back()->with('success', 'Report price updated successfully!');
     }
 
     /**
-     * Upload Report for a Car
+     * Upload report PDF for a car
      */
     public function uploadReport(Request $request, $id)
     {
         $car = Car::findOrFail($id);
 
         $request->validate([
-            'report' => 'required|file|mimes:pdf|max:10240',
+            'report'       => 'required|file|mimes:pdf|max:10240',
             'report_price' => 'nullable|numeric|min:0'
         ]);
 
-        // Delete old report if exists
         if ($car->report) {
             Storage::disk('public')->delete($car->report);
         }
@@ -239,52 +230,67 @@ class AdminController extends Controller
         $reportPath = $request->file('report')->store('reports', 'public');
 
         $car->update([
-            'report' => $reportPath,
+            'report'       => $reportPath,
             'report_price' => $request->report_price
         ]);
 
-        return redirect()->back()->with('success', 'Report uploaded successfully!');
+        return back()->with('success', 'Report uploaded successfully!');
     }
 
     /**
-     * Delete Report from a Car
+     * Delete report from a car
      */
     public function deleteReport($id)
     {
         $car = Car::findOrFail($id);
 
-        if ($car->report) {
-            Storage::disk('public')->delete($car->report);
-            $car->update([
-                'report' => null,
-                'report_price' => null
-            ]);
-
-            return redirect()->back()->with('success', 'Report deleted successfully!');
+        if (!$car->report) {
+            return back()->with('error', 'No report found to delete!');
         }
 
-        return redirect()->back()->with('error', 'No report found to delete!');
+        Storage::disk('public')->delete($car->report);
+        $car->update(['report' => null, 'report_price' => null]);
+
+        return back()->with('success', 'Report deleted successfully!');
     }
 
     /**
-     * Toggle Car Status
+     * Toggle car status between available / sold
      */
     public function toggleCarStatus($id)
     {
-        $car = Car::findOrFail($id);
+        $car       = Car::findOrFail($id);
         $newStatus = $car->status === 'available' ? 'sold' : 'available';
         $car->update(['status' => $newStatus]);
 
-        return redirect()->back()->with('success', "Car status changed to {$newStatus}!");
+        return back()->with('success', "Car status changed to {$newStatus}!");
     }
 
     /**
-     * Bulk Delete Cars
+     * Verify or reject an M-Pesa report payment (AJAX)
+     */
+    public function verifyReportPayment(ReportPayment $payment, Request $request)
+    {
+        $request->validate([
+            'status' => 'required|in:verified,rejected'
+        ]);
+
+        $payment->update([
+            'status'      => $request->status,
+            'verified_at' => $request->status === 'verified' ? now() : null,
+            'verified_by' => auth()->id(),
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Bulk delete cars
      */
     public function bulkDeleteCars(Request $request)
     {
         $request->validate([
-            'car_ids' => 'required|array',
+            'car_ids'   => 'required|array',
             'car_ids.*' => 'exists:cars,id'
         ]);
 
@@ -295,52 +301,40 @@ class AdminController extends Controller
             $car->delete();
         }
 
-        return redirect()->back()->with('success', count($request->car_ids) . ' cars deleted successfully!');
+        return back()->with('success', count($request->car_ids) . ' cars deleted successfully!');
     }
 
     /**
-     * Helper: Delete all files associated with a car
+     * Helper: delete all files attached to a car
      */
-    private function deleteCarFiles($car)
+    private function deleteCarFiles(Car $car): void
     {
-        // Delete main image
         if ($car->image) {
             Storage::disk('public')->delete($car->image);
         }
 
-        // Delete additional images
         if (is_array($car->images)) {
             foreach ($car->images as $img) {
                 Storage::disk('public')->delete($img);
             }
         }
 
-        // Delete report file
         if ($car->report) {
             Storage::disk('public')->delete($car->report);
         }
     }
 
     /**
-     * Helper: Delete all verification files
+     * Helper: delete all files attached to a verification record
      */
-    private function deleteVerificationFiles($verification)
+    private function deleteVerificationFiles(UserVerification $verification): void
     {
-        $fields = [
-            'driver_license',
-            'proof_of_address',
-            'national_id',
-            'photo',
-            'verification_video'
-        ];
-
-        foreach ($fields as $field) {
+        foreach (['driver_license', 'proof_of_address', 'national_id', 'photo', 'verification_video'] as $field) {
             if ($verification->$field) {
                 Storage::disk('public')->delete($verification->$field);
             }
         }
 
-        // Delete additional docs
         if (is_array($verification->additional_docs)) {
             foreach ($verification->additional_docs as $doc) {
                 Storage::disk('public')->delete($doc);

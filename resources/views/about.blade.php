@@ -1,658 +1,486 @@
-@extends('layouts.app') {{-- If you have a main layout --}}
+@extends('layouts.app')
 
 @section('content')
-<div class="about-container">
-    <div class="about-hero">
-        <div class="hero-content">
-            <h1>About <span class="brand-highlight">RentGo</span></h1>
-            <div class="hero-underline"></div>
-            <p class="hero-subtitle">Luxury car rentals redefined</p>
-        </div>
-        <div class="hero-decoration">
-            <div class="floating-circle circle-1"></div>
-            <div class="floating-circle circle-2"></div>
-            <div class="floating-circle circle-3"></div>
-        </div>
+
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<div class="ab-wrap">
+
+  {{-- Hero --}}
+  <section class="ab-hero">
+    <div class="ab-hero__deco"></div>
+    <div class="ab-hero__inner">
+      {{-- <span class="ab-tag">Est. 2018 · Premium Car Rentals</span> --}}
+      <h1 class="ab-hero__title">Luxury car rentals,<br><em>redefined.</em></h1>
+      <p class="ab-hero__sub">RentGo places the world's finest automobiles at your fingertips — for the moments that deserve nothing less.</p>
+      <div class="ab-hero__pills">
+        <div class="ab-pill">🎯 5,000+ Happy Clients</div>
+        <div class="ab-pill">⭐ 4.9 Avg Rating</div>
+        <div class="ab-pill">🕒 24 / 7 Support</div>
+      </div>
     </div>
+  </section>
 
-    {{-- Our Story --}}
-    <section class="our-story">
-        <div class="story-content">
-            <div class="section-badge">Our Journey</div>
-            <h2>The RentGo Story</h2>
-            <p>
-                Founded in 2018, RentGo began with a simple yet revolutionary idea: luxury car rentals should be accessible,
-                convenient, and exceptional in every way. What started as a small collection of premium vehicles
-                has grown into one of the region's most prestigious automotive rental services.
-            </p>
-            <p>
-                We believe that driving is more than transportation—it's an experience that should ignite passion and create memories.
-                Whether you're seeking the perfect vehicle for a special occasion, a business trip, or simply to enjoy
-                the thrill of driving a luxury automobile, RentGo delivers unparalleled service and selection.
-            </p>
-            <div class="story-stats">
-                <div class="stat-item">
-                    <span class="stat-number">2018</span>
-                    <span class="stat-label">Founded</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">100+</span>
-                    <span class="stat-label">Luxury Cars</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">5000+</span>
-                    <span class="stat-label">Happy Clients</span>
-                </div>
-            </div>
+  {{-- Story --}}
+  <section class="ab-story">
+    <div class="ab-story__visual">
+      <div class="ab-story__card">
+        <div class="ab-story__emoji">🚗</div>
+        <p class="ab-story__card-title">Premium Fleet</p>
+        <p class="ab-story__card-sub">100+ luxury vehicles</p>
+      </div>
+      <div class="ab-story__stat-stack">
+        <div class="ab-mini-stat">
+          <span class="ab-mini-stat__num">2018</span>
+          <span class="ab-mini-stat__lbl">Founded</span>
         </div>
-        <div class="story-visual">
-            <div class="story-image-container">
-                <div class="image-placeholder">
-                    <div class="car-icon">🚗</div>
-                    <p>Premium Fleet</p>
-                </div>
-            </div>
+        <div class="ab-mini-stat">
+          <span class="ab-mini-stat__num">100+</span>
+          <span class="ab-mini-stat__lbl">Luxury Cars</span>
         </div>
-    </section>
+        <div class="ab-mini-stat">
+          <span class="ab-mini-stat__num">5K+</span>
+          <span class="ab-mini-stat__lbl">Happy Clients</span>
+        </div>
+      </div>
+    </div>
+    <div class="ab-story__text">
+      <span class="ab-tag">Our Journey</span>
+      <h2 class="ab-section-title">The RentGo <em>story.</em></h2>
+      <p class="ab-body">Founded in 2018 with a small but handpicked collection of premium vehicles, RentGo set out to change what luxury car rental could feel like — seamless, personal, and worthy of the cars themselves.</p>
+      <p class="ab-body">Today we are one of the region's most trusted rental services. The principle stays the same: every journey deserves a vehicle as exceptional as the destination.</p>
+    </div>
+  </section>
 
-    {{-- Our Mission --}}
-    <section class="our-mission">
-        <div class="mission-header">
-            <div class="section-badge">What Drives Us</div>
-            <h2>Our Core Values</h2>
-        </div>
+  {{-- Values --}}
+  <section class="ab-values">
+    <div class="ab-values__head">
+      <span class="ab-tag">What Drives Us</span>
+      <h2 class="ab-section-title">Our core <em>values.</em></h2>
+    </div>
+    <div class="ab-values__grid">
+      <div class="ab-val-card">
+        <div class="ab-val-card__icon">★</div>
+        <h3 class="ab-val-card__title">Excellence</h3>
+        <p class="ab-val-card__body">Premium vehicles, personalized service, and seamless processes — consistently exceeding every expectation.</p>
+      </div>
+      <div class="ab-val-card ab-val-card--feature">
+        <div class="ab-val-card__icon">✦</div>
+        <h3 class="ab-val-card__title">Integrity</h3>
+        <p class="ab-val-card__body">Transparent pricing, honest communication, and genuine care for every client from first inquiry to final handover.</p>
+      </div>
+      <div class="ab-val-card">
+        <div class="ab-val-card__icon">◆</div>
+        <h3 class="ab-val-card__title">Quality</h3>
+        <p class="ab-val-card__body">Every vehicle meticulously maintained, immaculately presented, backed by 24/7 assistance for total peace of mind.</p>
+      </div>
+    </div>
+  </section>
 
-        <div class="mission-grid">
-            <div class="mission-card">
-                <div class="mission-icon">
-                    <span class="icon-symbol">★</span>
-                </div>
-                <h3>Excellence</h3>
-                <p>
-                    We provide exceptional automotive experiences through premium vehicles,
-                    personalized service, and seamless rental processes that exceed expectations.
-                </p>
-            </div>
+  {{-- Numbers --}}
+  <section class="ab-numbers">
+    <div class="ab-numbers__head">
+      <span class="ab-tag ab-tag--coral">Our Impact</span>
+      <h2 class="ab-section-title">Numbers that <em>matter.</em></h2>
+    </div>
+    <div class="ab-numbers__grid">
+      <div class="ab-num">
+        <span class="ab-num__icon">🎯</span>
+        <span class="ab-num__val">5,000+</span>
+        <span class="ab-num__lbl">Happy Customers</span>
+      </div>
+      <div class="ab-num">
+        <span class="ab-num__icon">🚘</span>
+        <span class="ab-num__val">100+</span>
+        <span class="ab-num__lbl">Luxury Vehicles</span>
+      </div>
+      <div class="ab-num">
+        <span class="ab-num__icon">⭐</span>
+        <span class="ab-num__val">4.9</span>
+        <span class="ab-num__lbl">Customer Rating</span>
+      </div>
+      <div class="ab-num">
+        <span class="ab-num__icon">🕒</span>
+        <span class="ab-num__val">24/7</span>
+        <span class="ab-num__lbl">Customer Support</span>
+      </div>
+    </div>
+  </section>
 
-            <div class="mission-card">
-                <div class="mission-icon">
-                    <span class="icon-symbol">✓</span>
-                </div>
-                <h3>Integrity</h3>
-                <p>
-                    Excellence in every detail, integrity in all interactions, innovation in our offerings,
-                    and genuine care for our customers' satisfaction and safety.
-                </p>
-            </div>
+  {{-- CTA --}}
+  <section class="ab-cta">
+    <div class="ab-cta__inner">
+      <h2 class="ab-cta__title">Ready to experience <em>RentGo?</em></h2>
+      <p class="ab-cta__sub">Discover our premium fleet and book your dream car today.</p>
+      <a href="#" class="ab-cta-btn">Browse Our Fleet <span>→</span></a>
+    </div>
+  </section>
 
-            <div class="mission-card">
-                <div class="mission-icon">
-                    <span class="icon-symbol">♦</span>
-                </div>
-                <h3>Quality Promise</h3>
-                <p>
-                    Each RentGo vehicle is meticulously maintained, thoroughly sanitized,
-                    and delivered with comprehensive support for a worry-free experience.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    {{-- Achievements --}}
-    <section class="achievements">
-        <div class="achievements-header">
-            <div class="section-badge">Our Impact</div>
-            <h2>Achievements That Matter</h2>
-            <p>Numbers that reflect our commitment to excellence</p>
-        </div>
-
-        <div class="achievement-grid">
-            <div class="achievement-card">
-                <div class="achievement-icon">🎯</div>
-                <div class="achievement-number">5000+</div>
-                <div class="achievement-text">Happy Customers</div>
-            </div>
-            <div class="achievement-card">
-                <div class="achievement-icon">🚘</div>
-                <div class="achievement-number">100+</div>
-                <div class="achievement-text">Luxury Vehicles</div>
-            </div>
-            <div class="achievement-card">
-                <div class="achievement-icon">⭐</div>
-                <div class="achievement-number">4.9</div>
-                <div class="achievement-text">Customer Rating</div>
-            </div>
-            <div class="achievement-card">
-                <div class="achievement-icon">🕒</div>
-                <div class="achievement-number">24/7</div>
-                <div class="achievement-text">Customer Support</div>
-            </div>
-        </div>
-    </section>
-
-    {{-- CTA Section --}}
-    <section class="cta-section">
-        <div class="cta-content">
-            <h2>Ready to Experience RentGo?</h2>
-            <p>Discover our premium fleet and book your dream car today.</p>
-            <button class="cta-button">
-                <span>Browse Our Fleet</span>
-                <span class="button-arrow">→</span>
-            </button>
-        </div>
-        <div class="cta-decoration">
-            <div class="decoration-circle"></div>
-            <div class="decoration-line"></div>
-        </div>
-    </section>
 </div>
 
-{{-- Add your CSS here --}}
 <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.about-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-  background: #fff;
+:root {
+  --cream:    #fdf8f3;
+  --peach:    #f5ede3;
+  --peach-2:  #eeddd0;
+  --coral:    #d4501a;
+  --coral-2:  #e8692e;
+  --warm-dk:  #3d2b1f;
+  --warm-md:  #7a5c4a;
+  --warm-lt:  #b89b8a;
+  --white:    #ffffff;
+  --radius:   18px;
+  --font-d:   'Fraunces', Georgia, serif;
+  --font-b:   'Plus Jakarta Sans', system-ui, sans-serif;
+  --max:      1100px;
+  --pad:      clamp(24px, 6vw, 80px);
+  --section:  clamp(64px, 9vw, 110px);
+}
+
+body { background: var(--cream); }
+
+.ab-wrap {
+  font-family: var(--font-b);
+  color: var(--warm-dk);
+  background: var(--cream);
   overflow-x: hidden;
 }
 
-/* Hero Section */
-.about-hero {
-  position: relative;
-  text-align: center;
-  padding: 100px 0 80px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  margin: 0 -20px;
-  overflow: hidden;
+/* ── Shared ── */
+.ab-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--warm-md);
+  background: var(--peach-2);
+  padding: 7px 16px;
+  border-radius: 50px;
+  margin-bottom: 20px;
+}
+.ab-tag--coral {
+  color: var(--coral);
+  background: rgba(212,80,26,0.1);
+}
+.ab-tag::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--coral);
+  display: inline-block;
 }
 
-.hero-content {
-  position: relative;
-  z-index: 2;
+.ab-section-title {
+  font-family: var(--font-d);
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--warm-dk);
+  margin-bottom: 20px;
+}
+.ab-section-title em {
+  font-style: italic;
+  color: var(--coral);
 }
 
-.about-hero h1 {
-  font-size: 4rem;
-  margin: 0;
-  letter-spacing: -1px;
-  color: #333;
-  font-weight: 800;
-}
-
-.brand-highlight {
-  color: #FF0000;
-  background: linear-gradient(45deg, #FF0000, #FFD700);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-underline {
-  width: 120px;
-  height: 6px;
-  background: linear-gradient(90deg, #FF0000, #FFD700);
-  margin: 20px auto;
-  border-radius: 3px;
-  box-shadow: 0 2px 10px rgba(255, 0, 0, 0.3);
-}
-
-.hero-subtitle {
-  font-size: 1.3rem;
-  color: #666;
-  margin-top: 20px;
+.ab-body {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--warm-md);
+  margin-bottom: 16px;
   font-weight: 300;
 }
 
-.hero-decoration {
+/* ── Hero ── */
+.ab-hero {
+  position: relative;
+  background: var(--peach);
+  padding: clamp(70px, 12vw, 130px) var(--pad) clamp(64px, 10vw, 110px);
+  overflow: hidden;
+}
+.ab-hero__deco {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  width: 520px; height: 520px;
+  border-radius: 50%;
+  border: 1.5px solid var(--peach-2);
+  top: -180px; right: -140px;
   pointer-events: none;
 }
-
-.floating-circle {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.1;
-  animation: float 6s ease-in-out infinite;
-}
-
-.circle-1 {
-  width: 100px;
-  height: 100px;
-  background: #FF0000;
-  top: 20%;
-  left: 10%;
-  animation-delay: 0s;
-}
-
-.circle-2 {
-  width: 150px;
-  height: 150px;
-  background: #FFD700;
-  top: 60%;
-  right: 15%;
-  animation-delay: 2s;
-}
-
-.circle-3 {
-  width: 80px;
-  height: 80px;
-  background: #FF0000;
-  bottom: 20%;
-  left: 20%;
-  animation-delay: 4s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-/* Section Badges */
-.section-badge {
-  display: inline-block;
-  background: linear-gradient(45deg, #FF0000, #FFD700);
-  color: white;
-  padding: 8px 20px;
-  border-radius: 25px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
-}
-
-/* Our Story Section */
-.our-story {
-  display: flex;
-  margin: 100px 0;
-  gap: 60px;
-  align-items: center;
-}
-
-.story-content {
-  flex: 1.2;
-}
-
-.story-content h2 {
-  font-size: 3rem;
-  margin: 0 0 30px 0;
-  color: #333;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.story-content p {
-  line-height: 1.8;
-  font-size: 1.2rem;
-  margin-bottom: 25px;
-  color: #555;
-}
-
-.story-stats {
-  display: flex;
-  gap: 40px;
-  margin-top: 40px;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-number {
-  display: block;
-  font-size: 2rem;
-  font-weight: 800;
-  color: #FF0000;
-  margin-bottom: 5px;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.story-visual {
-  flex: 1;
-}
-
-.story-image-container {
-  background: linear-gradient(135deg, #FF0000, #FFD700);
-  border-radius: 20px;
-  padding: 60px;
-  text-align: center;
-  box-shadow: 0 20px 40px rgba(255, 0, 0, 0.2);
-  transform: rotate(-2deg);
-  transition: transform 0.3s ease;
-}
-
-.story-image-container:hover {
-  transform: rotate(0deg) scale(1.05);
-}
-
-.image-placeholder {
-  background: white;
-  border-radius: 15px;
-  padding: 40px;
-  color: #333;
-}
-
-.car-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-}
-
-.image-placeholder p {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin: 0;
-  color: #333;
-}
-
-/* Mission Section */
-.our-mission {
-  margin: 120px 0;
-  text-align: center;
-}
-
-.mission-header h2 {
-  font-size: 3rem;
-  margin: 0 0 60px 0;
-  color: #333;
-  font-weight: 700;
-}
-
-.mission-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 40px;
-  margin-top: 60px;
-}
-
-.mission-card {
-  background: white;
-  padding: 50px 30px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  transition: all 0.3s ease;
-  border: 3px solid transparent;
-  position: relative;
-  overflow: hidden;
-}
-
-.mission-card::before {
+.ab-hero__deco::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #FF0000, #FFD700);
-}
-
-.mission-card:hover {
-  transform: translateY(-15px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-  border-color: #FFD700;
-}
-
-.mission-icon {
-  background: linear-gradient(135deg, #FF0000, #FFD700);
-  width: 80px;
-  height: 80px;
+  width: 320px; height: 320px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 30px;
-  box-shadow: 0 10px 25px rgba(255, 0, 0, 0.3);
+  border: 1.5px solid var(--peach-2);
+  top: 120px; left: 60px;
 }
-
-.icon-symbol {
-  color: white;
-  font-size: 2rem;
-  font-weight: bold;
-}
-
-.mission-card h3 {
-  font-size: 1.8rem;
-  margin: 0 0 20px;
-  color: #333;
-  font-weight: 700;
-}
-
-.mission-card p {
-  line-height: 1.7;
-  margin: 0;
-  color: #555;
-  font-size: 1.1rem;
-}
-
-/* Achievements Section */
-.achievements {
-  margin: 120px 0;
-  text-align: center;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  padding: 80px 40px;
-  border-radius: 30px;
+.ab-hero__inner {
   position: relative;
-}
-
-.achievements-header h2 {
-  font-size: 3rem;
-  color: #333;
-  margin: 0 0 20px 0;
-  font-weight: 700;
-}
-
-.achievements-header p {
-  font-size: 1.2rem;
-  color: #666;
-  margin-bottom: 60px;
-}
-
-.achievement-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 30px;
-  max-width: 900px;
+  z-index: 1;
+  max-width: var(--max);
   margin: 0 auto;
 }
-
-.achievement-card {
-  background: white;
-  border-radius: 20px;
-  padding: 40px 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 3px solid transparent;
+.ab-hero__title {
+  font-family: var(--font-d);
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--warm-dk);
+  margin-bottom: 22px;
+}
+.ab-hero__title em {
+  font-style: italic;
+  color: var(--coral);
+}
+.ab-hero__sub {
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  color: var(--warm-md);
+  line-height: 1.75;
+  max-width: 500px;
+  font-weight: 300;
+  margin-bottom: 40px;
+}
+.ab-hero__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.ab-pill {
+  background: var(--white);
+  border: 1px solid var(--peach-2);
+  color: var(--warm-dk);
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
-.achievement-card:hover {
-  transform: translateY(-10px);
-  border-color: #FFD700;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+/* ── Story ── */
+.ab-story {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: clamp(40px, 6vw, 80px);
+  align-items: center;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--section) var(--pad);
+}
+.ab-story__visual {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ab-story__card {
+  background: var(--peach);
+  border-radius: var(--radius);
+  padding: 44px 36px;
+  border: 1px solid var(--peach-2);
+}
+.ab-story__emoji { font-size: 2.6rem; margin-bottom: 16px; }
+.ab-story__card-title {
+  font-family: var(--font-d);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--warm-dk);
+  margin-bottom: 4px;
+}
+.ab-story__card-sub {
+  font-size: 0.82rem;
+  color: var(--warm-lt);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.ab-story__stat-stack {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ab-mini-stat {
+  background: var(--white);
+  border: 1px solid var(--peach-2);
+  border-radius: 14px;
+  padding: 22px 16px;
+  text-align: center;
+}
+.ab-mini-stat__num {
+  display: block;
+  font-family: var(--font-d);
+  font-size: 1.7rem;
+  font-weight: 400;
+  color: var(--coral);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.ab-mini-stat__lbl {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warm-lt);
 }
 
-.achievement-icon {
-  font-size: 2.5rem;
+/* ── Values ── */
+.ab-values {
+  background: var(--peach);
+  padding: var(--section) var(--pad);
+}
+.ab-values__head {
+  max-width: var(--max);
+  margin: 0 auto 48px;
+}
+.ab-values__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: var(--max);
+  margin: 0 auto;
+}
+.ab-val-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 44px 32px;
+  border: 1px solid var(--peach-2);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.ab-val-card:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.07);
+  transform: translateY(-4px);
+}
+.ab-val-card--feature {
+  background: var(--coral);
+  border-color: var(--coral);
+}
+.ab-val-card--feature .ab-val-card__icon,
+.ab-val-card--feature .ab-val-card__title,
+.ab-val-card--feature .ab-val-card__body { color: var(--white); }
+.ab-val-card--feature .ab-val-card__body { opacity: 0.85; }
+
+.ab-val-card__icon {
+  font-size: 1.3rem;
+  color: var(--coral);
+  display: block;
   margin-bottom: 20px;
 }
-
-.achievement-number {
-  font-size: 3rem;
-  font-weight: 800;
-  margin-bottom: 10px;
-  background: linear-gradient(45deg, #FF0000, #FFD700);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.ab-val-card__title {
+  font-family: var(--font-d);
+  font-size: 1.55rem;
+  font-weight: 400;
+  color: var(--warm-dk);
+  margin-bottom: 14px;
+}
+.ab-val-card__body {
+  font-size: 0.96rem;
+  line-height: 1.75;
+  color: var(--warm-md);
+  font-weight: 300;
 }
 
-.achievement-text {
-  font-size: 1.1rem;
-  color: #555;
-  font-weight: 500;
+/* ── Numbers ── */
+.ab-numbers {
+  padding: var(--section) var(--pad);
+  max-width: var(--max);
+  margin: 0 auto;
 }
-
-/* CTA Section */
-.cta-section {
-  background: linear-gradient(135deg, #FF0000, #FFD700);
-  border-radius: 25px;
-  padding: 80px 40px;
+.ab-numbers__head { margin-bottom: 48px; }
+.ab-numbers__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.ab-num {
+  background: var(--white);
+  border: 1px solid var(--peach-2);
+  border-radius: var(--radius);
+  padding: 36px 24px;
   text-align: center;
-  margin: 120px 0 60px;
-  position: relative;
-  overflow: hidden;
-  color: white;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.ab-num:hover {
+  box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+  transform: translateY(-4px);
+}
+.ab-num__icon { font-size: 1.8rem; display: block; margin-bottom: 14px; }
+.ab-num__val {
+  display: block;
+  font-family: var(--font-d);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 400;
+  color: var(--coral);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.ab-num__lbl {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warm-lt);
 }
 
-.cta-content {
-  position: relative;
-  z-index: 2;
+/* ── CTA ── */
+.ab-cta {
+  background: var(--peach);
+  padding: var(--section) var(--pad);
+  border-top: 1px solid var(--peach-2);
 }
-
-.cta-section h2 {
-  font-size: 2.5rem;
-  margin: 0 0 20px;
-  font-weight: 700;
+.ab-cta__inner {
+  max-width: 600px;
 }
-
-.cta-section p {
-  font-size: 1.3rem;
-  margin-bottom: 40px;
-  opacity: 0.9;
+.ab-cta__title {
+  font-family: var(--font-d);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  color: var(--warm-dk);
+  line-height: 1.2;
+  margin-bottom: 16px;
 }
-
-.cta-button {
-  background: white;
-  color: #FF0000;
-  border: none;
-  padding: 18px 40px;
-  font-size: 1.2rem;
-  font-weight: 700;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+.ab-cta__title em {
+  font-style: italic;
+  color: var(--coral);
+}
+.ab-cta__sub {
+  font-size: 1rem;
+  color: var(--warm-md);
+  line-height: 1.7;
+  margin-bottom: 36px;
+  font-weight: 300;
+}
+.ab-cta-btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  background: var(--coral);
+  color: var(--white);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 16px 32px;
+  border-radius: 50px;
+  border: 1.5px solid var(--coral);
+  transition: background 0.2s, gap 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(212,80,26,0.25);
+}
+.ab-cta-btn:hover {
+  background: var(--coral-2);
+  gap: 18px;
+  box-shadow: 0 8px 24px rgba(212,80,26,0.3);
 }
 
-.cta-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-  background: #f8f9fa;
+/* ── Responsive ── */
+@media (max-width: 840px) {
+  .ab-story { grid-template-columns: 1fr; }
+  .ab-values__grid { grid-template-columns: 1fr; }
+  .ab-numbers__grid { grid-template-columns: repeat(2, 1fr); }
 }
-
-.button-arrow {
-  transition: transform 0.3s ease;
+@media (max-width: 500px) {
+  .ab-hero__pills { flex-direction: column; }
+  .ab-story__stat-stack { grid-template-columns: 1fr 1fr; }
+  .ab-numbers__grid { grid-template-columns: 1fr 1fr; }
 }
-
-.cta-button:hover .button-arrow {
-  transform: translateX(5px);
-}
-
-.cta-decoration {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.decoration-circle {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  top: -100px;
-  right: -100px;
-}
-
-.decoration-line {
-  position: absolute;
-  width: 300px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.2);
-  bottom: 20px;
-  left: -150px;
-  transform: rotate(-15deg);
-}
-
-/* Responsive Design */
-@media (max-width: 960px) {
-  .our-story {
-    flex-direction: column;
-    gap: 40px;
-  }
-
-  .story-stats {
-    justify-content: center;
-  }
-
-  .about-hero h1 {
-    font-size: 3rem;
-  }
-
-  .story-content h2,
-  .mission-header h2,
-  .achievements-header h2 {
-    font-size: 2.3rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .about-hero {
-    padding: 80px 0 60px;
-  }
-
-  .about-hero h1 {
-    font-size: 2.5rem;
-  }
-
-  .story-stats {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .mission-grid {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-
-  .achievement-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-
-  .cta-section {
-    padding: 60px 20px;
-  }
-
-  .cta-section h2 {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 400px) {
-  .achievement-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-
 </style>
+
 @endsection

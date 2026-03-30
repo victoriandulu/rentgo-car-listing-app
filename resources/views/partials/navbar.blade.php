@@ -26,6 +26,19 @@
         <a href="{{ url('/contact') }}">Contact Us</a>
         <a href="{{ url('/faqs') }}">FAQs</a>
 
+        {{-- ADMIN MANAGEMENT LINK - Only visible to admin users --}}
+        @auth
+            @if(auth()->user()->is_admin)
+                <a href="{{ url('/admin/dashboard') }}" class="admin-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                        <circle cx="12" cy="12" r="4"/>
+                    </svg>
+                    Management
+                </a>
+            @endif
+        @endauth
+
         {{-- User Dropdown --}}
         @auth
         <div class="dropdown" onclick="toggleDropdown()">
@@ -37,6 +50,11 @@
 
             <div class="dropdown-menu">
                 <a href="{{ url('/profile') }}">Profile</a>
+                @if(auth()->user()->is_admin)
+                    <a href="{{ url('/admin/dashboard') }}" class="admin-dropdown-item">
+                        <span class="admin-badge">Admin</span> Dashboard
+                    </a>
+                @endif
                 <form method="POST" action="{{ route('auth.logout') }}">
                     @csrf
                     <button type="submit" class="logout-btn">Logout</button>
@@ -75,13 +93,39 @@
         <a href="{{ url('/contact') }}" onclick="toggleSidebar(false)">Contact Us</a>
         <a href="{{ url('/faqs') }}" onclick="toggleSidebar(false)">FAQs</a>
 
+        {{-- ADMIN MANAGEMENT LINK IN SIDEBAR --}}
+        @auth
+            @if(auth()->user()->is_admin)
+                <a href="{{ url('/admin/dashboard') }}" class="admin-link-sidebar" onclick="toggleSidebar(false)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                        <circle cx="12" cy="12" r="4"/>
+                    </svg>
+                    Management Dashboard
+                    <span class="admin-badge-sidebar">Admin</span>
+                </a>
+            @endif
+        @endauth
+
         @auth
         <div class="sidebar-user">
             <div class="sidebar-user-info">
                 <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
                 <span>{{ auth()->user()->name }}</span>
+                @if(auth()->user()->is_admin)
+                    <span class="admin-tag">Admin</span>
+                @endif
             </div>
             <a href="{{ url('/profile') }}" onclick="toggleSidebar(false)">Profile</a>
+            @if(auth()->user()->is_admin)
+                <a href="{{ url('/admin/dashboard') }}" onclick="toggleSidebar(false)" class="sidebar-admin-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                        <circle cx="12" cy="12" r="4"/>
+                    </svg>
+                    Admin Dashboard
+                </a>
+            @endif
             <form method="POST" action="{{ route('auth.logout') }}">
                 @csrf
                 <button type="submit" class="logout-btn">Logout</button>
@@ -131,7 +175,7 @@
         align-items: center;
         gap: 0.5rem;
         padding: 0.4rem 0.8rem;
-        background: linear-gradient(135deg, #dc2626 0%, #fbbf24 100%);
+        background: #dc2626 ;
         border-radius: 20px;
         color: white;
         transition: all 0.3s ease;
@@ -176,7 +220,7 @@
         background: white;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        min-width: 160px;
+        min-width: 180px;
         z-index: 1000;
         overflow: hidden;
     }
@@ -197,6 +241,100 @@
 
     .dropdown-menu a:hover {
         background: #f3f4f6;
+    }
+
+    /* Admin Link Styling - Desktop */
+    .admin-link {
+        background: #dc2626 ;
+        color: white !important;
+        padding: 0.4rem 1rem !important;
+        border-radius: 20px !important;
+        display: inline-flex;
+        align-items: center;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin: 0 4px;
+    }
+
+    .admin-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        background: #dc2626 ;
+    }
+
+    .admin-link svg {
+        stroke: white;
+    }
+
+    /* Admin Dropdown Item */
+    .admin-dropdown-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .admin-badge {
+        background: #dc2626 ;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* Sidebar Admin Link */
+    .admin-link-sidebar {
+        background: #dc2626  !important;
+        color: white !important;
+        margin: 8px 0 !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.8rem 1rem !important;
+    }
+
+    .admin-link-sidebar:hover {
+        background: #dc2626 !important;
+        transform: translateX(4px);
+    }
+
+    .admin-badge-sidebar {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .admin-tag {
+        background: #dc2626 ;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        margin-left: auto;
+    }
+
+    .sidebar-admin-link {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #7c3aed10, #6d28d910);
+        margin-top: 4px;
+        border-left: 3px solid #dc2626 ;
+    }
+
+    .sidebar-admin-link:hover {
+        background: linear-gradient(135deg, #7c3aed20, #6d28d920);
+    }
+
+    .sidebar-admin-link svg {
+        stroke: #dc2626 ;
     }
 
     .logout-btn {
@@ -227,7 +365,7 @@
         align-items: center;
         gap: 0.6rem;
         padding: 0.8rem;
-        background: linear-gradient(135deg, #dc2626 0%, #fbbf24 100%);
+        background: #dc2626 ;
         color: white;
         border-radius: 8px;
         margin-bottom: 0.8rem;
@@ -262,5 +400,16 @@
 
     .sidebar-user .logout-btn:hover {
         background: #fef2f2;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .admin-link {
+            display: none !important;
+        }
+
+        .admin-link-sidebar {
+            display: flex !important;
+        }
     }
 </style>

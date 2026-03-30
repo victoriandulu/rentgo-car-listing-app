@@ -1,811 +1,428 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="home-container">
-    {{-- Hero Section --}}
-    <div class="hero-section">
-        <div class="hero-watermark">
-            <span>Rent</span>
-            <span>Go</span>
-        </div>
 
-        <div class="hero-content">
-            <h1>The Safest Way to <span class="highlight">Buy and Sell</span> Your Car in Kenya</h1>
-            <p class="hero-subtitle">Find what fits you</p>
-            <p class="hero-description">We help you find a car that fits your personality, dream, and pocket!</p>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,500;1,9..144,600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-            <div class="hero-buttons">
-                <a href="{{ url('/vehicles') }}" class="btn-primary">Explore Vehicles</a>
-                @auth
-                    <a href="{{ route('cars.create') }}" class="btn-secondary">Sell Your Car</a>
-                @endauth
-                @guest
-                    <a href="{{ url('/sell') }}" class="btn-secondary">Sell Your Car</a>
-                @endguest
-            </div>
-        </div>
+<div class="hm-wrap">
+
+  {{-- ── Hero ── --}}
+  <section class="hm-hero">
+
+    {{-- Watermark --}}
+    <div class="hm-watermark" aria-hidden="true">
+      <span>Rent</span>
+      <span>Go</span>
     </div>
 
-    {{-- Car Showcase --}}
-    <div class="car-showcase">
-        <img src="{{ asset('images/gwagon.png') }}" alt="Featured Vehicle" class="showcase-car" />
-    </div>
+    {{-- Vignette depth layer --}}
+    <div class="hm-vignette" aria-hidden="true"></div>
 
-    {{-- Search Section --}}
-    <div class="search-section">
-        <div class="section-container">
-            <h2 class="section-title">Find Your Perfect Vehicle</h2>
-            <form action="{{ route('search.vehicle') }}" method="GET" class="search-form">
-                <input
-                    type="text"
-                    name="query"
-                    id="search-input"
-                    placeholder="Search by make, model, or keyword..."
-                    class="search-input"
-                    required
-                />
-                <button type="submit" class="search-button">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.35-4.35"/>
-                    </svg>
-                    Search
-                </button>
-            </form>
+    {{-- Left: Text --}}
+    <div class="hm-hero__left">
+
+      <h1 class="hm-hero__title">
+        The smarter way<br>
+        to <em>buy &amp; sell</em><br>
+        your car.
+      </h1>
+
+      <p class="hm-hero__sub">
+        Find a car that fits your personality, dream, and pocket — we'll handle the rest.
+      </p>
+
+      <div class="hm-hero__btns">
+        <a href="{{ url('/vehicles') }}" class="hm-btn hm-btn--primary">
+          Explore Vehicles
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        @auth
+          <a href="{{ route('cars.create') }}" class="hm-btn hm-btn--outline">Sell Your Car</a>
+        @endauth
+        @guest
+          <a href="{{ url('/sell') }}" class="hm-btn hm-btn--outline">Sell Your Car</a>
+        @endguest
+      </div>
+
+      <div class="hm-stats">
+        <div class="hm-stat">
+          <span class="hm-stat__num">5,000+</span>
+          <span class="hm-stat__lbl">Happy Clients</span>
         </div>
-    </div>
-
-    {{-- Filters Section --}}
-    <div class="filters-section">
-        <div class="section-container">
-            <h2 class="section-title">Quick Filters</h2>
-
-            {{-- Price Range Filters --}}
-            <div class="filter-category">
-                <h3 class="filter-label">Filter by Price Range</h3>
-                <div class="filter-grid">
-                    <button class="filter-btn" onclick="filterByPrice(0, 500000)">
-                        <span class="filter-text">0 - 500K</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterByPrice(500000, 1000000)">
-                        <span class="filter-text">500K - 1M</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterByPrice(1000000, 2000000)">
-                        <span class="filter-text">1M - 2M</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterByPrice(2000000, 3000000)">
-                        <span class="filter-text">2M - 3M</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterByPrice(3000000, 5000000)">
-                        <span class="filter-text">3M - 5M</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterByPrice(5000000, 10000000)">
-                        <span class="filter-text">5M - 10M</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterByPrice(10000000, 999999999)">
-                        <span class="filter-text">Above 10M</span>
-                    </button>
-                </div>
-            </div>
-
-            {{-- Brand and Body Type Filters --}}
-            <div class="filter-secondary">
-                <div class="filter-category">
-                    <h3 class="filter-label">Filter by Brand</h3>
-                    <select id="brand-filter" class="filter-select" onchange="filterByBrand(this.value)">
-                        <option value="">All Brands</option>
-                        <option value="toyota">Toyota</option>
-                        <option value="honda">Honda</option>
-                        <option value="nissan">Nissan</option>
-                        <option value="mazda">Mazda</option>
-                        <option value="subaru">Subaru</option>
-                        <option value="mercedes">Mercedes-Benz</option>
-                        <option value="bmw">BMW</option>
-                        <option value="audi">Audi</option>
-                        <option value="volkswagen">Volkswagen</option>
-                        <option value="ford">Ford</option>
-                        <option value="landrover">Land Rover</option>
-                        <option value="mitsubishi">Mitsubishi</option>
-                    </select>
-                </div>
-
-                <div class="filter-category">
-                    <h3 class="filter-label">Filter by Body Type</h3>
-                    <select id="body-filter" class="filter-select" onchange="filterByBodyType(this.value)">
-                        <option value="">All Body Types</option>
-                        <option value="suv">SUV</option>
-                        <option value="sedan">Sedan</option>
-                        <option value="hatchback">Hatchback</option>
-                        <option value="pickup">Pickup</option>
-                        <option value="van">Van</option>
-                        <option value="coupe">Coupe</option>
-                        <option value="wagon">Wagon</option>
-                        <option value="convertible">Convertible</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="cta-section">
-                <a href="{{ url('/vehicles') }}" class="btn-view-all">View All Vehicles</a>
-            </div>
+        <div class="hm-stat__div"></div>
+        <div class="hm-stat">
+          <span class="hm-stat__num">4.9</span>
+          <span class="hm-stat__lbl">Avg Rating</span>
         </div>
+        <div class="hm-stat__div"></div>
+        <div class="hm-stat">
+          <span class="hm-stat__num">100%</span>
+          <span class="hm-stat__lbl">Verified &amp; Secure</span>
+        </div>
+      </div>
+
     </div>
+
+    {{-- Right: Car --}}
+    <div class="hm-hero__right">
+      <img src="{{ asset('images/gwagon.png') }}" alt="Featured Vehicle" />
+    </div>
+
+  </section>
+
+  {{-- ── Search ── --}}
+  <section class="hm-search">
+    <div class="hm-container">
+      <span class="hm-tag hm-tag--coral">Find Your Vehicle</span>
+      <h2 class="hm-section-title">Search our <em>fleet.</em></h2>
+      <form action="{{ route('search.vehicle') }}" method="GET" class="hm-search__form">
+        <input type="text" name="query" id="search-input" class="hm-search__input"
+          placeholder="Search by make, model, or keyword…" required />
+        <button type="submit" class="hm-btn hm-btn--primary hm-search__btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          Search
+        </button>
+      </form>
+    </div>
+  </section>
+
+  {{-- ── Filters ── --}}
+  <section class="hm-filters">
+    <div class="hm-container">
+
+      <div class="hm-filter-block">
+        <span class="hm-tag">Filter by Price</span>
+        <h2 class="hm-section-title">What's your <em>budget?</em></h2>
+        <div class="hm-price-grid">
+          <button class="hm-price-btn" onclick="filterByPrice(0,500000)">Under 500K</button>
+          <button class="hm-price-btn" onclick="filterByPrice(500000,1000000)">500K – 1M</button>
+          <button class="hm-price-btn" onclick="filterByPrice(1000000,2000000)">1M – 2M</button>
+          <button class="hm-price-btn" onclick="filterByPrice(2000000,3000000)">2M – 3M</button>
+          <button class="hm-price-btn" onclick="filterByPrice(3000000,5000000)">3M – 5M</button>
+          <button class="hm-price-btn" onclick="filterByPrice(5000000,10000000)">5M – 10M</button>
+          <button class="hm-price-btn hm-price-btn--accent" onclick="filterByPrice(10000000,999999999)">Above 10M</button>
+        </div>
+      </div>
+
+      <div class="hm-select-row">
+        <div class="hm-select-group">
+          <label class="hm-select-label" for="brand-filter">Filter by Brand</label>
+          <select id="brand-filter" class="hm-select" onchange="filterByBrand(this.value)">
+            <option value="">All Brands</option>
+            <option value="toyota">Toyota</option>
+            <option value="honda">Honda</option>
+            <option value="nissan">Nissan</option>
+            <option value="mazda">Mazda</option>
+            <option value="subaru">Subaru</option>
+            <option value="mercedes">Mercedes-Benz</option>
+            <option value="bmw">BMW</option>
+            <option value="audi">Audi</option>
+            <option value="volkswagen">Volkswagen</option>
+            <option value="ford">Ford</option>
+            <option value="landrover">Land Rover</option>
+            <option value="mitsubishi">Mitsubishi</option>
+          </select>
+        </div>
+        <div class="hm-select-group">
+          <label class="hm-select-label" for="body-filter">Filter by Body Type</label>
+          <select id="body-filter" class="hm-select" onchange="filterByBodyType(this.value)">
+            <option value="">All Body Types</option>
+            <option value="suv">SUV</option>
+            <option value="sedan">Sedan</option>
+            <option value="hatchback">Hatchback</option>
+            <option value="pickup">Pickup</option>
+            <option value="van">Van</option>
+            <option value="coupe">Coupe</option>
+            <option value="wagon">Wagon</option>
+            <option value="convertible">Convertible</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="hm-filter-cta">
+        <a href="{{ url('/vehicles') }}" class="hm-btn hm-btn--primary">View All Vehicles →</a>
+      </div>
+
+    </div>
+  </section>
+
 </div>
 
 <script>
-function filterByPrice(minPrice, maxPrice) {
-    window.location.href = `{{ url('/vehicles') }}?price_min=${minPrice}&price_max=${maxPrice}`;
+function filterByPrice(min, max) {
+  window.location.href = `{{ url('/vehicles') }}?price_min=${min}&price_max=${max}`;
 }
-
 function filterByBrand(brand) {
-    if (brand) {
-        window.location.href = `{{ url('/vehicles') }}?make=${brand}`;
-    }
+  if (brand) window.location.href = `{{ url('/vehicles') }}?make=${brand}`;
 }
-
-function filterByBodyType(bodyType) {
-    if (bodyType) {
-        window.location.href = `{{ url('/vehicles') }}?body_type=${bodyType}`;
-    }
+function filterByBodyType(type) {
+  if (type) window.location.href = `{{ url('/vehicles') }}?body_type=${type}`;
 }
-
-// Search form enhancement
-document.addEventListener('DOMContentLoaded', function() {
-    const searchForm = document.querySelector('.search-form');
-    const searchInput = document.getElementById('search-input');
-
-    if (searchForm) {
-        searchForm.addEventListener('submit', function(e) {
-            if (searchInput.value.trim() === '') {
-                e.preventDefault();
-                searchInput.focus();
-            }
-        });
-    }
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.querySelector('.hm-search__form');
+  const input = document.getElementById('search-input');
+  if (form) form.addEventListener('submit', e => {
+    if (!input.value.trim()) { e.preventDefault(); input.focus(); }
+  });
 });
 </script>
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --primary: #1a1a1a;
-    --secondary: #d32f2f;
-    --text-dark: #1a1a1a;
-    --text-medium: #4a5568;
-    --text-light: #718096;
-    --border: #e2e8f0;
-    --bg-light: #f7fafc;
-    --bg-white: #ffffff;
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --cream:   #fdf8f3;
+  --peach:   #f5ede3;
+  --peach-2: #eeddd0;
+  --coral:   #d4501a;
+  --coral-2: #e8692e;
+  --warm-dk: #3d2b1f;
+  --warm-md: #7a5c4a;
+  --warm-lt: #b89b8a;
+  --white:   #ffffff;
+  --radius:  14px;
+  --font-d:  'Fraunces', Georgia, serif;
+  --font-b:  'Plus Jakarta Sans', system-ui, sans-serif;
+  --max:     1200px;
+  --pad:     clamp(24px, 5vw, 80px);
+  --section: clamp(60px, 8vw, 100px);
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    color: var(--text-dark);
-    line-height: 1.6;
+body { background: var(--cream); }
+.hm-wrap { font-family: var(--font-b); color: var(--warm-dk); overflow-x: hidden; }
+
+/* ── Shared ── */
+.hm-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--warm-md); background: var(--peach-2);
+  padding: 7px 16px; border-radius: 50px; margin-bottom: 22px;
+}
+.hm-tag::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--coral); display:inline-block; }
+.hm-tag--coral { color:var(--coral); background:rgba(212,80,26,0.10); }
+
+.hm-section-title {
+  font-family: var(--font-d);
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 400; line-height: 1.2; color: var(--warm-dk); margin-bottom: 36px;
+}
+.hm-section-title em { font-style: italic; color: var(--coral); }
+.hm-container { max-width: var(--max); margin: 0 auto; padding: var(--section) var(--pad); }
+
+/* ── Buttons ── */
+.hm-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-b); font-size: 0.92rem; font-weight: 600;
+  padding: 15px 30px; border-radius: 50px; cursor: pointer;
+  text-decoration: none; border: none; transition: all 0.22s;
+}
+.hm-btn--primary { background: var(--coral); color: var(--white); box-shadow: 0 4px 20px rgba(212,80,26,0.28); }
+.hm-btn--primary:hover { background: var(--coral-2); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(212,80,26,0.35); }
+.hm-btn--outline { background: transparent; color: var(--coral); border: 1.5px solid rgba(212,80,26,0.4); }
+.hm-btn--outline:hover { background: rgba(212,80,26,0.05); transform: translateY(-2px); border-color: var(--coral); }
+
+/* ══════════════
+   HERO
+══════════════ */
+.hm-hero {
+  position: relative;
+  background: var(--peach);
+  overflow: hidden;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 52% 48%;
+  align-items: center;
 }
 
-.home-container {
-    background: var(--bg-white);
-    width: 100%;
-    overflow-x: hidden;
+/* Watermark — ultra-soft, centred */
+.hm-watermark {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none; user-select: none;
+  z-index: 0; text-align: center; white-space: nowrap;
+}
+.hm-watermark span {
+  display: block;
+  font-family: var(--font-d);
+  font-size: clamp(9rem, 22vw, 20rem);
+  font-weight: 600; line-height: 0.88;
+  letter-spacing: -0.02em;
+  color: rgba(212, 80, 26, 0.055);
 }
 
-/* Hero Section */
-.hero-section {
-    min-height: 65vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(to bottom, var(--bg-white) 0%, var(--bg-light) 100%);
-    padding: 60px 24px 40px;
-    position: relative;
-    overflow: hidden;
+/* Soft left glow for depth */
+.hm-vignette {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(
+    ellipse 55% 75% at 18% 50%,
+    rgba(253,248,243,0.5) 0%,
+    transparent 65%
+  );
 }
 
-.hero-watermark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: clamp(8rem, 20vw, 16rem);
-    font-weight: 900;
-    color: rgba(0, 0, 0, 0.03);
-    text-transform: uppercase;
-    letter-spacing: -0.02em;
-    line-height: 0.9;
-    pointer-events: none;
-    user-select: none;
-    z-index: 1;
-    text-align: center;
-    white-space: nowrap;
+/* Left column */
+.hm-hero__left {
+  position: relative; z-index: 2;
+  padding: clamp(80px, 9vw, 130px) clamp(32px, 5vw, 90px);
+  display: flex; flex-direction: column; justify-content: center;
 }
 
-.hero-watermark span {
-    display: block;
+/* Coral accent bar above title */
+.hm-hero__left::before {
+  content: '';
+  display: block;
+  width: 44px; height: 3px;
+  background: linear-gradient(90deg, var(--coral), var(--coral-2));
+  border-radius: 2px;
+  margin-bottom: 30px;
 }
 
-.hero-content {
-    text-align: center;
-    max-width: 900px;
-    width: 100%;
-    margin: 0 auto;
-    position: relative;
-    z-index: 2;
+/* Hairline between columns */
+.hm-hero__left::after {
+  content: '';
+  position: absolute; right: 0; top: 14%; bottom: 14%;
+  width: 1px; background: var(--peach-2);
 }
 
-.hero-content h1 {
-    font-size: clamp(32px, 5vw, 56px);
-    font-weight: 300;
-    line-height: 1.2;
-    color: var(--text-dark);
-    margin-bottom: 20px;
-    letter-spacing: -0.5px;
+.hm-hero__title {
+  font-family: var(--font-d);
+  font-size: clamp(3rem, 5.2vw, 5.6rem);
+  font-weight: 400; line-height: 1.06;
+  color: var(--warm-dk); margin-bottom: 28px;
+  animation: fadeUp 0.65s ease both;
+}
+.hm-hero__title em { font-style: italic; color: var(--coral); }
+
+.hm-hero__sub {
+  font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+  color: var(--warm-md); line-height: 1.8; font-weight: 300;
+  max-width: 400px; margin-bottom: 40px;
+  animation: fadeUp 0.65s 0.1s ease both;
 }
 
-.hero-content h1 .highlight {
-    font-weight: 700;
-    color: var(--primary);
+.hm-hero__btns {
+  display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 52px;
+  animation: fadeUp 0.65s 0.18s ease both;
 }
 
-.hero-subtitle {
-    font-size: clamp(18px, 2.5vw, 24px);
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 10px;
+/* Stats (replaces pills) */
+.hm-stats {
+  display: flex; align-items: center; gap: 24px;
+  animation: fadeUp 0.65s 0.26s ease both;
+}
+.hm-stat { display: flex; flex-direction: column; gap: 3px; }
+.hm-stat__num {
+  font-family: var(--font-d);
+  font-size: 1.6rem; font-weight: 600;
+  color: var(--warm-dk); line-height: 1;
+}
+.hm-stat__lbl {
+  font-size: 0.74rem; font-weight: 500;
+  color: var(--warm-lt); letter-spacing: 0.07em; text-transform: uppercase;
+}
+.hm-stat__div { width: 1px; height: 38px; background: var(--peach-2); flex-shrink: 0; }
+
+/* Right column — car */
+.hm-hero__right {
+  position: relative; z-index: 2;
+  height: 100%; min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.hm-hero__right img {
+  width: 110%; height: 100%;
+  object-fit: contain; object-position: center center;
+  transform: translateY(-2%) translateX(4%);
+  filter: drop-shadow(0 28px 56px rgba(61,43,31,0.13));
+  animation: carSlide 0.9s 0.12s cubic-bezier(0.22,1,0.36,1) both;
+  transition: transform 0.55s ease, filter 0.4s ease;
+}
+.hm-hero__right img:hover {
+  transform: translateY(-4%) translateX(4%) scale(1.02);
+  filter: drop-shadow(0 40px 72px rgba(61,43,31,0.17));
 }
 
-.hero-description {
-    font-size: clamp(16px, 2vw, 18px);
-    color: var(--text-medium);
-    margin-bottom: 32px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes carSlide {
+  from { opacity: 0; transform: translateY(-2%) translateX(70px); }
+  to   { opacity: 1; transform: translateY(-2%) translateX(4%); }
 }
 
-.hero-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
+/* ── Search ── */
+.hm-search { background: var(--cream); border-top: 1px solid var(--peach-2); }
+.hm-search__form { display: flex; gap: 12px; max-width: 680px; }
+.hm-search__input {
+  flex: 1; padding: 15px 20px;
+  border: 1.5px solid var(--peach-2); border-radius: 50px;
+  font-size: 0.95rem; font-family: var(--font-b);
+  background: var(--white); color: var(--warm-dk);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
+.hm-search__input:focus { outline: none; border-color: var(--coral); box-shadow: 0 0 0 3px rgba(212,80,26,0.12); }
+.hm-search__input::placeholder { color: var(--warm-lt); }
+.hm-search__btn { white-space: nowrap; }
 
-.btn-primary,
-.btn-secondary {
-    padding: 16px 32px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    text-decoration: none;
-    display: inline-block;
-    border-radius: 6px;
+/* ── Filters ── */
+.hm-filters { background: var(--peach); border-top: 1px solid var(--peach-2); }
+.hm-filter-block { margin-bottom: 52px; }
+
+.hm-price-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px; max-width: 900px;
 }
-
-.btn-primary {
-    background: var(--primary);
-    color: var(--bg-white);
-    border-color: var(--primary);
+.hm-price-btn {
+  padding: 13px 16px; font-family: var(--font-b); font-size: 0.88rem; font-weight: 600;
+  background: var(--white); color: var(--warm-dk);
+  border: 1.5px solid var(--peach-2); border-radius: var(--radius);
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
+.hm-price-btn:hover { background: var(--coral); color: var(--white); border-color: var(--coral); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(212,80,26,0.22); }
+.hm-price-btn--accent { background: rgba(212,80,26,0.07); color: var(--coral); border-color: rgba(212,80,26,0.25); }
 
-.btn-primary:hover {
-    background: transparent;
-    color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+.hm-select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 700px; margin-bottom: 48px; }
+.hm-select-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--warm-dk); margin-bottom: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
+.hm-select {
+  width: 100%; padding: 13px 16px;
+  border: 1.5px solid var(--peach-2); border-radius: var(--radius);
+  font-size: 0.93rem; font-family: var(--font-b);
+  background: var(--white); color: var(--warm-dk);
+  cursor: pointer; appearance: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b89b8a' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px;
 }
+.hm-select:focus { outline: none; border-color: var(--coral); box-shadow: 0 0 0 3px rgba(212,80,26,0.12); }
+.hm-filter-cta { text-align: left; }
 
-.btn-secondary {
-    background: var(--bg-white);
-    color: var(--primary);
-    border-color: var(--primary);
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .hm-hero { grid-template-columns: 1fr; min-height: auto; }
+  .hm-hero__left { padding: 90px var(--pad) 32px; }
+  .hm-hero__left::after { display: none; }
+  .hm-hero__right { min-height: 56vw; height: 56vw; }
+  .hm-hero__right img { transform: none; width: 100%; }
 }
-
-.btn-secondary:hover {
-    background: var(--primary);
-    color: var(--bg-white);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+@media (max-width: 600px) {
+  .hm-hero__btns { flex-direction: column; max-width: 280px; }
+  .hm-btn { width: 100%; justify-content: center; }
+  .hm-search__form { flex-direction: column; }
+  .hm-search__btn { width: 100%; justify-content: center; }
+  .hm-price-grid { grid-template-columns: repeat(2,1fr); }
+  .hm-stats { gap: 14px; }
+  .hm-stat__num { font-size: 1.3rem; }
+  .hm-select-row { grid-template-columns: 1fr; max-width: 100%; }
+  .hm-watermark span { font-size: clamp(6rem, 28vw, 10rem); }
 }
-
-/* Car Showcase */
-.car-showcase {
-    width: 100%;
-    padding: 20px 24px 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: var(--bg-white);
-    margin-top: -20px;
-}
-
-.showcase-car {
-    width: 100%;
-    max-width: 1200px;
-    height: auto;
-    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.08));
-}
-
-/* Search Section */
-.search-section {
-    padding: 50px 24px;
-    background: var(--bg-light);
-}
-
-.section-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.section-title {
-    font-size: clamp(28px, 4vw, 36px);
-    font-weight: 600;
-    color: var(--text-dark);
-    text-align: center;
-    margin-bottom: 32px;
-    letter-spacing: -0.5px;
-}
-
-.search-form {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-    max-width: 700px;
-    margin: 0 auto;
-}
-
-.search-input {
-    flex: 1;
-    padding: 16px 20px;
-    border: 2px solid var(--border);
-    font-size: 16px;
-    outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    border-radius: 6px;
-    background: var(--bg-white);
-}
-
-.search-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-}
-
-.search-button {
-    padding: 16px 28px;
-    background: var(--primary);
-    color: var(--bg-white);
-    border: none;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    white-space: nowrap;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.search-button:hover {
-    background: var(--text-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-/* Filters Section */
-.filters-section {
-    padding: 50px 24px;
-    background: var(--bg-white);
-}
-
-.filter-category {
-    margin-bottom: 40px;
-}
-
-.filter-label {
-    font-size: clamp(16px, 2vw, 18px);
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 16px;
-    text-align: center;
-}
-
-.filter-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    max-width: 1100px;
-    margin: 0 auto;
-}
-
-.filter-btn {
-    padding: 14px 16px;
-    background: var(--bg-white);
-    color: var(--text-dark);
-    border: 2px solid var(--border);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    border-radius: 6px;
-    text-align: center;
-    white-space: nowrap;
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.filter-text {
-    display: block;
-}
-
-.filter-btn:hover {
-    background: var(--primary);
-    color: var(--bg-white);
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.filter-secondary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.filter-select {
-    width: 100%;
-    padding: 14px 20px;
-    background: var(--bg-white);
-    color: var(--text-dark);
-    border: 2px solid var(--border);
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    border-radius: 6px;
-    outline: none;
-}
-
-.filter-select:hover,
-.filter-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
-}
-
-.cta-section {
-    text-align: center;
-    margin-top: 48px;
-}
-
-.btn-view-all {
-    display: inline-block;
-    padding: 16px 40px;
-    background: var(--primary);
-    color: var(--bg-white);
-    border: 2px solid var(--primary);
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: all 0.3s;
-}
-
-.btn-view-all:hover {
-    background: transparent;
-    color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-/* Responsive Design */
-
-/* iPad Air & Similar (820px - 1024px) */
-@media (min-width: 768px) and (max-width: 1024px) {
-    .hero-section {
-        padding: 50px 32px 30px;
-        min-height: 60vh;
-    }
-
-    .hero-watermark {
-        font-size: clamp(10rem, 18vw, 14rem);
-    }
-
-    .car-showcase {
-        padding: 10px 32px 30px;
-        margin-top: -10px;
-    }
-
-    .filter-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
-        max-width: 750px;
-    }
-
-    .filter-btn {
-        padding: 16px 12px;
-        font-size: 13px;
-        min-height: 52px;
-    }
-
-    .filter-secondary {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 750px;
-        gap: 20px;
-    }
-
-    .search-form {
-        max-width: 650px;
-    }
-
-    .search-section {
-        padding: 40px 32px;
-    }
-
-    .filters-section {
-        padding: 40px 32px;
-    }
-}
-
-/* Tablets (768px - 1024px) */
-@media (max-width: 1024px) {
-    .hero-section {
-        padding: 50px 20px 30px;
-        min-height: 60vh;
-    }
-
-    .car-showcase {
-        padding: 10px 20px 30px;
-    }
-}
-
-/* Tablets Portrait (768px - 991px) */
-@media (max-width: 991px) {
-    .hero-buttons {
-        gap: 12px;
-    }
-
-    .btn-primary,
-    .btn-secondary {
-        padding: 14px 28px;
-        font-size: 15px;
-    }
-
-    .filter-secondary {
-        grid-template-columns: 1fr;
-        max-width: 500px;
-    }
-}
-
-/* Mobile Landscape & Small Tablets (640px - 767px) */
-@media (max-width: 767px) {
-    .hero-section {
-        padding: 40px 20px 30px;
-        min-height: 55vh;
-    }
-
-    .hero-watermark {
-        display: none;
-    }
-
-    .hero-content h1 {
-        margin-bottom: 16px;
-    }
-
-    .hero-description {
-        margin-bottom: 24px;
-    }
-
-    .search-section,
-    .filters-section {
-        padding: 35px 20px;
-    }
-
-    .car-showcase {
-        padding: 10px 20px 30px;
-        margin-top: -10px;
-    }
-
-    .section-title {
-        margin-bottom: 24px;
-    }
-
-    .filter-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .filter-btn {
-        padding: 12px 10px;
-        font-size: 13px;
-        min-height: 46px;
-    }
-
-    .filter-category {
-        margin-bottom: 32px;
-    }
-
-    .filter-secondary {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Mobile Portrait (480px - 639px) */
-@media (max-width: 639px) {
-    .hero-section {
-        padding: 35px 16px 25px;
-    }
-
-    .hero-buttons {
-        flex-direction: column;
-        gap: 12px;
-        width: 100%;
-        max-width: 320px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .btn-primary,
-    .btn-secondary {
-        width: 100%;
-        padding: 14px 24px;
-    }
-
-    .car-showcase {
-        padding: 10px 16px 25px;
-    }
-
-    .search-section,
-    .filters-section {
-        padding: 30px 16px;
-    }
-
-    .search-form {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .search-button {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .filter-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .filter-secondary {
-        gap: 16px;
-    }
-}
-
-/* Small Mobile (320px - 479px) */
-@media (max-width: 479px) {
-    .hero-section {
-        padding: 30px 12px 20px;
-        min-height: 55vh;
-    }
-
-    .hero-watermark {
-        display: none;
-    }
-
-    .hero-content h1 {
-        margin-bottom: 14px;
-    }
-
-    .hero-subtitle {
-        margin-bottom: 8px;
-    }
-
-    .hero-description {
-        margin-bottom: 20px;
-    }
-
-    .hero-buttons {
-        gap: 10px;
-        max-width: 280px;
-    }
-
-    .btn-primary,
-    .btn-secondary {
-        padding: 12px 20px;
-        font-size: 14px;
-    }
-
-    .search-section,
-    .filters-section {
-        padding: 28px 12px;
-    }
-
-    .car-showcase {
-        padding: 10px 12px 25px;
-        margin-top: -5px;
-    }
-
-    .section-title {
-        margin-bottom: 20px;
-    }
-
-    .filter-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .filter-btn {
-        padding: 12px 16px;
-        font-size: 14px;
-        min-height: 48px;
-    }
-
-    .filter-select {
-        padding: 12px 16px;
-        font-size: 14px;
-    }
-
-    .filter-label {
-        margin-bottom: 12px;
-    }
-
-    .btn-view-all {
-        padding: 14px 32px;
-        font-size: 15px;
-    }
-}
-
-/* Large Desktops (1440px+) */
-@media (min-width: 1440px) {
-    .hero-section {
-        padding: 70px 24px 50px;
-    }
-
-    .car-showcase {
-        padding: 20px 24px 50px;
-    }
-
-    .section-container {
-        max-width: 1400px;
-    }
-
-    .search-form {
-        max-width: 800px;
-    }
-
-    .filter-grid {
-        max-width: 1200px;
-    }
-}
-
-/* Extra Large Screens (1920px+) */
-@media (min-width: 1920px) {
-    .section-container {
-        max-width: 1600px;
-    }
-
-    .hero-content {
-        max-width: 1100px;
-    }
-
-    .hero-section {
-        padding: 80px 24px 60px;
-    }
-
-    .car-showcase {
-        padding: 30px 24px 60px;
-    }
+@media (max-width: 400px) {
+  .hm-price-grid { grid-template-columns: 1fr; }
 }
 </style>
+
 @endsection

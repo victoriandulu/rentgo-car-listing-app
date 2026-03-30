@@ -116,7 +116,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn primary"><i class="fas fa-save"></i> Save Changes</button>
+            <button type="submit" class="btn secondary"><i class="fas fa-save"></i> Save Changes</button>
             <a href="{{ url()->previous() }}" class="btn secondary"><i class="fas fa-arrow-left"></i> Cancel</a>
         </div>
     </form>

@@ -1,242 +1,60 @@
 @extends('layouts.dashboard')
 
 @section('dashboard-content')
-<style>
-/* Container */
-.my-cars-container {
-    width: 100%;
-    max-width: 1600px;
-    margin: 40px auto 60px auto;
-    padding: 0 16px; /* smaller padding on mobile */
-}
 
-/* Header */
-.my-cars-header {
-    margin-bottom: 32px;
-}
-.my-cars-header h2 {
-    font-size: 2.2rem;
-    margin: 0;
-    color: #1f2937;
-    font-weight: 700;
-    text-align: center;
-}
+<div class="ml-wrap">
 
-/* Grid layout */
-.my-cars-grid {
-    display: grid;
-    gap: 24px;
-    grid-template-columns: 1fr; /* full width on mobile */
-}
-@media (min-width: 640px) {
-    .my-cars-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 28px;
-    }
-}
-@media (min-width: 1024px) {
-    .my-cars-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 32px;
-    }
-}
-
-/* Card styles */
-.my-car-card {
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #e5e7eb;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.my-car-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
-}
-
-/* Image */
-.my-car-image-wrapper {
-    width: 100%;
-    padding-top: 56.25%; /* 16:9 aspect ratio */
-    position: relative;
-    background: #f9fafb;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.my-car-image-wrapper img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: translate(-50%, -50%);
-}
-.my-car-name-label {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    background: rgba(0,0,0,0.6);
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-/* Card details */
-.my-car-details {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex-grow: 1;
-}
-.my-car-top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.my-car-badge {
-    background: #facc15;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    color: #1f2937;
-    font-weight: 600;
-}
-.my-car-price {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #ef4444;
-}
-.my-car-details h3 {
-    margin: 4px 0;
-    font-size: 1.2rem;
-    color: #1f2937;
-    font-weight: 600;
-}
-.my-car-details p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: #4b5563;
-}
-.my-car-dealer {
-    color: #ef4444;
-    font-weight: 500;
-}
-
-/* Actions */
-.my-car-actions {
-    margin-top: auto;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
-.my-car-actions button {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-.my-car-actions button.edit {
-    background: #3b82f6;
-    color: #fff;
-}
-.my-car-actions button.edit:hover {
-    background: #1d4ed8;
-}
-.my-car-actions button.delete {
-    background: #ef4444;
-    color: #fff;
-}
-.my-car-actions button.delete:hover {
-    background: #b91c1c;
-}
-
-/* Success message */
-.my-cars-success {
-    margin-bottom: 24px;
-    padding: 16px;
-    background: #10b981;
-    color: white;
-    border-radius: 8px;
-    font-weight: 500;
-    text-align: center;
-}
-
-/* Empty state */
-.my-cars-empty {
-    padding: 60px 20px;
-    text-align: center;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-}
-.my-cars-empty p {
-    font-size: 1.05rem;
-    color: #6b7280;
-}
-.my-cars-empty a {
-    color: #ef4444;
-    font-weight: 600;
-    text-decoration: none;
-}
-.my-cars-empty a:hover {
-    text-decoration: underline;
-}
-</style>
-
-<div class="my-cars-container">
-    <div class="my-cars-header">
-        <h2>📋 My Listed Cars</h2>
+    {{-- Page Header --}}
+    <div class="ml-hero">
+        <div class="ml-hero-inner">
+            <div class="ml-trust-badge">
+                <span class="ml-dot"></span> YOUR LISTINGS
+            </div>
+            <h1 class="ml-headline">My Listed <em>Cars.</em></h1>
+            <p class="ml-sub">Manage your listings, track performance, and reach verified buyers.</p>
+        </div>
+        <a href="{{ route('cars.create') }}" class="ml-btn-new">+ List a New Car</a>
     </div>
 
     @if(session('success'))
-        <div class="my-cars-success">
-            {{ session('success') }}
-        </div>
+        <div class="ml-success">{{ session('success') }}</div>
     @endif
 
     @if($cars->isEmpty())
-        <div class="my-cars-empty">
-            <p>
-                You haven't listed any cars yet.
-                <a href="{{ route('cars.create') }}">List your first car</a>.
-            </p>
+        <div class="ml-empty">
+            <div class="ml-empty-icon">🚗</div>
+            <h3>No cars listed yet</h3>
+            <p>You haven't listed any cars yet. <a href="{{ route('cars.create') }}">List your first car</a> and start reaching verified buyers today.</p>
         </div>
     @else
-        <div class="my-cars-grid">
+        <div class="ml-grid">
             @foreach($cars as $car)
-                <div class="my-car-card">
-                    <div class="my-car-image-wrapper">
-                        <img src="{{ $car->image ? asset('storage/' . $car->image) : 'https://placehold.co/600x400?text=Car' }}" alt="{{ $car->name }}">
-                        <span class="my-car-name-label">{{ $car->name }}</span>
+                <div class="ml-card">
+                    <div class="ml-img-wrap">
+                        <img
+                            src="{{ $car->image ? asset('storage/' . $car->image) : 'https://placehold.co/600x400?text=Car' }}"
+                            alt="{{ $car->name }}"
+                        >
+                        <span class="ml-car-name">{{ $car->name }}</span>
+                        <span class="ml-avail-badge {{ ($car->availability ?? '') === 'Available' ? 'available' : 'unavailable' }}">
+                            {{ $car->availability ?? 'N/A' }}
+                        </span>
                     </div>
-                    <div class="my-car-details">
-                        <div class="my-car-top-row">
-                            <span class="my-car-badge">{{ $car->year ?? 'N/A' }}</span>
-                            <span class="my-car-price">Ksh {{ number_format($car->price ?? 0, 2) }}</span>
+                    <div class="ml-details">
+                        <div class="ml-top-row">
+                            <span class="ml-year-badge">{{ $car->year ?? 'N/A' }}</span>
+                            <span class="ml-price">Ksh {{ number_format($car->price ?? 0) }}</span>
                         </div>
-                        <h3>{{ $car->name }}</h3>
-                        <p>{{ $car->engine_size ?? 'N/A' }}, {{ $car->transmission ?? 'N/A' }}</p>
-                        <p class="my-car-dealer">{{ $car->source ?? 'Dealer Unknown' }}</p>
-                        <div class="my-car-actions">
-                            <a href="{{ route('cars.edit', $car) }}">
-                                <button type="button" class="edit">Edit</button>
-                            </a>
-                            <form action="{{ route('cars.destroy', $car) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this car?');">
+                        <h3 class="ml-name">{{ $car->name }}</h3>
+                        <p class="ml-spec">{{ $car->engine_size ?? 'N/A' }} cc &nbsp;·&nbsp; {{ $car->transmission ?? 'N/A' }}</p>
+                        <p class="ml-dealer">{{ $car->source ?? 'Dealer Unknown' }}</p>
+                        <div class="ml-actions">
+                            <a href="{{ route('cars.edit', $car) }}" class="ml-btn ml-btn-edit">Edit</a>
+                            <form action="{{ route('cars.destroy', $car) }}" method="POST"
+                                  onsubmit="return confirm('Are you sure you want to delete this car?');" style="display:contents">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="delete">Delete</button>
+                                <button type="submit" class="ml-btn ml-btn-delete">Delete</button>
                             </form>
                         </div>
                     </div>
@@ -245,4 +63,264 @@
         </div>
     @endif
 </div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.ml-wrap {
+    min-height: 100vh;
+    background: #fdf6ee;
+    font-family: 'DM Sans', sans-serif;
+    color: #1f1a14;
+    padding: 48px 40px 80px;
+}
+
+@media (max-width: 640px) {
+    .ml-wrap { padding: 32px 20px 60px; }
+}
+
+/* ── Page Hero ── */
+.ml-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #e8ddd0;
+}
+
+.ml-trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid #e8ddd0;
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #6b5c4e;
+    margin-bottom: 14px;
+    width: fit-content;
+}
+
+.ml-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ef4444;
+    display: inline-block;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.3); }
+}
+
+.ml-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: #1f1a14;
+    line-height: 1.15;
+    margin-bottom: 8px;
+}
+.ml-headline em { font-style: italic; color: #ef4444; }
+
+.ml-sub { font-size: 0.95rem; color: #9c8878; }
+
+.ml-btn-new {
+    display: inline-flex;
+    align-items: center;
+    padding: 13px 24px;
+    background: #ef4444;
+    color: white;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+}
+.ml-btn-new:hover { background: #dc2626; transform: translateY(-1px); }
+
+/* ── Success ── */
+.ml-success {
+    background: #ecfdf5;
+    border: 1.5px solid #6ee7b7;
+    color: #065f46;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-weight: 500;
+    margin-bottom: 28px;
+    font-size: 0.95rem;
+}
+
+/* ── Empty State ── */
+.ml-empty {
+    text-align: center;
+    background: white;
+    border: 1px solid #e8ddd0;
+    border-radius: 16px;
+    padding: 80px 40px;
+}
+.ml-empty-icon { font-size: 3rem; margin-bottom: 16px; }
+.ml-empty h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 10px; }
+.ml-empty p { font-size: 0.95rem; color: #9c8878; }
+.ml-empty a { color: #ef4444; font-weight: 600; text-decoration: none; }
+.ml-empty a:hover { text-decoration: underline; }
+
+/* ── Grid ── */
+.ml-grid {
+    display: grid;
+    gap: 28px;
+    grid-template-columns: repeat(1, 1fr);
+}
+@media (min-width: 640px)  { .ml-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .ml-grid { grid-template-columns: repeat(3, 1fr); } }
+
+/* ── Card ── */
+.ml-card {
+    background: white;
+    border: 1px solid #e8ddd0;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.ml-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(31,26,20,0.1); }
+
+/* ── Card Image ── */
+.ml-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: #fdf6ee;
+    overflow: hidden;
+}
+.ml-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s;
+}
+.ml-card:hover .ml-img-wrap img { transform: scale(1.04); }
+
+.ml-car-name {
+    position: absolute;
+    bottom: 12px; left: 12px;
+    background: rgba(31,26,20,0.78);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    backdrop-filter: blur(6px);
+}
+
+.ml-avail-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+.ml-avail-badge.available { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
+.ml-avail-badge.unavailable { background: #fff1f1; color: #991b1b; border: 1px solid #fca5a5; }
+
+/* ── Card Details ── */
+.ml-details {
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.ml-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ml-year-badge {
+    background: #fdf6ee;
+    border: 1px solid #e8ddd0;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #4a3f35;
+}
+
+.ml-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #ef4444;
+}
+
+.ml-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f1a14;
+    margin-top: 2px;
+}
+
+.ml-spec {
+    font-size: 0.88rem;
+    color: #6b5c4e;
+}
+
+.ml-dealer {
+    font-size: 0.88rem;
+    color: #ef4444;
+    font-weight: 500;
+}
+
+/* ── Actions ── */
+.ml-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 14px;
+}
+
+.ml-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.2s, transform 0.15s;
+    display: inline-block;
+}
+.ml-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.ml-btn-edit {
+    background: #1f1a14;
+    color: white;
+}
+
+.ml-btn-delete {
+    background: #ef4444;
+    color: white;
+    width: 100%;
+}
+</style>
+
 @endsection

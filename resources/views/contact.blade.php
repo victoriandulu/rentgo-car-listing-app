@@ -1,609 +1,311 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="contact-us-container">
-    <div class="contact-header">
-        <div class="header-content">
-            <h1>Contact Us</h1>
-            <div class="header-underline"></div>
-            <p>We're here to help with all your luxury car rental needs</p>
+
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<div class="ct-wrap">
+
+  {{-- Hero --}}
+  <section class="ct-hero">
+    <div class="ct-hero__deco"></div>
+    <div class="ct-hero__inner">
+      <span class="ct-tag">We'd love to hear from you</span>
+      <h1 class="ct-hero__title">Get in <em>touch.</em></h1>
+      <p class="ct-hero__sub">We're here to help with all your luxury car rental needs — reach out any time.</p>
+    </div>
+  </section>
+
+  {{-- Main Content --}}
+  <div class="ct-body">
+
+    {{-- Info Cards --}}
+    <aside class="ct-info">
+      <div class="ct-info-card">
+        <div class="ct-info-card__icon">📞</div>
+        <div>
+          <h3 class="ct-info-card__title">Call Us</h3>
+          <p class="ct-info-card__val">+254-717-475-336</p>
+          <p class="ct-info-card__sub">Mon–Fri: 9AM – 6PM</p>
         </div>
+      </div>
+      <div class="ct-info-card">
+        <div class="ct-info-card__icon">✉️</div>
+        <div>
+          <h3 class="ct-info-card__title">Email Us</h3>
+          <p class="ct-info-card__val">rentgo@gmail.com</p>
+          <p class="ct-info-card__sub">We reply within 24 hours</p>
+        </div>
+      </div>
+      <div class="ct-info-card">
+        <div class="ct-info-card__icon">📍</div>
+        <div>
+          <h3 class="ct-info-card__title">Visit Us</h3>
+          <p class="ct-info-card__val">Kenya Railways Station</p>
+          <p class="ct-info-card__sub">Nairobi, Kenya</p>
+        </div>
+      </div>
+    </aside>
+
+    {{-- Form --}}
+    <div class="ct-form-wrap">
+      @if(session('success'))
+        <div class="ct-success">
+          <div class="ct-success__icon">✓</div>
+          <h2 class="ct-success__title">Message sent!</h2>
+          <p class="ct-success__body">{{ session('success') }}</p>
+          <a href="{{ route('contact') }}" class="ct-btn ct-btn--outline">Send another message</a>
+        </div>
+      @else
+        <form class="ct-form" method="POST" action="{{ route('contact.submit') }}">
+          @csrf
+          <h2 class="ct-form__title">Send us a message</h2>
+          <p class="ct-form__sub">Fill in the form and we'll get back to you shortly.</p>
+
+          <div class="ct-field">
+            <label class="ct-label" for="name">Full Name <span class="ct-req">*</span></label>
+            <input class="ct-input @error('name') ct-input--err @enderror" type="text" name="name" id="name" value="{{ old('name') }}" placeholder="Enter your full name">
+            @error('name')<p class="ct-err">{{ $message }}</p>@enderror
+          </div>
+
+          <div class="ct-row">
+            <div class="ct-field">
+              <label class="ct-label" for="email">Email Address <span class="ct-req">*</span></label>
+              <input class="ct-input @error('email') ct-input--err @enderror" type="email" name="email" id="email" value="{{ old('email') }}" placeholder="your@email.com">
+              @error('email')<p class="ct-err">{{ $message }}</p>@enderror
+            </div>
+            <div class="ct-field">
+              <label class="ct-label" for="phone">Phone <span class="ct-opt">(optional)</span></label>
+              <input class="ct-input @error('phone') ct-input--err @enderror" type="tel" name="phone" id="phone" value="{{ old('phone') }}" placeholder="+254 XXX XXX XXX">
+              @error('phone')<p class="ct-err">{{ $message }}</p>@enderror
+            </div>
+          </div>
+
+          <div class="ct-field">
+            <label class="ct-label" for="subject">Subject</label>
+            <select class="ct-input ct-select" name="subject" id="subject">
+              <option value="General Inquiry"   {{ old('subject')=='General Inquiry'   ? 'selected' : '' }}>General Inquiry</option>
+              <option value="Car Rental"        {{ old('subject')=='Car Rental'        ? 'selected' : '' }}>Car Rental</option>
+              <option value="Luxury Fleet"      {{ old('subject')=='Luxury Fleet'      ? 'selected' : '' }}>Luxury Fleet</option>
+              <option value="Corporate Rentals" {{ old('subject')=='Corporate Rentals' ? 'selected' : '' }}>Corporate Rentals</option>
+              <option value="Technical Support" {{ old('subject')=='Technical Support' ? 'selected' : '' }}>Technical Support</option>
+              <option value="Feedback"          {{ old('subject')=='Feedback'          ? 'selected' : '' }}>Feedback</option>
+            </select>
+          </div>
+
+          <div class="ct-field">
+            <label class="ct-label" for="message">Message <span class="ct-req">*</span></label>
+            <textarea class="ct-input ct-textarea @error('message') ct-input--err @enderror" name="message" id="message" rows="5" placeholder="Tell us how we can help you…">{{ old('message') }}</textarea>
+            @error('message')<p class="ct-err">{{ $message }}</p>@enderror
+          </div>
+
+          <button type="submit" class="ct-btn ct-btn--primary">Send Message →</button>
+        </form>
+      @endif
     </div>
 
-    <div class="contact-content">
-        <!-- Contact Info -->
-        <div class="contact-info">
-            <div class="info-card">
-                <div class="info-icon"><i class="phone-icon"></i></div>
-                <h3>Call Us</h3>
-                <p>+254-717-475-336</p>
-                <p class="hours">Mon-Fri: 9AM-6PM</p>
-            </div>
+  </div>
 
-            <div class="info-card">
-                <div class="info-icon"><i class="email-icon"></i></div>
-                <h3>Email Us</h3>
-                <p>rentgo@gmail.com</p>
-                <p class="hours">We respond within 24 hours</p>
-            </div>
-
-            <div class="info-card">
-                <div class="info-icon"><i class="location-icon"></i></div>
-                <h3>Visit Us</h3>
-                <p>Kenya Railways Station</p>
-                <p class="hours">Nairobi, Kenya</p>
-            </div>
-        </div>
-
-        <!-- Contact Form -->
-        <div class="contact-form-container">
-            @if(session('success'))
-                <div class="success-message">
-                    <h2>Thank You!</h2>
-                    <p>{{ session('success') }}</p>
-                    <a href="{{ route('contact') }}" class="send-new-message">Send Another Message</a>
-                </div>
-            @else
-                <form class="contact-form" method="POST" action="{{ route('contact.submit') }}">
-                    @csrf
-                    <h2>Send us a message</h2>
-
-                    <div class="form-group">
-                        <label for="name">Full Name <span class="required">*</span></label>
-                        <input type="text" name="name" id="name" value="{{ old('name') }}" placeholder="Enter your full name" class="@error('name') error @enderror">
-                        @error('name') <div class="error-message">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="email">Email Address <span class="required">*</span></label>
-                            <input type="email" name="email" id="email" value="{{ old('email') }}" placeholder="your.email@example.com" class="@error('email') error @enderror">
-                            @error('email') <div class="error-message">{{ $message }}</div> @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label for="phone">Phone Number (Optional)</label>
-                            <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" placeholder="+254 XXX XXX XXX" class="@error('phone') error @enderror">
-                            @error('phone') <div class="error-message">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="subject">Subject</label>
-                        <select name="subject" id="subject">
-                            <option value="General Inquiry" {{ old('subject') == 'General Inquiry' ? 'selected' : '' }}>General Inquiry</option>
-                            <option value="Car Rental" {{ old('subject') == 'Car Rental' ? 'selected' : '' }}>Car Rental</option>
-                            <option value="Luxury Fleet" {{ old('subject') == 'Luxury Fleet' ? 'selected' : '' }}>Luxury Fleet</option>
-                            <option value="Corporate Rentals" {{ old('subject') == 'Corporate Rentals' ? 'selected' : '' }}>Corporate Rentals</option>
-                            <option value="Technical Support" {{ old('subject') == 'Technical Support' ? 'selected' : '' }}>Technical Support</option>
-                            <option value="Feedback" {{ old('subject') == 'Feedback' ? 'selected' : '' }}>Feedback</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="message">Message <span class="required">*</span></label>
-                        <textarea name="message" id="message" rows="5" placeholder="Tell us how we can help you..." class="@error('message') error @enderror">{{ old('message') }}</textarea>
-                        @error('message') <div class="error-message">{{ $message }}</div> @enderror
-                    </div>
-
-                    <button type="submit" class="submit-button">Send Message</button>
-                </form>
-            @endif
-        </div>
+  {{-- FAQ Strip --}}
+  <section class="ct-faq">
+    <div class="ct-faq__head">
+      <span class="ct-tag ct-tag--coral">Quick Answers</span>
+      <h2 class="ct-section-title">Common <em>questions.</em></h2>
     </div>
-
-    <!-- FAQ Section -->
-    <div class="faq-section">
-        <div class="faq-header">
-            <h2>Frequently Asked Questions</h2>
-            <p class="faq-subtitle">Quick answers to common questions</p>
-            <div class="faq-underline"></div>
-        </div>
-
-        <div class="faq-grid">
-            <div class="faq-item">
-                <h3>How do I book a luxury car?</h3>
-                <p>Simply browse our premium fleet, select your preferred vehicle, choose your rental dates, and complete the booking process online. It's that easy!</p>
-            </div>
-            <div class="faq-item">
-                <h3>What documents do I need?</h3>
-                <p>You'll need a valid driver's license, passport or national ID, and a credit card for security deposit. International visitors may need an International Driving Permit.</p>
-            </div>
-            <div class="faq-item">
-                <h3>Do you offer delivery service?</h3>
-                <p>Yes! We provide complimentary delivery and pickup within Nairobi CBD. Extended delivery areas are available for an additional fee.</p>
-            </div>
-        </div>
+    <div class="ct-faq__grid">
+      <div class="ct-faq-card">
+        <h3 class="ct-faq-card__q">How do I book a luxury car?</h3>
+        <p class="ct-faq-card__a">Browse our premium fleet, select your vehicle, choose your rental dates, and complete the booking online. Simple and fast.</p>
+      </div>
+      <div class="ct-faq-card">
+        <h3 class="ct-faq-card__q">What documents do I need?</h3>
+        <p class="ct-faq-card__a">A valid driver's licence, passport or national ID, and a credit card for the security deposit. International visitors may also need an IDP.</p>
+      </div>
+      <div class="ct-faq-card">
+        <h3 class="ct-faq-card__q">Do you offer delivery?</h3>
+        <p class="ct-faq-card__a">Yes — complimentary delivery and pickup within Nairobi CBD. Extended delivery areas are available for an additional fee.</p>
+      </div>
     </div>
+  </section>
+
 </div>
 
-<!-- Leave empty for your CSS -->
 <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.contact-us-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: #333;
-  background: #fff;
-  overflow-x: hidden;
+:root {
+  --cream:   #fdf8f3;
+  --peach:   #f5ede3;
+  --peach-2: #eeddd0;
+  --coral:   #d4501a;
+  --coral-2: #e8692e;
+  --warm-dk: #3d2b1f;
+  --warm-md: #7a5c4a;
+  --warm-lt: #b89b8a;
+  --white:   #ffffff;
+  --radius:  16px;
+  --font-d:  'Fraunces', Georgia, serif;
+  --font-b:  'Plus Jakarta Sans', system-ui, sans-serif;
+  --max:     1100px;
+  --pad:     clamp(24px, 6vw, 80px);
+  --section: clamp(60px, 8vw, 100px);
 }
 
-/* Header Section */
-.contact-header {
-  text-align: center;
-  padding: 80px 0 60px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  margin: 0 -20px 60px -20px;
-  position: relative;
+body { background: var(--cream); }
+.ct-wrap { font-family: var(--font-b); color: var(--warm-dk); background: var(--cream); overflow-x: hidden; }
+
+/* ── Shared ── */
+.ct-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--warm-md); background: var(--peach-2);
+  padding: 7px 16px; border-radius: 50px; margin-bottom: 20px;
+}
+.ct-tag::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--coral); display:inline-block; }
+.ct-tag--coral  { color: var(--coral); background: rgba(212,80,26,0.1); }
+
+.ct-section-title {
+  font-family: var(--font-d); font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400; line-height: 1.2; color: var(--warm-dk); margin-bottom: 16px;
+}
+.ct-section-title em { font-style: italic; color: var(--coral); }
+
+/* ── Hero ── */
+.ct-hero {
+  position: relative; background: var(--peach);
+  padding: clamp(70px, 10vw, 120px) var(--pad) clamp(60px, 8vw, 100px);
   overflow: hidden;
 }
-
-.contact-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(255, 0, 0, 0.05), rgba(255, 215, 0, 0.05));
-  z-index: 1;
+.ct-hero__deco {
+  position: absolute; width: 480px; height: 480px; border-radius: 50%;
+  border: 1.5px solid var(--peach-2); top: -160px; right: -120px; pointer-events: none;
+}
+.ct-hero__deco::after {
+  content:''; position:absolute; width:280px; height:280px; border-radius:50%;
+  border: 1.5px solid var(--peach-2); top:110px; left:60px;
+}
+.ct-hero__inner { position:relative; z-index:1; max-width: var(--max); margin: 0 auto; }
+.ct-hero__title {
+  font-family: var(--font-d); font-size: clamp(2.8rem, 7vw, 5rem);
+  font-weight: 400; line-height: 1.1; color: var(--warm-dk); margin-bottom: 18px;
+}
+.ct-hero__title em { font-style: italic; color: var(--coral); }
+.ct-hero__sub {
+  font-size: clamp(1rem, 2vw, 1.1rem); color: var(--warm-md);
+  line-height: 1.75; max-width: 480px; font-weight: 300;
 }
 
-.header-content {
-  position: relative;
-  z-index: 2;
+/* ── Body layout ── */
+.ct-body {
+  display: grid; grid-template-columns: 300px 1fr;
+  gap: clamp(32px, 5vw, 64px);
+  max-width: var(--max); margin: 0 auto;
+  padding: var(--section) var(--pad); align-items: start;
 }
 
-.contact-header h1 {
-  font-size: 4rem;
-  font-weight: 800;
-  margin-bottom: 20px;
-  color: #333;
-  background: linear-gradient(45deg, #FF0000, #FFD700);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* ── Info cards ── */
+.ct-info { display: flex; flex-direction: column; gap: 14px; }
+.ct-info-card {
+  background: var(--white); border: 1px solid var(--peach-2);
+  border-radius: var(--radius); padding: 24px 22px;
+  display: flex; align-items: flex-start; gap: 16px;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
+.ct-info-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.07); transform: translateY(-3px); }
+.ct-info-card__icon { font-size: 1.6rem; flex-shrink: 0; margin-top: 2px; }
+.ct-info-card__title { font-family: var(--font-d); font-size: 1.15rem; font-weight: 400; color: var(--warm-dk); margin-bottom: 4px; }
+.ct-info-card__val   { font-size: 0.95rem; color: var(--warm-dk); font-weight: 500; margin-bottom: 2px; }
+.ct-info-card__sub   { font-size: 0.8rem; color: var(--warm-lt); letter-spacing: 0.04em; }
 
-.contact-header p {
-  font-size: 1.3rem;
-  color: #666;
-  max-width: 600px;
-  margin: 0 auto;
-  font-weight: 300;
+/* ── Form card ── */
+.ct-form-wrap {
+  background: var(--white); border: 1px solid var(--peach-2);
+  border-radius: 20px; padding: clamp(32px, 5vw, 52px);
 }
+.ct-form__title { font-family: var(--font-d); font-size: 1.9rem; font-weight: 400; color: var(--warm-dk); margin-bottom: 6px; }
+.ct-form__sub   { font-size: 0.92rem; color: var(--warm-md); font-weight: 300; margin-bottom: 32px; }
 
-.header-underline {
-  width: 100px;
-  height: 5px;
-  background: linear-gradient(90deg, #FF0000, #FFD700);
-  margin: 20px auto 0;
-  border-radius: 3px;
-  box-shadow: 0 2px 10px rgba(255, 0, 0, 0.3);
+.ct-field { margin-bottom: 22px; }
+.ct-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px; }
+.ct-row .ct-field { margin-bottom: 0; }
+
+.ct-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--warm-dk); margin-bottom: 8px; }
+.ct-req   { color: var(--coral); }
+.ct-opt   { color: var(--warm-lt); font-weight: 400; }
+
+.ct-input {
+  width: 100%; padding: 13px 16px;
+  border: 1.5px solid var(--peach-2); border-radius: 12px;
+  font-size: 0.95rem; font-family: var(--font-b);
+  background: var(--cream); color: var(--warm-dk);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  appearance: none;
 }
-
-/* Contact Content Layout */
-.contact-content {
-  display: flex;
-  gap: 50px;
-  margin-bottom: 100px;
-  align-items: stretch;
+.ct-input:focus {
+  outline: none; border-color: var(--coral);
+  background: var(--white); box-shadow: 0 0 0 3px rgba(212,80,26,0.12);
 }
+.ct-input::placeholder { color: var(--warm-lt); }
+.ct-input--err { border-color: var(--coral); background: rgba(212,80,26,0.04); }
+.ct-select { cursor: pointer; }
+.ct-textarea { resize: vertical; min-height: 130px; }
+.ct-err { font-size: 0.82rem; color: var(--coral); margin-top: 6px; font-weight: 500; }
 
-/* Contact Info Cards */
-.contact-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
+/* ── Buttons ── */
+.ct-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-b); font-size: 0.92rem; font-weight: 600;
+  padding: 14px 30px; border-radius: 50px; cursor: pointer;
+  text-decoration: none; border: none; transition: all 0.2s; width: 100%;
 }
-
-.info-card {
-  background: white;
-  border-radius: 20px;
-  padding: 35px 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 3px solid transparent;
-  position: relative;
-  overflow: hidden;
+.ct-btn--primary {
+  background: var(--coral); color: var(--white);
+  box-shadow: 0 4px 16px rgba(212,80,26,0.25);
 }
-
-.info-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #FF0000, #FFD700);
+.ct-btn--primary:hover { background: var(--coral-2); box-shadow: 0 8px 24px rgba(212,80,26,0.3); transform: translateY(-2px); }
+.ct-btn--outline {
+  background: transparent; color: var(--coral);
+  border: 1.5px solid var(--coral); margin-top: 16px; width: auto;
 }
+.ct-btn--outline:hover { background: rgba(212,80,26,0.06); }
 
-.info-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  border-color: #FFD700;
+/* ── Success ── */
+.ct-success { text-align: center; padding: 48px 20px; }
+.ct-success__icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--coral); color: var(--white);
+  font-size: 2rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px; box-shadow: 0 8px 24px rgba(212,80,26,0.3);
 }
+.ct-success__title { font-family: var(--font-d); font-size: 2rem; color: var(--warm-dk); margin-bottom: 10px; }
+.ct-success__body  { font-size: 1rem; color: var(--warm-md); font-weight: 300; }
 
-.info-icon {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #FF0000, #FFD700);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  box-shadow: 0 10px 25px rgba(255, 0, 0, 0.3);
+/* ── FAQ strip ── */
+.ct-faq {
+  background: var(--peach); border-top: 1px solid var(--peach-2);
+  padding: var(--section) var(--pad);
 }
+.ct-faq__head { max-width: var(--max); margin: 0 auto 48px; }
+.ct-faq__grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; max-width: var(--max); margin: 0 auto; }
 
-.info-icon i {
-  font-size: 1.8rem;
-  color: white;
+.ct-faq-card {
+  background: var(--white); border: 1px solid var(--peach-2);
+  border-radius: var(--radius); padding: 36px 28px;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
+.ct-faq-card:hover { box-shadow: 0 10px 28px rgba(0,0,0,0.07); transform: translateY(-4px); }
+.ct-faq-card__q { font-family: var(--font-d); font-size: 1.2rem; font-weight: 400; color: var(--warm-dk); margin-bottom: 12px; }
+.ct-faq-card__a { font-size: 0.93rem; line-height: 1.8; color: var(--warm-md); font-weight: 300; }
 
-.info-card h3 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin-bottom: 15px;
-  color: #333;
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .ct-body { grid-template-columns: 1fr; }
+  .ct-faq__grid { grid-template-columns: 1fr; }
 }
-
-.info-card p {
-  margin: 8px 0;
-  color: #555;
-  font-size: 1.1rem;
+@media (max-width: 540px) {
+  .ct-row { grid-template-columns: 1fr; }
 }
-
-.info-card .hours {
-  font-size: 1rem;
-  color: #777;
-  font-style: italic;
-}
-
-.phone-icon::before { content: "📞"; font-size: 1.5rem; }
-.email-icon::before { content: "✉️"; font-size: 1.5rem; }
-.location-icon::before { content: "📍"; font-size: 1.5rem; }
-
-/* Contact Form */
-.contact-form-container {
-  flex: 1.5;
-  background: white;
-  border-radius: 25px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-  padding: 50px 40px;
-  position: relative;
-  overflow: hidden;
-}
-
-.contact-form-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #FF0000, #FFD700);
-}
-
-.contact-form h2 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 35px;
-  color: #333;
-  text-align: center;
-}
-
-.form-group {
-  margin-bottom: 25px;
-}
-
-.form-row {
-  display: flex;
-  gap: 25px;
-  margin-bottom: 25px;
-}
-
-.form-row .form-group {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: 600;
-  color: #333;
-  font-size: 1rem;
-}
-
-.required {
-  color: #FF0000;
-  font-weight: 700;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 15px 20px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  font-family: inherit;
-  background: #fafafa;
-  box-sizing: border-box;
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: #FFD700;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2);
-  transform: translateY(-2px);
-}
-
-input.error, select.error, textarea.error {
-  border-color: #FF0000;
-  background: rgba(255, 0, 0, 0.05);
-}
-
-.error-message {
-  color: #FF0000;
-  font-size: 0.9rem;
-  margin-top: 8px;
-  font-weight: 500;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 130px;
-  font-family: inherit;
-}
-
-.submit-button {
-  background: linear-gradient(135deg, #FF0000, #FFD700);
-  color: white;
-  border: none;
-  border-radius: 50px;
-  padding: 18px 40px;
-  font-size: 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  box-shadow: 0 10px 25px rgba(255, 0, 0, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.submit-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s ease;
-}
-
-.submit-button:hover::before {
-  left: 100%;
-}
-
-.submit-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 35px rgba(255, 0, 0, 0.4);
-}
-
-/* Success Message */
-.success-message {
-  text-align: center;
-  padding: 60px 40px;
-}
-
-.success-icon {
-  width: 100px;
-  height: 100px;
-  background: linear-gradient(135deg, #FF0000, #FFD700);
-  border-radius: 50%;
-  margin: 0 auto 30px;
-  position: relative;
-  box-shadow: 0 15px 30px rgba(255, 0, 0, 0.3);
-  animation: successPulse 2s ease-in-out infinite;
-}
-
-@keyframes successPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-.success-icon::before {
-  content: "✓";
-  font-size: 3rem;
-  color: white;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-weight: bold;
-}
-
-.success-message h2 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  color: #333;
-  font-weight: 700;
-}
-
-.success-message p {
-  color: #666;
-  margin-bottom: 30px;
-  font-size: 1.2rem;
-}
-
-.send-new-message {
-  background: linear-gradient(135deg, #f8f9fa, #e2e8f0);
-  border: 2px solid #FFD700;
-  border-radius: 50px;
-  padding: 15px 30px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.send-new-message:hover {
-  background: linear-gradient(135deg, #FFD700, #FF0000);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(255, 215, 0, 0.3);
-}
-
-/* FAQ Section */
-.faq-section {
-  padding: 60px 0;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  margin: 0 -20px;
-  border-radius: 30px 30px 0 0;
-}
-
-.faq-header {
-  text-align: center;
-  margin-bottom: 50px;
-  padding: 0 20px;
-}
-
-.faq-section h2 {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  color: #333;
-  font-weight: 700;
-  background: linear-gradient(45deg, #FF0000, #FFD700);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.faq-subtitle {
-  font-size: 1.2rem;
-  color: #666;
-  margin-bottom: 20px;
-}
-
-.faq-underline {
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(90deg, #FF0000, #FFD700);
-  margin: 0 auto;
-  border-radius: 2px;
-}
-
-.faq-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 30px;
-  padding: 0 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.faq-item {
-  background: white;
-  border-radius: 20px;
-  padding: 35px 30px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  border: 3px solid transparent;
-  position: relative;
-  overflow: hidden;
-}
-
-.faq-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #FF0000, #FFD700);
-}
-
-.faq-item:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-  border-color: #FFD700;
-}
-
-.faq-item h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 15px;
-  color: #333;
-}
-
-.faq-item p {
-  color: #555;
-  line-height: 1.7;
-  font-size: 1.1rem;
-}
-
-/* Responsive Design */
-@media (max-width: 992px) {
-  .contact-content {
-    flex-direction: column;
-    gap: 40px;
-  }
-
-  .contact-header h1 {
-    font-size: 3rem;
-  }
-
-  .faq-section h2 {
-    font-size: 2.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .form-row {
-    flex-direction: column;
-    gap: 25px;
-  }
-
-  .contact-header h1 {
-    font-size: 2.5rem;
-  }
-
-  .contact-form-container {
-    padding: 40px 30px;
-  }
-
-  .faq-grid {
-    grid-template-columns: 1fr;
-    gap: 25px;
-  }
-}
-
-@media (max-width: 600px) {
-  .contact-header {
-    padding: 60px 0 40px;
-  }
-
-  .contact-header h1 {
-    font-size: 2.2rem;
-  }
-
-  .contact-form-container {
-    padding: 35px 25px;
-  }
-
-  .info-card, .faq-item {
-    padding: 25px 20px;
-  }
-}
-
 </style>
+
 @endsection
