@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('mileage')->nullable();
             $table->string('engine_size')->nullable();
             $table->string('fuel_type')->nullable();
-            $table->integer('horse_power')->nullable();
+            $table->string('horse_power')->nullable();
             $table->string('transmission')->nullable();
             $table->string('torque')->nullable();
             $table->string('aspiration')->nullable();
