@@ -99,7 +99,7 @@ class AuthController extends Controller
    public function handleGoogleCallback(Request $request)
 {
     try {
-        $googleUser = Socialite::driver('google')->user();
+        $googleUser = Socialite::driver('google')->stateless()->user();
 
         $user = \App\Models\User::updateOrCreate(
             ['email' => $googleUser->getEmail()],

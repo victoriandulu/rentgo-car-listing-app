@@ -492,25 +492,35 @@ body {
 .sc-alert-err { background: #FFF7F5; color: var(--rose); border: 1.5px solid rgba(244,91,56,0.22); }
 
 /* ══════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — MOBILE FIRST REORDER
+   On small screens: form comes FIRST,
+   marketing panel comes SECOND (below)
 ══════════════════════════════════════ */
 @media (max-width: 900px) {
     .sc-wrap {
         grid-template-columns: 1fr;
-    }
-    .sc-left {
-        padding: 40px 28px;
-        gap: 26px;
+        min-height: unset;       /* kill the 100vh forcing stretch */
+        align-items: unset;
+        height: auto;
     }
     .sc-right {
-        padding: 40px 28px 52px;
+        order: 1;
+        padding: 52px 28px 40px;
+        justify-content: flex-start;
+        min-height: unset;
+        height: auto;
+    }
+    .sc-left {
+        order: 2;
+        padding: 40px 28px;
+        gap: 26px;
     }
     .sc-divider-line { display: none; }
 }
 
 @media (max-width: 520px) {
+    .sc-right { padding: 52px 18px 36px; justify-content: flex-start; min-height: unset; }
     .sc-left  { padding: 30px 18px; gap: 22px; }
-    .sc-right { padding: 30px 18px 44px; }
     .sc-row   { grid-template-columns: 1fr; }
     .sc-stats { flex-wrap: wrap; }
 }
@@ -518,7 +528,7 @@ body {
 
 <div class="sc-wrap">
 
-    {{-- ════ LEFT ════ --}}
+    {{-- ════ LEFT — Marketing Panel ════ --}}
     <div class="sc-left">
         <div class="sc-blob-bl"></div>
 
@@ -585,7 +595,7 @@ body {
 
     </div>
 
-    {{-- ════ RIGHT ════ --}}
+    {{-- ════ RIGHT — Form Panel ════ --}}
     <div class="sc-right">
         <div class="sc-divider-line"></div>
 
@@ -621,8 +631,6 @@ body {
                 </svg>
                 <span id="googleText">Continue with Google</span>
             </a>
-
-
 
             {{-- ── SIGN UP FORM ── --}}
             <form class="sc-form {{ !session('login_tab') ? 'active' : '' }}"
