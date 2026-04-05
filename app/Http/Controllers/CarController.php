@@ -47,7 +47,7 @@ class CarController extends Controller
      */
     public function create()
     {
-        $origins = ['kenya', 'import'];
+        $origins  = ['kenya', 'import'];
         $carTypes = ['Sedan', 'SUV', 'Truck', 'Van', 'Coupe'];
 
         return view('cars.create', compact('origins', 'carTypes'));
@@ -75,11 +75,12 @@ class CarController extends Controller
             'source'        => 'nullable|string|max:255',
             'specification' => 'nullable|array',
             'running_cost'  => 'nullable|array',
-            'images.*'      => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+            'images.*'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'report'        => 'nullable|file|mimes:pdf|max:10240',
+            'video'         => 'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:51200',
         ]);
 
-        // Handle new images
+        // Handle images
         $imagePaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
@@ -88,12 +89,18 @@ class CarController extends Controller
         }
 
         // Handle report
-        $reportPath = $request->hasFile('report') ? $request->file('report')->store('reports', 'public') : null;
+        $reportPath = $request->hasFile('report')
+            ? $request->file('report')->store('reports', 'public')
+            : null;
 
-        // Set main image as the first uploaded image
+        // Handle video
+        $videoPath = $request->hasFile('video')
+            ? $request->file('video')->store('car-videos', 'public')
+            : null;
+
+        // First image is the cover
         $mainImage = $imagePaths[0] ?? null;
 
-        // Create car
         Car::create([
             'user_id'       => auth()->id(),
             'name'          => $validated['name'],
@@ -115,6 +122,7 @@ class CarController extends Controller
             'images'        => $imagePaths ?: null,
             'image'         => $mainImage,
             'report'        => $reportPath,
+            'video'         => $videoPath,
         ]);
 
         return redirect()->route('cars.my')->with('success', '🚀 Car listed successfully!');
@@ -126,8 +134,8 @@ class CarController extends Controller
     public function show(Car $car)
     {
         $specifications = $car->specification ?? [];
-        $runningCosts = $car->running_cost ?? [];
-        $images = $car->images ?? [];
+        $runningCosts   = $car->running_cost  ?? [];
+        $images         = $car->images        ?? [];
 
         return view('cars.show', compact('car', 'specifications', 'runningCosts', 'images'));
     }
@@ -139,43 +147,44 @@ class CarController extends Controller
     {
         $this->authorize('update', $car);
 
-        $origins = ['kenya', 'import'];
+        $origins  = ['kenya', 'import'];
         $carTypes = ['Sedan', 'SUV', 'Truck', 'Van', 'Coupe'];
 
         return view('cars.edit', compact('car', 'origins', 'carTypes'));
     }
 
     /**
-     * Update a car (handle existing images and new uploads).
+     * Update a car (handle existing images, new uploads, and video).
      */
     public function update(Request $request, Car $car)
     {
         $this->authorize('update', $car);
 
         $validated = $request->validate([
-            'name'          => 'required|string|max:255',
-            'year'          => 'required|integer|min:1900|max:' . date('Y'),
-            'car_type'      => 'required|string|max:50',
-            'description'   => 'nullable|string',
-            'price'         => 'required|numeric|min:0',
-            'availability'  => 'nullable|string|max:50',
-            'drive'         => 'nullable|string|max:50',
-            'mileage'       => 'nullable|integer',
-            'engine_size'   => 'nullable|string|max:50',
-            'fuel_type'     => 'nullable|string|max:50',
-            'horse_power'   => 'nullable|string|max:50',
-            'transmission'  => 'nullable|string|max:50',
-            'origin'        => 'required|string|in:kenya,import',
-            'source'        => 'nullable|string|max:255',
-            'specification' => 'nullable|array',
-            'running_cost'  => 'nullable|array',
-            'existing_images' => 'nullable|array',
-            'main_image_index' => 'nullable|integer',
-            'images.*'      => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
-            'report'        => 'nullable|file|mimes:pdf|max:10240',
+            'name'              => 'required|string|max:255',
+            'year'              => 'required|integer|min:1900|max:' . date('Y'),
+            'car_type'          => 'required|string|max:50',
+            'description'       => 'nullable|string',
+            'price'             => 'required|numeric|min:0',
+            'availability'      => 'nullable|string|max:50',
+            'drive'             => 'nullable|string|max:50',
+            'mileage'           => 'nullable|integer',
+            'engine_size'       => 'nullable|string|max:50',
+            'fuel_type'         => 'nullable|string|max:50',
+            'horse_power'       => 'nullable|string|max:50',
+            'transmission'      => 'nullable|string|max:50',
+            'origin'            => 'required|string|in:kenya,import',
+            'source'            => 'nullable|string|max:255',
+            'specification'     => 'nullable|array',
+            'running_cost'      => 'nullable|array',
+            'existing_images'   => 'nullable|array',
+            'main_image_index'  => 'nullable|integer',
+            'images.*'          => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'report'            => 'nullable|file|mimes:pdf|max:10240',
+            'video'             => 'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:51200',
         ]);
 
-        // Merge existing images (submitted via hidden inputs) with new uploads
+        // ── Images ──────────────────────────────────────────────
         $images = $request->input('existing_images', []);
 
         if ($request->hasFile('images')) {
@@ -184,11 +193,10 @@ class CarController extends Controller
             }
         }
 
-        // Set main image
         $mainIndex = $request->input('main_image_index', 0);
-        $mainImage = $images[$mainIndex] ?? ($car->image ?? ($images[0] ?? null));
+        $mainImage = $images[$mainIndex] ?? $car->image ?? ($images[0] ?? null);
 
-        // Handle report replacement
+        // ── Report ───────────────────────────────────────────────
         if ($request->hasFile('report')) {
             if ($car->report) {
                 Storage::disk('public')->delete($car->report);
@@ -196,44 +204,55 @@ class CarController extends Controller
             $car->report = $request->file('report')->store('reports', 'public');
         }
 
-        // Update car
+        // ── Video ────────────────────────────────────────────────
+        if ($request->hasFile('video')) {
+            // Delete old video to free up storage
+            if ($car->video) {
+                Storage::disk('public')->delete($car->video);
+            }
+            $car->video = $request->file('video')->store('car-videos', 'public');
+        }
+
+        // ── Save all fields ──────────────────────────────────────
         $car->update([
             'name'          => $validated['name'],
             'year'          => $validated['year'],
             'car_type'      => $validated['car_type'],
-            'description'   => $validated['description'] ?? $car->description,
+            'description'   => $validated['description']  ?? $car->description,
             'price'         => $validated['price'],
             'availability'  => $validated['availability'] ?? $car->availability,
-            'drive'         => $validated['drive'] ?? $car->drive,
-            'mileage'       => $validated['mileage'] ?? $car->mileage,
-            'engine_size'   => $validated['engine_size'] ?? $car->engine_size,
-            'fuel_type'     => $validated['fuel_type'] ?? $car->fuel_type,
-            'horse_power'   => $validated['horse_power'] ?? $car->horse_power,
+            'drive'         => $validated['drive']        ?? $car->drive,
+            'mileage'       => $validated['mileage']      ?? $car->mileage,
+            'engine_size'   => $validated['engine_size']  ?? $car->engine_size,
+            'fuel_type'     => $validated['fuel_type']    ?? $car->fuel_type,
+            'horse_power'   => $validated['horse_power']  ?? $car->horse_power,
             'transmission'  => $validated['transmission'] ?? $car->transmission,
             'origin'        => $validated['origin'],
-            'source'        => $validated['source'] ?? $car->source,
+            'source'        => $validated['source']       ?? $car->source,
             'specification' => $validated['specification'] ?? $car->specification,
             'running_cost'  => $validated['running_cost'] ?? $car->running_cost,
-            'images'        => $images ?: null,
+            'images'        => $images    ?: null,
             'image'         => $mainImage,
+            'report'        => $car->report,
+            'video'         => $car->video,
         ]);
 
         return redirect()->route('cars.my')->with('success', '✅ Car updated successfully!');
     }
 
     /**
-     * Delete a car and associated files.
+     * Delete a car and all associated files.
      */
     public function destroy(Car $car)
     {
         $this->authorize('delete', $car);
 
-        // Delete main image
+        // Delete cover image
         if ($car->image) {
             Storage::disk('public')->delete($car->image);
         }
 
-        // Delete all images
+        // Delete all gallery images
         if ($car->images) {
             foreach ($car->images as $img) {
                 Storage::disk('public')->delete($img);
@@ -243,6 +262,11 @@ class CarController extends Controller
         // Delete report
         if ($car->report) {
             Storage::disk('public')->delete($car->report);
+        }
+
+        // Delete video
+        if ($car->video) {
+            Storage::disk('public')->delete($car->video);
         }
 
         $car->delete();

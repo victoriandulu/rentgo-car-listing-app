@@ -156,7 +156,7 @@ body { background: var(--bg); }
 }
 .cl-step.active .cl-step-label {
     color: var(--ink);
-    background: var(--bg); /* ensure active label also masks the line */
+    background: var(--bg);
 }
 @media (min-width: 500px) { .cl-step-label { display: block; } }
 .cl-step.active .cl-step-label { color: var(--ink); }
@@ -413,7 +413,7 @@ textarea { resize: vertical; }
     color: white;
 }
 
-/* ─── Info row (inline 2-col tip) ─── */
+/* ─── Info row ─── */
 .cl-info-row {
     display: flex;
     align-items: flex-start;
@@ -445,6 +445,32 @@ textarea { resize: vertical; }
 .cl-file-label:hover { border-color: var(--red); background: white; }
 .cl-file-label input { display: none; }
 .cl-file-name { color: var(--ink-3); font-size: 0.78rem; margin-top: 3px; }
+
+/* ─── Video preview ─── */
+.cl-video-preview {
+    display: none;
+    margin-top: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+    background: #000;
+}
+.cl-video-preview video {
+    width: 100%;
+    max-height: 280px;
+    display: block;
+}
+.cl-video-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--warm);
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--ink-3);
+}
+.cl-video-meta strong { color: var(--ink-2); }
 
 /* ─── Alert ─── */
 .cl-alert {
@@ -519,7 +545,6 @@ textarea { resize: vertical; }
     <div class="cl-header">
         <div class="cl-header-inner">
             <div>
-
                 <h1 class="cl-title">List your <em>car</em></h1>
                 <p class="cl-subtitle">Free to post · reach thousands of verified buyers</p>
             </div>
@@ -834,6 +859,44 @@ textarea { resize: vertical; }
             </div>
         </div>
 
+        {{-- ── CARD 8: Video ── --}}
+        <div class="cl-card">
+            <div class="cl-card-head">
+                <div class="cl-card-head-left">
+                    <div class="cl-card-icon">🎥</div>
+                    <div>
+                        <div class="cl-card-title">Car Video</div>
+                        <div class="cl-card-desc">A short walkthrough or 360° tour boosts buyer interest</div>
+                    </div>
+                </div>
+                <span class="cl-card-badge optional">OPTIONAL</span>
+            </div>
+            <div class="cl-card-body">
+                <label class="cl-file-label" id="videoLabel">
+                    <input type="file" name="video" accept="video/mp4,video/webm,video/quicktime"
+                           onchange="updateVideoPreview(this)">
+                    <span style="font-size:1.4rem">🎬</span>
+                    <div>
+                        <div>Attach video (MP4, WebM, MOV)</div>
+                        <div class="cl-file-name" id="videoName">No file chosen · Max 50MB</div>
+                    </div>
+                </label>
+
+                <div class="cl-video-preview" id="videoPreviewWrap">
+                    <video id="videoPreviewEl" controls preload="metadata"></video>
+                    <div class="cl-video-meta">
+                        <span>🎞️</span>
+                        <span id="videoMetaText">Ready to upload</span>
+                    </div>
+                </div>
+
+                <div class="cl-info-row" style="margin-top:12px;">
+                    <span class="cl-info-icon">💡</span>
+                    <span>A 30–60 second walkthrough video can <strong>double buyer enquiries</strong>. Show the exterior, interior and engine bay.</span>
+                </div>
+            </div>
+        </div>
+
         {{-- ── Submit ── --}}
         <div class="cl-submit-card">
             <div class="cl-submit-info">
@@ -913,10 +976,51 @@ function toggleFeat(input) {
     input.closest('.cl-feat-item').classList.toggle('checked', input.checked);
 }
 
-/* ── File name display ── */
+/* ── PDF file name display ── */
 function updateFileName(input) {
     const label = document.getElementById('reportName');
     label.textContent = input.files[0] ? input.files[0].name : 'No file chosen';
+}
+
+/* ── Video preview ── */
+function updateVideoPreview(input) {
+    const nameEl   = document.getElementById('videoName');
+    const wrap     = document.getElementById('videoPreviewWrap');
+    const videoEl  = document.getElementById('videoPreviewEl');
+    const metaEl   = document.getElementById('videoMetaText');
+
+    if (!input.files[0]) {
+        nameEl.textContent = 'No file chosen · Max 50MB';
+        wrap.style.display = 'none';
+        return;
+    }
+
+    const file = input.files[0];
+    const maxBytes = 50 * 1024 * 1024; // 50 MB
+
+    if (file.size > maxBytes) {
+        alert('Video is too large. Please choose a file under 50 MB.');
+        input.value = '';
+        nameEl.textContent = 'No file chosen · Max 50MB';
+        wrap.style.display = 'none';
+        return;
+    }
+
+    nameEl.textContent = file.name;
+    const url = URL.createObjectURL(file);
+    videoEl.src = url;
+    wrap.style.display = 'block';
+
+    // Show file size
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    metaEl.textContent = `${file.name} · ${sizeMB} MB`;
+
+    // Clean up object URL when done
+    videoEl.onloadedmetadata = () => {
+        const mins = Math.floor(videoEl.duration / 60);
+        const secs = Math.floor(videoEl.duration % 60);
+        metaEl.textContent = `${sizeMB} MB · ${mins}m ${secs}s`;
+    };
 }
 </script>
 

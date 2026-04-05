@@ -1,86 +1,125 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="vehicles-page">
 
-    <!-- Hero Search Section -->
-    <div class="hero-search">
-        <div class="container-wrapper">
-            <div class="hero-content">
-                <p class="hero-eyebrow">
-                    <span class="eyebrow-dot"></span>
-                    {{ $cars->count() }} VEHICLES AVAILABLE
+@php
+/*
+ * ─────────────────────────────────────────────
+ *  HELPER: resolve video for a car model
+ *  Returns ['has_video' => bool, 'url' => string|null]
+ * ─────────────────────────────────────────────
+ */
+function resolveVideo($car): array {
+    $raw = trim((string) ($car->video ?? ''));
+    if ($raw === '' || $raw === 'null') {
+        return ['has_video' => false, 'url' => null];
+    }
+    // Avoid double-prefixing if the value already contains "storage/"
+    $path = str_starts_with($raw, 'storage/') ? $raw : 'storage/' . $raw;
+    return ['has_video' => true, 'url' => asset($path)];
+}
+@endphp
+
+<div class="vp">
+
+    {{-- ╔══════════════════════════════════════╗
+         ║           HERO / SEARCH             ║
+         ╚══════════════════════════════════════╝ --}}
+    <header class="vp-hero">
+        <div class="vp-wrap">
+
+            <div class="vp-hero-text">
+                <p class="vp-eyebrow">
+                    <span class="vp-dot"></span>
+                    {{ $cars->count() }} vehicles available
                 </p>
-                <h1 class="hero-title">Find your <em>perfect</em> car.</h1>
-                <p class="hero-subtitle">Browse quality vehicles from trusted dealers across Kenya.</p>
+                <h1 class="vp-title">Find your <em>perfect</em> car.</h1>
+                <p class="vp-sub">Browse quality vehicles from trusted dealers across Kenya.</p>
             </div>
 
-            <!-- Search Bar -->
-            <div class="search-box-container">
-                <div class="search-box">
-                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.35-4.35"/>
+            {{-- Search + Currency + Price pills --}}
+            <div class="vp-search-bar">
+                <div class="vp-search-left">
+                    <svg class="vp-search-ico" width="17" height="17" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.2">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
-                    <input type="text" id="main-search" placeholder="Search by make, model, or keyword..." oninput="filterVehicles()">
+                    <input id="js-search" type="text" placeholder="Make, model, keyword…"
+                           oninput="VP.filter()" autocomplete="off">
+
+                    <div class="vp-currency">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        <select id="js-currency" onchange="VP.currency()">
+                            <option value="KES" data-rate="1"       data-sym="KSh">KES</option>
+                            <option value="USD" data-rate="0.0077"  data-sym="$">USD</option>
+                            <option value="GBP" data-rate="0.0061"  data-sym="£">GBP</option>
+                            <option value="EUR" data-rate="0.0071"  data-sym="€">EUR</option>
+                            <option value="ZAR" data-rate="0.14"    data-sym="R">ZAR</option>
+                            <option value="AED" data-rate="0.028"   data-sym="AED">AED</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Currency Selector inline -->
-                <div class="currency-selector">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="2" y1="12" x2="22" y2="12"/>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                    </svg>
-                    <select id="currency-select" class="currency-dropdown" onchange="updateCurrency()">
-                        <option value="KES" data-rate="1" data-symbol="KSh">KES</option>
-                        <option value="USD" data-rate="0.0077" data-symbol="$">USD</option>
-                        <option value="GBP" data-rate="0.0061" data-symbol="£">GBP</option>
-                        <option value="EUR" data-rate="0.0071" data-symbol="€">EUR</option>
-                        <option value="ZAR" data-rate="0.14" data-symbol="R">ZAR</option>
-                        <option value="AED" data-rate="0.028" data-symbol="AED">AED</option>
-                    </select>
+                <div class="vp-divider"></div>
+
+                <div class="vp-pills-wrap">
+                    <span class="vp-pills-lbl">Budget</span>
+                    <div class="vp-pills">
+                        <button class="vp-pill active" data-min="0"        data-max="99000000" onclick="VP.pill(this,0,99000000)">All</button>
+                        <button class="vp-pill"        data-min="0"        data-max="500000"   onclick="VP.pill(this,0,500000)">Under 500K</button>
+                        <button class="vp-pill"        data-min="500000"   data-max="1000000"  onclick="VP.pill(this,500000,1000000)">500K–1M</button>
+                        <button class="vp-pill"        data-min="1000000"  data-max="2000000"  onclick="VP.pill(this,1000000,2000000)">1M–2M</button>
+                        <button class="vp-pill"        data-min="2000000"  data-max="3000000"  onclick="VP.pill(this,2000000,3000000)">2M–3M</button>
+                        <button class="vp-pill"        data-min="3000000"  data-max="5000000"  onclick="VP.pill(this,3000000,5000000)">3M–5M</button>
+                        <button class="vp-pill"        data-min="5000000"  data-max="10000000" onclick="VP.pill(this,5000000,10000000)">5M–10M</button>
+                        <button class="vp-pill"        data-min="10000000" data-max="99000000" onclick="VP.pill(this,10000000,99000000)">Above 10M</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Quick Filters -->
-            <div class="quick-filters-section">
-                <button class="quick-filter-btn active" data-filter="all" onclick="quickFilter('all')">All Vehicles</button>
-                <button class="quick-filter-btn" data-filter="local" onclick="quickFilter('local')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {{-- Quick filters --}}
+            <div class="vp-quick">
+                <button class="vp-qbtn active" data-filter="all"       onclick="VP.quick('all')">All Vehicles</button>
+                <button class="vp-qbtn"        data-filter="local"     onclick="VP.quick('local')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                     In Kenya
                 </button>
-                <button class="quick-filter-btn" data-filter="imports" onclick="quickFilter('imports')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                <button class="vp-qbtn"        data-filter="imports"   onclick="VP.quick('imports')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
                     Imports
                 </button>
-                <button class="quick-filter-btn" data-filter="verified" onclick="quickFilter('verified')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <button class="vp-qbtn"        data-filter="verified"  onclick="VP.quick('verified')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                     Verified
                 </button>
+                <button class="vp-qbtn vp-qbtn--video" data-filter="has-video" onclick="VP.quick('has-video')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    Has Video
+                </button>
 
-                <!-- Advanced Filters Toggle -->
-                <button class="advanced-toggle-btn" onclick="toggleAdvancedFilters()" id="advanced-toggle">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button class="vp-adv-toggle" id="js-adv-toggle" onclick="VP.toggleAdv()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
                         <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
                         <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
                         <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/>
                         <line x1="17" y1="16" x2="23" y2="16"/>
                     </svg>
-                    <span class="toggle-text">Filters</span>
-                    <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polyline points="6 9 12 15 18 9"/>
-                    </svg>
+                    <span id="js-adv-label">More Filters</span>
+                    <svg class="vp-chev" id="js-adv-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
             </div>
 
-            <!-- Advanced Filters Panel -->
-            <div class="advanced-filters" id="advanced-filters">
-                <div class="filters-grid">
-                    <div class="filter-group">
-                        <label class="filter-label">Make</label>
-                        <select id="make-filter" class="filter-select" onchange="filterVehicles()">
+            {{-- Advanced filters panel --}}
+            <div class="vp-adv" id="js-adv-panel">
+                <div class="vp-adv-grid">
+                    <div class="vp-fg">
+                        <label class="vp-fl">Make</label>
+                        <select id="js-make" class="vp-fs" onchange="VP.filter()">
                             <option value="">All Makes</option>
                             <option value="toyota">Toyota</option>
                             <option value="honda">Honda</option>
@@ -96,9 +135,9 @@
                             <option value="mitsubishi">Mitsubishi</option>
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Body Type</label>
-                        <select id="body-type-filter" class="filter-select" onchange="filterVehicles()">
+                    <div class="vp-fg">
+                        <label class="vp-fl">Body Type</label>
+                        <select id="js-body" class="vp-fs" onchange="VP.filter()">
                             <option value="">All Types</option>
                             <option value="suv">SUV</option>
                             <option value="sedan">Sedan</option>
@@ -106,57 +145,35 @@
                             <option value="pickup">Pickup</option>
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Min Price</label>
-                        <select id="price-min" class="filter-select" onchange="filterVehicles()">
-                            <option value="0">No Min</option>
-                            <option value="500000">KSh 500K</option>
-                            <option value="1000000">KSh 1M</option>
-                            <option value="2000000">KSh 2M</option>
-                            <option value="3000000">KSh 3M</option>
-                            <option value="5000000">KSh 5M</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Max Price</label>
-                        <select id="price-max" class="filter-select" onchange="filterVehicles()">
-                            <option value="20000000">No Max</option>
-                            <option value="1000000">KSh 1M</option>
-                            <option value="2000000">KSh 2M</option>
-                            <option value="3000000">KSh 3M</option>
-                            <option value="5000000">KSh 5M</option>
-                            <option value="10000000">KSh 10M</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Year From</label>
-                        <select id="year-from" class="filter-select" onchange="filterVehicles()">
+                    <div class="vp-fg">
+                        <label class="vp-fl">Year From</label>
+                        <select id="js-year-from" class="vp-fs" onchange="VP.filter()">
                             <option value="">Any Year</option>
                             @for($y = 2024; $y >= 2000; $y--)
                                 <option value="{{ $y }}">{{ $y }}</option>
                             @endfor
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Year To</label>
-                        <select id="year-to" class="filter-select" onchange="filterVehicles()">
+                    <div class="vp-fg">
+                        <label class="vp-fl">Year To</label>
+                        <select id="js-year-to" class="vp-fs" onchange="VP.filter()">
                             <option value="">Any Year</option>
                             @for($y = 2024; $y >= 2000; $y--)
                                 <option value="{{ $y }}">{{ $y }}</option>
                             @endfor
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Transmission</label>
-                        <select id="transmission-filter" class="filter-select" onchange="filterVehicles()">
+                    <div class="vp-fg">
+                        <label class="vp-fl">Transmission</label>
+                        <select id="js-trans" class="vp-fs" onchange="VP.filter()">
                             <option value="">All</option>
                             <option value="automatic">Automatic</option>
                             <option value="manual">Manual</option>
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Fuel Type</label>
-                        <select id="fuel-filter" class="filter-select" onchange="filterVehicles()">
+                    <div class="vp-fg">
+                        <label class="vp-fl">Fuel Type</label>
+                        <select id="js-fuel" class="vp-fs" onchange="VP.filter()">
                             <option value="">All</option>
                             <option value="petrol">Petrol</option>
                             <option value="diesel">Diesel</option>
@@ -164,37 +181,42 @@
                             <option value="electric">Electric</option>
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Min Mileage (km)</label>
-                        <input type="number" id="mileage-from" class="filter-select" placeholder="e.g. 0" onchange="filterVehicles()">
+                    <div class="vp-fg">
+                        <label class="vp-fl">Min Mileage (km)</label>
+                        <input id="js-mil-from" type="number" class="vp-fs" placeholder="e.g. 0" oninput="VP.filter()">
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Max Mileage (km)</label>
-                        <input type="number" id="mileage-to" class="filter-select" placeholder="e.g. 150,000" onchange="filterVehicles()">
+                    <div class="vp-fg">
+                        <label class="vp-fl">Max Mileage (km)</label>
+                        <input id="js-mil-to" type="number" class="vp-fs" placeholder="e.g. 150,000" oninput="VP.filter()">
                     </div>
-                    <div class="filter-group filter-actions-group">
-                        <button class="clear-btn" onclick="clearAllFilters()">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    <div class="vp-fg vp-fg--action">
+                        <button class="vp-clear-btn" onclick="VP.clear()">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             Clear All
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Results Section -->
-    <div class="container-wrapper results-section">
-        <!-- Toolbar -->
-        <div class="results-toolbar">
-            <div class="results-info">
-                <span class="count" id="results-count">{{ $cars->count() }}</span>
-                <span class="label">vehicles found</span>
+        </div>{{-- /wrap --}}
+    </header>
+
+
+    {{-- ╔══════════════════════════════════════╗
+         ║         RESULTS SECTION             ║
+         ╚══════════════════════════════════════╝ --}}
+    <section class="vp-results vp-wrap">
+
+        {{-- Toolbar --}}
+        <div class="vp-toolbar">
+            <div class="vp-count-wrap">
+                <span class="vp-count" id="js-count">{{ $cars->count() }}</span>
+                <span class="vp-count-lbl">vehicles found</span>
             </div>
-            <div class="toolbar-right">
-                <div class="sort-wrapper">
+            <div class="vp-toolbar-right">
+                <div class="vp-sort-wrap">
                     <label>Sort by</label>
-                    <select id="sort-select" class="toolbar-select" onchange="sortVehicles()">
+                    <select id="js-sort" class="vp-sort-sel" onchange="VP.sort()">
                         <option value="featured">Featured</option>
                         <option value="price-low">Price: Low → High</option>
                         <option value="price-high">Price: High → Low</option>
@@ -203,1287 +225,1148 @@
                         <option value="mileage-low">Lowest Mileage</option>
                     </select>
                 </div>
-                <div class="view-toggle">
-                    <button class="view-btn active" data-view="grid" onclick="switchView('grid')" title="Grid View">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <div class="vp-view-toggle">
+                    <button class="vp-view active" data-view="grid" onclick="VP.view('grid')" title="Grid">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
                     </button>
-                    <button class="view-btn" data-view="list" onclick="switchView('list')" title="List View">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><rect x="3" y="4" width="2" height="4"/><rect x="3" y="10" width="2" height="4"/><rect x="3" y="16" width="2" height="4"/></svg>
+                    <button class="vp-view" data-view="list" onclick="VP.view('list')" title="List">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><rect x="3" y="4" width="2" height="4"/><rect x="3" y="10" width="2" height="4"/><rect x="3" y="16" width="2" height="4"/></svg>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Grid -->
-        <div class="vehicles-grid" id="vehicles-container">
+        {{-- Cards grid --}}
+        <div class="vp-grid" id="js-grid">
             @forelse($cars as $car)
                 @php
-                    $images = $car->images ? (is_string($car->images) ? json_decode($car->images, true) : (array)$car->images) : [];
-                    $mainImage = count($images) ? asset('storage/' . $images[0]) : 'https://via.placeholder.com/400x300?text=No+Image';
+                    /* ── Images ── */
+                    $rawImages = $car->images ?? null;
+                    $images    = $rawImages
+                        ? (is_string($rawImages) ? json_decode($rawImages, true) : (array) $rawImages)
+                        : [];
+                    $images    = array_filter((array) $images); // drop nulls / empty strings
+                    $mainImage = count($images)
+                        ? asset('storage/' . ltrim($images[0], '/'))
+                        : 'https://via.placeholder.com/600x400/f5ede0/9b8b7e?text=No+Photo';
+
+                    /* ── Video — THE FIX ── */
+                    $videoRaw  = trim((string) ($car->video ?? ''));
+                    $hasVideo  = ($videoRaw !== '' && $videoRaw !== 'null' && $videoRaw !== '0');
+                    $videoPath = $hasVideo
+                        ? (str_starts_with($videoRaw, 'storage/') ? $videoRaw : 'storage/' . $videoRaw)
+                        : null;
+                    $videoUrl  = $hasVideo ? asset($videoPath) : '';
+
+                    /* ── Misc ── */
+                    $isVerified = $car->user && $car->user->is_verified;
+                    $isFeatured = (bool) ($car->featured ?? false);
+                    $carPrice   = (int)   ($car->price   ?? 0);
+                    $carMileage = (int)   ($car->mileage ?? 0);
+                    $carYear    = (int)   ($car->year    ?? date('Y'));
+                    $carName    = $car->name ?? 'Vehicle';
+                    $carMake    = strtolower($car->make ?? '');
+                    $carTrans   = strtolower($car->transmission_type ?? 'Auto');
+                    $carFuel    = strtolower($car->fuel_type ?? 'Petrol');
+                    $carBody    = strtolower($car->body_type ?? '');
+                    $carCat     = strtolower($car->category ?? 'local');
+                    $carLoc     = $car->location ?? 'Kenya';
+                    $carId      = $car->id ?? 0;
                 @endphp
 
-                <article class="vehicle-card"
-                     data-make="{{ strtolower($car->make ?? 'toyota') }}"
-                     data-year="{{ $car->year ?? 2014 }}"
-                     data-price="{{ $car->price ?? 2500000 }}"
-                     data-mileage="{{ $car->mileage ?? 85000 }}"
-                     data-category="{{ $car->category ?? 'local' }}"
-                     data-body-type="{{ strtolower($car->body_type ?? 'suv') }}"
-                     data-transmission="{{ strtolower($car->transmission_type ?? 'automatic') }}"
-                     data-fuel="{{ strtolower($car->fuel_type ?? 'petrol') }}"
-                     data-verified="{{ $car->user && $car->user->is_verified ? 'true' : 'false' }}"
-                     data-name="{{ strtolower($car->name ?? 'toyota fortuner') }}">
+                <article class="vp-card"
+                    data-make="{{ $carMake }}"
+                    data-year="{{ $carYear }}"
+                    data-price="{{ $carPrice }}"
+                    data-mileage="{{ $carMileage }}"
+                    data-category="{{ $carCat }}"
+                    data-body="{{ $carBody }}"
+                    data-trans="{{ $carTrans }}"
+                    data-fuel="{{ $carFuel }}"
+                    data-verified="{{ $isVerified ? 'true' : 'false' }}"
+                    data-has-video="{{ $hasVideo ? 'true' : 'false' }}"
+                    data-name="{{ strtolower($carName) }}">
 
-                    <div class="card-image-wrapper">
-                        <a href="{{ route('vehicles.show', $car->id ?? 1) }}" class="image-link">
-                            <img src="{{ $mainImage }}" alt="{{ $car->name ?? 'Vehicle' }}" loading="lazy">
+                    {{-- ── Image wrapper ── --}}
+                    <div class="vp-card-img">
+                        <a href="{{ route('vehicles.show', $carId) }}" class="vp-img-link" tabindex="-1">
+                            <img src="{{ $mainImage }}"
+                                 alt="{{ $carName }}"
+                                 loading="lazy"
+                                 onerror="this.src='https://via.placeholder.com/600x400/f5ede0/9b8b7e?text=No+Photo'">
                         </a>
 
-                        <button class="wishlist-icon" onclick="toggleWishlist(event, this)" aria-label="Add to wishlist">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        {{-- Wishlist --}}
+                        <button class="vp-wish" onclick="VP.wish(event,this)" aria-label="Save to wishlist">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
                         </button>
 
-                        <div class="card-badges">
-                            @if($car->user && $car->user->is_verified)
-                                <span class="badge verified">
+                        {{-- Video play button — rendered ONLY when car has a video --}}
+                        @if($hasVideo)
+                        <button class="vp-play-btn"
+                                onclick="VP.openVideo(event,'{{ addslashes($videoUrl) }}','{{ addslashes($carName) }}')"
+                                aria-label="Watch video walkthrough">
+                            <span class="vp-play-ripple"></span>
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        </button>
+                        @endif
+
+                        {{-- Badges --}}
+                        <div class="vp-badges">
+                            @if($isVerified)
+                                <span class="vp-badge vp-badge--v">
                                     <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                                     Verified
                                 </span>
                             @endif
-                            @if($car->featured ?? false)
-                                <span class="badge featured">Featured</span>
+                            @if($isFeatured)
+                                <span class="vp-badge vp-badge--f">Featured</span>
+                            @endif
+                            @if($hasVideo)
+                                <span class="vp-badge vp-badge--vid">
+                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                                    Video
+                                </span>
                             @endif
                         </div>
 
                         @if(count($images) > 1)
-                            <div class="image-counter">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-                                {{ count($images) }}
-                            </div>
+                        <div class="vp-img-count">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                            {{ count($images) }}
+                        </div>
                         @endif
                     </div>
 
-                    <div class="card-body">
-                        <div class="card-header">
-                            <div>
-                                <h3 class="vehicle-title">
-                                    <a href="{{ route('vehicles.show', $car->id ?? 1) }}">{{ $car->name ?? 'Toyota Fortuner' }}</a>
+                    {{-- ── Card body ── --}}
+                    <div class="vp-card-body">
+                        <div class="vp-card-head">
+                            <div class="vp-card-name-wrap">
+                                <h3 class="vp-car-name">
+                                    <a href="{{ route('vehicles.show', $carId) }}">{{ $carName }}</a>
                                 </h3>
-                                <span class="vehicle-year">{{ $car->year ?? 2014 }}</span>
+                                <span class="vp-car-year">{{ $carYear }}</span>
                             </div>
-                            <div class="vehicle-price" data-original-price="{{ $car->price ?? 2500000 }}">
-                                KSh {{ number_format($car->price ?? 2500000) }}
+                            <div class="vp-price" data-base="{{ $carPrice }}">
+                                KSh {{ number_format($carPrice) }}
                             </div>
                         </div>
 
-                        <div class="vehicle-specs">
-                            <span class="spec">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                {{ number_format($car->mileage ?? 85000) }} km
+                        <div class="vp-specs">
+                            <span class="vp-spec">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                {{ number_format($carMileage) }} km
                             </span>
-                            <span class="spec-dot"></span>
-                            <span class="spec">{{ $car->transmission_type ?? 'Auto' }}</span>
-                            <span class="spec-dot"></span>
-                            <span class="spec">{{ $car->fuel_type ?? 'Petrol' }}</span>
+                            <span class="vp-dot-sep"></span>
+                            <span class="vp-spec">{{ $carTrans }}</span>
+                            <span class="vp-dot-sep"></span>
+                            <span class="vp-spec">{{ ucfirst($carFuel) }}</span>
                         </div>
 
-                        <div class="card-footer">
-                            <div class="location-info">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                {{ $car->location ?? 'Nairobi' }}
-                            </div>
-                            <a href="{{ route('vehicles.show', $car->id ?? 1) }}" class="view-details">
-                                View details →
-                            </a>
+                        <div class="vp-card-foot">
+                            <span class="vp-loc">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                {{ $carLoc }}
+                            </span>
+                            <a href="{{ route('vehicles.show', $carId) }}" class="vp-details-link">View details →</a>
                         </div>
 
-                        @if($car->report)
-                        <div class="report-section">
+                        {{-- Video teaser strip --}}
+                        @if($hasVideo)
+                        <button class="vp-video-strip"
+                                onclick="VP.openVideo(event,'{{ addslashes($videoUrl) }}','{{ addslashes($carName) }}')">
+                            <span class="vp-vs-icon">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            </span>
+                            <span>Watch video walkthrough</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        @endif
+
+                        {{-- Report --}}
+                        @if($car->report ?? false)
+                        <div class="vp-report-wrap">
                             @auth
                                 @php
-                                    $userPayment = \App\Models\ReportPayment::where('car_id', $car->id)
-                                        ->where('user_id', auth()->id())
-                                        ->latest()->first();
+                                    $pmt = \App\Models\ReportPayment::where('car_id', $carId)
+                                          ->where('user_id', auth()->id())
+                                          ->latest()->first();
                                 @endphp
-
-                                @if($userPayment && $userPayment->status === 'verified')
-                                    <a href="{{ route('vehicles.report', $car->id) }}" class="report-btn report-verified">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                @if($pmt && $pmt->status === 'verified')
+                                    <a href="{{ route('vehicles.report', $carId) }}" class="vp-report-btn vp-report-btn--ok">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                                         View Report
                                     </a>
-                                @elseif($userPayment && $userPayment->status === 'pending')
-                                    <button class="report-btn report-pending"
-                                        onclick="openPaymentModal(event, {{ $car->id }}, {{ $car->report_price ?? 0 }}, '{{ addslashes($car->name) }}')">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                @elseif($pmt && $pmt->status === 'pending')
+                                    <button class="vp-report-btn vp-report-btn--pend"
+                                            onclick="VP.openPay(event,{{ $carId }},{{ $car->report_price ?? 0 }},'{{ addslashes($carName) }}')">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                         Pending Verification
                                     </button>
                                 @else
-                                    <button class="report-btn"
-                                        onclick="openPaymentModal(event, {{ $car->id }}, {{ $car->report_price ?? 0 }}, '{{ addslashes($car->name) }}')">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                                        @if($car->report_price)Buy Report · KSh {{ number_format($car->report_price) }}@else Buy Report @endif
+                                    <button class="vp-report-btn"
+                                            onclick="VP.openPay(event,{{ $carId }},{{ $car->report_price ?? 0 }},'{{ addslashes($carName) }}')">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                        @if($car->report_price) Buy Report · KSh {{ number_format($car->report_price) }}
+                                        @else Buy Report @endif
                                     </button>
                                 @endif
                             @else
-                                <a href="{{ route('sell') }}?redirect={{ urlencode(request()->url()) }}" class="report-btn">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                    @if($car->report_price)Buy Report · KSh {{ number_format($car->report_price) }}@else Buy Report @endif
+                                <a href="{{ route('sell') }}?redirect={{ urlencode(request()->url()) }}" class="vp-report-btn">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    @if($car->report_price) Buy Report · KSh {{ number_format($car->report_price) }}
+                                    @else Buy Report @endif
                                 </a>
                             @endauth
                         </div>
                         @endif
                     </div>
                 </article>
+
             @empty
-                <div class="no-results-state">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.35-4.35"/>
-                    </svg>
+                <div class="vp-empty">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                     <h3>No vehicles found</h3>
-                    <p>Try adjusting your search or filters</p>
-                    <button class="btn-primary" onclick="clearAllFilters()">Clear Filters</button>
+                    <p>Try adjusting your search or clearing the filters</p>
+                    <button class="vp-btn-primary" onclick="VP.clear()">Clear Filters</button>
                 </div>
             @endforelse
         </div>
 
-        <!-- Pagination -->
-        <nav class="pagination-wrapper" aria-label="Pagination">
-            <button class="page-nav" aria-label="Previous page" disabled>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        {{-- Pagination --}}
+        <nav class="vp-pager" aria-label="Pagination">
+            <button class="vp-page-nav" aria-label="Previous" disabled>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <button class="page-num active">1</button>
-            <button class="page-num">2</button>
-            <button class="page-num">3</button>
-            <span class="page-ellipsis">…</span>
-            <button class="page-num">10</button>
-            <button class="page-nav" aria-label="Next page">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            <button class="vp-page-num active">1</button>
+            <button class="vp-page-num">2</button>
+            <button class="vp-page-num">3</button>
+            <span class="vp-page-ell">…</span>
+            <button class="vp-page-num">10</button>
+            <button class="vp-page-nav" aria-label="Next">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
         </nav>
+
+    </section>{{-- /results --}}
+</div>{{-- /vp --}}
+
+
+{{-- ╔══════════════════════════════════════╗
+     ║         VIDEO MODAL                 ║
+     ╚══════════════════════════════════════╝ --}}
+<div id="vp-video-modal" class="vpm-overlay" role="dialog" aria-modal="true" aria-label="Video player"
+     onclick="if(event.target===this)VP.closeVideo()">
+    <div class="vpm-box">
+        <div class="vpm-header">
+            <div class="vpm-title-row">
+                <span class="vpm-ico">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                </span>
+                <span id="vpm-name" class="vpm-name">Video Walkthrough</span>
+            </div>
+            <button class="vpm-close" onclick="VP.closeVideo()" aria-label="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <div class="vpm-stage">
+            <video id="vpm-video" controls preload="metadata" playsinline>
+                <source id="vpm-src" src="" type="video/mp4">
+                Your browser does not support video playback.
+            </video>
+            <div id="vpm-overlay" class="vpm-play-overlay" onclick="VP.startVideo()">
+                <div class="vpm-big-play">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+                <p class="vpm-hint">Tap to play</p>
+            </div>
+        </div>
+
+        <div class="vpm-footer">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+            Full walkthrough · exterior &amp; interior tour
+        </div>
     </div>
 </div>
 
-<script>
-let currentCurrency = 'KES';
-let currentRate = 1;
-let currentSymbol = 'KSh';
-let currentQuickFilter = 'all';
-let filtersExpanded = false;
 
-function toggleAdvancedFilters() {
-    filtersExpanded = !filtersExpanded;
-    const panel = document.getElementById('advanced-filters');
-    const btn = document.getElementById('advanced-toggle');
-    const chevron = btn.querySelector('.chevron');
-    const text = btn.querySelector('.toggle-text');
-
-    if (filtersExpanded) {
-        panel.style.maxHeight = panel.scrollHeight + 'px';
-        panel.classList.add('expanded');
-        chevron.style.transform = 'rotate(180deg)';
-        text.textContent = 'Hide Filters';
-        btn.classList.add('active');
-    } else {
-        panel.style.maxHeight = '0';
-        panel.classList.remove('expanded');
-        chevron.style.transform = 'rotate(0deg)';
-        text.textContent = 'Filters';
-        btn.classList.remove('active');
-    }
-}
-
-function updateCurrency() {
-    const select = document.getElementById('currency-select');
-    const option = select.options[select.selectedIndex];
-    currentCurrency = option.value;
-    currentRate = parseFloat(option.dataset.rate);
-    currentSymbol = option.dataset.symbol;
-    document.querySelectorAll('.vehicle-price').forEach(el => {
-        const orig = parseFloat(el.dataset.originalPrice);
-        el.textContent = formatPrice(orig * currentRate);
-    });
-}
-
-function formatPrice(amount) {
-    if (['KES', 'UGX', 'TZS'].includes(currentCurrency)) {
-        return `${currentSymbol} ${Math.round(amount).toLocaleString()}`;
-    }
-    return `${currentSymbol}${Math.round(amount).toLocaleString()}`;
-}
-
-function quickFilter(type) {
-    currentQuickFilter = type;
-    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === type);
-    });
-    filterVehicles();
-}
-
-function filterVehicles() {
-    const searchTerm = document.getElementById('main-search').value.toLowerCase();
-    const selectedMake = document.getElementById('make-filter').value.toLowerCase();
-    const selectedBodyType = document.getElementById('body-type-filter').value.toLowerCase();
-    const selectedTransmission = document.getElementById('transmission-filter').value.toLowerCase();
-    const selectedFuel = document.getElementById('fuel-filter').value.toLowerCase();
-    const yearFrom = document.getElementById('year-from').value;
-    const yearTo = document.getElementById('year-to').value;
-    const minPrice = parseInt(document.getElementById('price-min').value);
-    const maxPrice = parseInt(document.getElementById('price-max').value);
-    const mileageFrom = document.getElementById('mileage-from').value;
-    const mileageTo = document.getElementById('mileage-to').value;
-
-    let visibleCount = 0;
-    document.querySelectorAll('.vehicle-card').forEach(card => {
-        let matches = true;
-
-        if (currentQuickFilter !== 'all') {
-            if (currentQuickFilter === 'local' && card.dataset.category !== 'local') matches = false;
-            if (currentQuickFilter === 'imports' && card.dataset.category !== 'imports') matches = false;
-            if (currentQuickFilter === 'verified' && card.dataset.verified !== 'true') matches = false;
-        }
-        if (searchTerm && !card.dataset.name.includes(searchTerm)) matches = false;
-        if (selectedMake && card.dataset.make !== selectedMake) matches = false;
-        if (selectedBodyType && card.dataset.bodyType !== selectedBodyType) matches = false;
-        if (selectedTransmission && card.dataset.transmission !== selectedTransmission) matches = false;
-        if (selectedFuel && card.dataset.fuel !== selectedFuel) matches = false;
-        if (yearFrom && parseInt(card.dataset.year) < parseInt(yearFrom)) matches = false;
-        if (yearTo && parseInt(card.dataset.year) > parseInt(yearTo)) matches = false;
-        if (parseInt(card.dataset.price) < minPrice || parseInt(card.dataset.price) > maxPrice) matches = false;
-        if (mileageFrom && parseInt(card.dataset.mileage) < parseInt(mileageFrom)) matches = false;
-        if (mileageTo && parseInt(card.dataset.mileage) > parseInt(mileageTo)) matches = false;
-
-        card.style.display = matches ? '' : 'none';
-        if (matches) visibleCount++;
-    });
-    document.getElementById('results-count').textContent = visibleCount;
-}
-
-function sortVehicles() {
-    const sortValue = document.getElementById('sort-select').value;
-    const container = document.getElementById('vehicles-container');
-    const cards = Array.from(document.querySelectorAll('.vehicle-card'));
-    cards.sort((a, b) => {
-        switch(sortValue) {
-            case 'price-low': return parseInt(a.dataset.price) - parseInt(b.dataset.price);
-            case 'price-high': return parseInt(b.dataset.price) - parseInt(a.dataset.price);
-            case 'year-new': return parseInt(b.dataset.year) - parseInt(a.dataset.year);
-            case 'year-old': return parseInt(a.dataset.year) - parseInt(b.dataset.year);
-            case 'mileage-low': return parseInt(a.dataset.mileage) - parseInt(b.dataset.mileage);
-            default: return 0;
-        }
-    });
-    cards.forEach(card => container.appendChild(card));
-}
-
-function clearAllFilters() {
-    document.getElementById('main-search').value = '';
-    document.getElementById('make-filter').value = '';
-    document.getElementById('body-type-filter').value = '';
-    document.getElementById('transmission-filter').value = '';
-    document.getElementById('fuel-filter').value = '';
-    document.getElementById('year-from').value = '';
-    document.getElementById('year-to').value = '';
-    document.getElementById('price-min').value = '0';
-    document.getElementById('price-max').value = '20000000';
-    document.getElementById('mileage-from').value = '';
-    document.getElementById('mileage-to').value = '';
-    currentQuickFilter = 'all';
-    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === 'all');
-    });
-    filterVehicles();
-}
-
-function switchView(view) {
-    document.querySelectorAll('.view-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.view === view);
-    });
-    document.getElementById('vehicles-container').classList.toggle('list-view', view === 'list');
-}
-
-function toggleWishlist(event, btn) {
-    event.preventDefault();
-    event.stopPropagation();
-    btn.classList.toggle('active');
-    btn.querySelector('svg').setAttribute('fill', btn.classList.contains('active') ? 'currentColor' : 'none');
-}
-</script>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@300;400;500;600&display=swap');
-
-:root {
-    --cream: #fdf8f3;
-    --cream-dark: #f5ede0;
-    --warm-white: #fffcf8;
-    --accent: #c0392b;
-    --accent-hover: #a93226;
-    --accent-light: rgba(192, 57, 43, 0.08);
-    --text-dark: #1a1612;
-    --text-medium: #5c4e42;
-    --text-light: #9b8b7e;
-    --border: #e8ddd4;
-    --border-light: #f0e8df;
-    --success: #2d7a4f;
-    --warning: #b45309;
-    --shadow-sm: 0 1px 3px rgba(26,22,18,0.06);
-    --shadow-md: 0 4px 16px rgba(26,22,18,0.08);
-    --shadow-lg: 0 12px 40px rgba(26,22,18,0.12);
-    --radius: 12px;
-    --radius-sm: 8px;
-    --tr: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-    font-family: 'DM Sans', -apple-system, sans-serif;
-    color: var(--text-dark);
-    background: var(--cream);
-    line-height: 1.6;
-}
-
-.vehicles-page { min-height: 100vh; }
-
-.container-wrapper {
-    max-width: 1320px;
-    margin: 0 auto;
-    padding: 0 32px;
-}
-
-/* ── HERO ── */
-.hero-search {
-    background: var(--cream-dark);
-    padding: 80px 32px 44px;
-    border-bottom: 1px solid var(--border);
-}
-
-.hero-content {
-    text-align: center;
-    margin-bottom: 36px;
-}
-
-.hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 20px;
-}
-
-.eyebrow-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-}
-
-.hero-title {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: clamp(36px, 5vw, 60px);
-    font-weight: 700;
-    line-height: 1.1;
-    color: var(--text-dark);
-    margin-bottom: 14px;
-    letter-spacing: -0.5px;
-}
-
-.hero-title em {
-    font-style: italic;
-    color: var(--accent);
-}
-
-.hero-subtitle {
-    font-size: 17px;
-    color: var(--text-medium);
-    font-weight: 300;
-}
-
-/* ── SEARCH BOX ── */
-.search-box-container {
-    max-width: 860px;
-    margin: 0 auto 24px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.search-box {
-    flex: 1;
-    background: var(--warm-white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 5px 5px 5px 22px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transition: var(--tr);
-    box-shadow: var(--shadow-sm);
-}
-
-.search-box:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-light);
-}
-
-.search-icon { color: var(--text-light); flex-shrink: 0; }
-
-.search-box input {
-    flex: 1; border: none; outline: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px; color: var(--text-dark);
-    background: transparent;
-    padding: 14px 0;
-}
-
-.search-box input::placeholder { color: var(--text-light); }
-
-.currency-selector {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--warm-white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.currency-selector svg { color: var(--text-light); }
-
-.currency-dropdown {
-    border: none; outline: none; background: transparent;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px; font-weight: 500;
-    color: var(--text-dark); cursor: pointer;
-}
-
-/* ── QUICK FILTERS ── */
-.quick-filters-section {
-    max-width: 860px;
-    margin: 0 auto;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-}
-
-.quick-filter-btn {
-    padding: 9px 18px;
-    border: 1.5px solid var(--border);
-    border-radius: 100px;
-    background: var(--warm-white);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; color: var(--text-medium);
-    display: flex; align-items: center; gap: 6px;
-    transition: var(--tr);
-}
-
-.quick-filter-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-}
-
-.quick-filter-btn.active {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-}
-
-.advanced-toggle-btn {
-    padding: 9px 18px;
-    border: 1.5px solid var(--border);
-    border-radius: 100px;
-    background: var(--warm-white);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; color: var(--text-medium);
-    display: flex; align-items: center; gap: 7px;
-    transition: var(--tr);
-    margin-left: auto;
-}
-
-.advanced-toggle-btn:hover,
-.advanced-toggle-btn.active {
-    border-color: var(--accent);
-    color: var(--accent);
-}
-
-.advanced-toggle-btn .chevron {
-    transition: transform 0.3s ease;
-}
-
-/* ── ADVANCED FILTERS ── */
-.advanced-filters {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.advanced-filters.expanded { padding-top: 28px; }
-
-.filters-grid {
-    max-width: 860px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 14px;
-    background: var(--warm-white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-}
-
-.filter-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--text-light);
-}
-
-.filter-select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    background: var(--cream);
-    color: var(--text-dark);
-    cursor: pointer;
-    outline: none;
-    transition: var(--tr);
-    appearance: auto;
-}
-
-.filter-select:focus, .filter-select:hover {
-    border-color: var(--accent);
-}
-
-.filter-actions-group {
-    justify-content: flex-end;
-    padding-top: 24px;
-}
-
-.clear-btn {
-    padding: 10px 18px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; color: var(--text-medium);
-    display: flex; align-items: center; gap: 7px;
-    transition: var(--tr);
-    white-space: nowrap;
-}
-
-.clear-btn:hover {
-    background: var(--text-dark);
-    color: white;
-    border-color: var(--text-dark);
-}
-
-/* ── RESULTS SECTION ── */
-.results-section { padding-top: 40px; padding-bottom: 80px; }
-
-.results-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 28px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--border-light);
-}
-
-.results-info { display: flex; align-items: baseline; gap: 8px; }
-
-.results-info .count {
-    font-family: 'Playfair Display', serif;
-    font-size: 32px; font-weight: 700;
-    color: var(--accent);
-}
-
-.results-info .label { font-size: 15px; color: var(--text-medium); font-weight: 300; }
-
-.toolbar-right { display: flex; align-items: center; gap: 16px; }
-
-.sort-wrapper { display: flex; align-items: center; gap: 10px; }
-
-.sort-wrapper label {
-    font-size: 13px; font-weight: 500;
-    color: var(--text-light);
-}
-
-.toolbar-select {
-    padding: 9px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    background: var(--warm-white);
-    color: var(--text-dark);
-    cursor: pointer;
-    outline: none;
-    transition: var(--tr);
-    min-width: 160px;
-}
-
-.toolbar-select:hover { border-color: var(--accent); }
-
-.view-toggle {
-    display: flex; gap: 2px;
-    background: var(--cream-dark);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 3px;
-}
-
-.view-btn {
-    background: transparent; border: none;
-    padding: 8px 12px; border-radius: 6px;
-    cursor: pointer; color: var(--text-light);
-    transition: var(--tr);
-    display: flex; align-items: center; justify-content: center;
-}
-
-.view-btn.active {
-    background: var(--warm-white);
-    color: var(--accent);
-    box-shadow: var(--shadow-sm);
-}
-
-/* ── VEHICLES GRID ── */
-.vehicles-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-bottom: 48px;
-}
-
-.vehicles-grid.list-view {
-    grid-template-columns: 1fr;
-}
-
-/* ── VEHICLE CARD ── */
-.vehicle-card {
-    background: var(--warm-white);
-    border-radius: var(--radius);
-    overflow: hidden;
-    border: 1px solid var(--border-light);
-    box-shadow: var(--shadow-sm);
-    transition: var(--tr);
-    display: flex;
-    flex-direction: column;
-}
-
-.vehicle-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--border);
-}
-
-.list-view .vehicle-card {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    flex-direction: row;
-}
-
-/* ── CARD IMAGE ── */
-.card-image-wrapper {
-    position: relative;
-    aspect-ratio: 4/3;
-    background: var(--cream-dark);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.list-view .card-image-wrapper {
-    aspect-ratio: auto;
-    height: 100%;
-    min-height: 220px;
-}
-
-.image-link { display: block; width: 100%; height: 100%; }
-
-.card-image-wrapper img {
-    width: 100%; height: 100%;
-    object-fit: contain;
-    transition: transform 0.4s ease;
-}
-
-.vehicle-card:hover .card-image-wrapper img {
-    transform: scale(1.03);
-}
-
-.wishlist-icon {
-    position: absolute; top: 12px; right: 12px;
-    width: 34px; height: 34px;
-    background: rgba(255,252,248,0.92);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--text-light);
-    transition: var(--tr); z-index: 10;
-    backdrop-filter: blur(4px);
-}
-
-.wishlist-icon:hover, .wishlist-icon.active { color: var(--accent); }
-
-.card-badges {
-    position: absolute; top: 12px; left: 12px;
-    display: flex; flex-direction: column; gap: 5px; z-index: 10;
-}
-
-.badge {
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 0.5px;
-    display: inline-flex; align-items: center; gap: 4px;
-}
-
-.badge.verified { background: var(--success); color: white; }
-.badge.featured { background: var(--warning); color: white; }
-
-.image-counter {
-    position: absolute; bottom: 10px; right: 10px;
-    background: rgba(26,22,18,0.65);
-    color: white;
-    padding: 3px 8px; border-radius: 4px;
-    font-size: 11px; font-weight: 600;
-    display: flex; align-items: center; gap: 4px;
-    backdrop-filter: blur(4px);
-}
-
-/* ── CARD BODY ── */
-.card-body {
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    flex: 1;
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-}
-
-.vehicle-title {
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.4;
-    margin-bottom: 2px;
-}
-
-.vehicle-title a {
-    color: var(--text-dark);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.vehicle-title a:hover { color: var(--accent); }
-
-.vehicle-year {
-    display: block;
-    font-size: 12px;
-    color: var(--text-light);
-    font-weight: 400;
-}
-
-.vehicle-price {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent);
-    white-space: nowrap;
-}
-
-.vehicle-specs {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 10px 0;
-    border-top: 1px solid var(--border-light);
-    border-bottom: 1px solid var(--border-light);
-}
-
-.spec {
-    font-size: 12px;
-    color: var(--text-medium);
-    display: flex; align-items: center; gap: 4px;
-}
-
-.spec svg { color: var(--text-light); }
-
-.spec-dot {
-    width: 3px; height: 3px;
-    border-radius: 50%;
-    background: var(--border);
-}
-
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.location-info {
-    display: flex; align-items: center; gap: 4px;
-    font-size: 12px; color: var(--text-light);
-}
-
-.location-info svg { flex-shrink: 0; }
-
-.view-details {
-    font-size: 13px; font-weight: 600;
-    color: var(--accent);
-    text-decoration: none;
-    transition: var(--tr);
-    letter-spacing: -0.2px;
-}
-
-.view-details:hover { letter-spacing: 0.2px; }
-
-/* ── REPORT SECTION ── */
-.report-section {
-    border-top: 1px solid var(--border-light);
-    padding-top: 12px;
-}
-
-.report-btn {
-    width: 100%;
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 10px 14px;
-    border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: var(--tr);
-    display: flex; align-items: center; justify-content: center;
-    gap: 6px; text-decoration: none;
-}
-
-.report-btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-.report-btn.report-verified { background: var(--success); }
-.report-btn.report-verified:hover { background: #1f6b42; }
-.report-btn.report-pending { background: var(--text-medium); opacity: 0.8; cursor: default; }
-
-/* ── NO RESULTS ── */
-.no-results-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 100px 20px;
-}
-
-.no-results-state svg { color: var(--text-light); margin-bottom: 24px; }
-.no-results-state h3 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 10px; }
-.no-results-state p { color: var(--text-medium); margin-bottom: 28px; font-weight: 300; }
-
-.btn-primary {
-    background: var(--accent); color: white;
-    border: none; padding: 13px 28px;
-    border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600; cursor: pointer;
-    font-size: 14px; transition: var(--tr);
-}
-
-.btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); }
-
-/* ── PAGINATION ── */
-.pagination-wrapper {
-    display: flex; justify-content: center;
-    align-items: center; gap: 8px;
-    padding: 40px 0 20px;
-}
-
-.page-nav, .page-num {
-    background: var(--warm-white);
-    border: 1.5px solid var(--border);
-    width: 40px; height: 40px;
-    border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-family: 'DM Sans', sans-serif;
-    font-weight: 500; color: var(--text-medium);
-    transition: var(--tr); font-size: 14px;
-}
-
-.page-nav:hover:not(:disabled), .page-num:hover {
-    border-color: var(--accent); color: var(--accent);
-}
-
-.page-num.active {
-    background: var(--accent); color: white;
-    border-color: var(--accent);
-}
-
-.page-nav:disabled { opacity: 0.35; cursor: not-allowed; }
-
-.page-ellipsis {
-    color: var(--text-light);
-    padding: 0 4px; font-size: 16px;
-}
-
-/* ── LIST VIEW ── */
-.list-view .card-body { padding: 24px; }
-.list-view .vehicle-title { font-size: 16px; }
-.list-view .vehicle-price { font-size: 20px; }
-.list-view .vehicle-specs { flex-wrap: nowrap; gap: 14px; }
-.list-view .report-btn { width: auto; padding: 11px 20px; }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 1200px) {
-    .vehicles-grid { grid-template-columns: repeat(3, 1fr); }
-    .filters-grid { grid-template-columns: repeat(4, 1fr); }
-}
-
-@media (max-width: 992px) {
-    .vehicles-grid { grid-template-columns: repeat(2, 1fr); }
-    .filters-grid { grid-template-columns: repeat(3, 1fr); }
-    .list-view .vehicle-card { grid-template-columns: 1fr; }
-    .list-view .card-image-wrapper { aspect-ratio: 4/3; min-height: auto; height: auto; }
-}
-
-@media (max-width: 768px) {
-    .hero-search { padding: 60px 20px 32px; }
-    .container-wrapper { padding: 0 20px; }
-    .hero-title { font-size: 36px; }
-    .search-box-container { flex-direction: column; gap: 10px; }
-    .currency-selector { align-self: flex-end; }
-    .quick-filters-section { gap: 8px; }
-    .advanced-toggle-btn { margin-left: 0; }
-    .filters-grid { grid-template-columns: repeat(2, 1fr); }
-    .vehicles-grid { grid-template-columns: 1fr; gap: 16px; }
-    .results-toolbar { flex-direction: column; align-items: flex-start; gap: 16px; }
-    .toolbar-right { width: 100%; justify-content: space-between; }
-}
-
-@media (max-width: 480px) {
-    .hero-title { font-size: 30px; }
-    .filters-grid { grid-template-columns: 1fr; }
-    .quick-filter-btn { flex: 1; justify-content: center; }
-}
-
-@media (min-width: 1600px) {
-    .vehicles-grid { grid-template-columns: repeat(5, 1fr); }
-    .container-wrapper { max-width: 1560px; }
-}
-
-/* Fade-in animation */
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.vehicle-card {
-    animation: fadeUp 0.35s ease-out both;
-}
-
-.vehicle-card:nth-child(1)  { animation-delay: 0ms; }
-.vehicle-card:nth-child(2)  { animation-delay: 40ms; }
-.vehicle-card:nth-child(3)  { animation-delay: 80ms; }
-.vehicle-card:nth-child(4)  { animation-delay: 120ms; }
-.vehicle-card:nth-child(5)  { animation-delay: 160ms; }
-.vehicle-card:nth-child(6)  { animation-delay: 200ms; }
-.vehicle-card:nth-child(7)  { animation-delay: 240ms; }
-.vehicle-card:nth-child(8)  { animation-delay: 280ms; }
-.vehicle-card:nth-child(9)  { animation-delay: 320ms; }
-.vehicle-card:nth-child(10) { animation-delay: 360ms; }
-.vehicle-card:nth-child(11) { animation-delay: 400ms; }
-.vehicle-card:nth-child(12) { animation-delay: 440ms; }
-.vehicle-card:nth-child(13) { animation-delay: 480ms; }
-.vehicle-card:nth-child(14) { animation-delay: 520ms; }
-.vehicle-card:nth-child(15) { animation-delay: 560ms; }
-.vehicle-card:nth-child(16) { animation-delay: 600ms; }
-.vehicle-card:nth-child(17) { animation-delay: 640ms; }
-.vehicle-card:nth-child(18) { animation-delay: 680ms; }
-.vehicle-card:nth-child(19) { animation-delay: 720ms; }
-.vehicle-card:nth-child(20) { animation-delay: 760ms; }
-
-/* Focus states */
-.filter-select:focus, .toolbar-select:focus,
-.currency-dropdown:focus, .search-box input:focus {
-    outline: none;
-}
-
-button:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-</style>
-
-<!-- M-Pesa Payment Modal -->
-<div id="mpesa-modal" class="mpesa-modal-overlay" onclick="closeMpesaModal(event)">
-    <div class="mpesa-modal-box">
-        <div id="mpesa-step-1" class="mpesa-step active">
-            <div class="mpesa-modal-header">
-                <div class="mpesa-logo-wrap">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+{{-- ╔══════════════════════════════════════╗
+     ║      M-PESA PAYMENT MODAL           ║
+     ╚══════════════════════════════════════╝ --}}
+<div id="vp-mpesa-modal" class="mpm-overlay" onclick="if(event.target===this)VP.closePay()">
+    <div class="mpm-box">
+
+        {{-- Step 1: Instructions --}}
+        <div id="mpm-s1" class="mpm-step active">
+            <div class="mpm-header">
+                <div class="mpm-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
                 </div>
                 <div>
-                    <h2 class="mpesa-modal-title">Pay via M-Pesa</h2>
-                    <p class="mpesa-modal-car" id="modal-car-name">Vehicle Report</p>
+                    <h2 class="mpm-title">Pay via M-Pesa</h2>
+                    <p class="mpm-sub" id="mpm-car-name">Vehicle Report</p>
                 </div>
-                <button class="mpesa-close-btn" onclick="closeMpesaModalDirect()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <button class="mpm-x" onclick="VP.closePay()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
-            <div class="mpesa-amount-display">
-                <span class="amount-label">Amount to Pay</span>
-                <span class="amount-value" id="modal-amount">KSh 0</span>
+
+            <div class="mpm-amount">
+                <span>Amount to Pay</span>
+                <strong id="mpm-amount-display">KSh 0</strong>
             </div>
-            <div class="mpesa-instructions">
-                <h3 class="instructions-title">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    How to Pay
-                </h3>
-                <ol class="steps-list">
-                    <li><span class="step-num">1</span><span>Go to <strong>M-Pesa</strong> on your phone</span></li>
-                    <li><span class="step-num">2</span><span>Select <strong>Lipa na M-Pesa → Paybill</strong></span></li>
-                    <li><span class="step-num">3</span><span>Enter Business No: <strong class="highlight-num" onclick="copyText('247247')">247247</strong><button class="copy-btn" onclick="copyText('247247')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span></li>
-                    <li><span class="step-num">4</span><span>Account No: <strong class="highlight-num" id="modal-account-no" onclick="copyAccountNo()">CAR-001</strong><button class="copy-btn" onclick="copyAccountNo()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span></li>
-                    <li><span class="step-num">5</span><span>Enter Amount: <strong class="highlight-num" id="modal-amount-inline">0</strong></span></li>
-                    <li><span class="step-num">6</span><span>Enter your M-Pesa PIN and confirm</span></li>
-                </ol>
-                <div class="mpesa-note">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    You will receive an M-Pesa confirmation SMS with a transaction code
-                </div>
+
+            <h3 class="mpm-steps-title">How to Pay</h3>
+            <ol class="mpm-steps">
+                <li><span class="mpm-n">1</span><span>Open <strong>M-Pesa</strong> on your phone</span></li>
+                <li><span class="mpm-n">2</span><span>Select <strong>Lipa na M-Pesa → Paybill</strong></span></li>
+                <li>
+                    <span class="mpm-n">3</span>
+                    <span>Business No: <strong class="mpm-hl" onclick="VP.copy('247247')">247247</strong>
+                    <button class="mpm-copy" onclick="VP.copy('247247')">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button></span>
+                </li>
+                <li>
+                    <span class="mpm-n">4</span>
+                    <span>Account No: <strong class="mpm-hl" id="mpm-acct" onclick="VP.copyAcct()">RPT-0</strong>
+                    <button class="mpm-copy" onclick="VP.copyAcct()">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button></span>
+                </li>
+                <li><span class="mpm-n">5</span><span>Amount: <strong class="mpm-hl" id="mpm-amount-inline">0</strong></span></li>
+                <li><span class="mpm-n">6</span><span>Enter PIN and confirm</span></li>
+            </ol>
+
+            <div class="mpm-note">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                You'll receive an M-Pesa confirmation SMS with a transaction code.
             </div>
-            <button class="mpesa-next-btn" onclick="goToStep2()">
-                I've Paid — Enter M-Pesa Code
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+
+            <button class="mpm-next-btn" onclick="VP.payStep(2)">
+                I've Paid — Enter Code
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
         </div>
 
-        <div id="mpesa-step-2" class="mpesa-step">
-            <div class="mpesa-modal-header">
-                <button class="mpesa-back-btn" onclick="goToStep1()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        {{-- Step 2: Enter code --}}
+        <div id="mpm-s2" class="mpm-step">
+            <div class="mpm-header">
+                <button class="mpm-back" onclick="VP.payStep(1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
                 <div>
-                    <h2 class="mpesa-modal-title">Enter M-Pesa Code</h2>
-                    <p class="mpesa-modal-car">Confirm your payment</p>
+                    <h2 class="mpm-title">Enter M-Pesa Code</h2>
+                    <p class="mpm-sub">Confirm your payment</p>
                 </div>
-                <button class="mpesa-close-btn" onclick="closeMpesaModalDirect()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <button class="mpm-x" onclick="VP.closePay()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
-            <div class="code-input-section">
-                <label class="code-label">M-Pesa Transaction Code</label>
-                <p class="code-hint">This is the code from your M-Pesa confirmation SMS (e.g. <strong>SJK1AB2CD3</strong>)</p>
-                <input type="text" id="mpesa-code-input" class="mpesa-code-input" placeholder="e.g. SJK1AB2CD3" maxlength="12" oninput="formatMpesaCode(this)" autocomplete="off" autocapitalize="characters">
-                <div id="code-error" class="code-error hidden">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    <span id="code-error-text">Please enter a valid M-Pesa code</span>
-                </div>
-                <label class="code-label" style="margin-top:20px;">Your Phone Number</label>
-                <p class="code-hint">We'll send your report access to this number</p>
-                <div class="phone-input-wrap">
-                    <span class="phone-prefix">+254</span>
-                    <input type="tel" id="phone-input" class="phone-input" placeholder="7XX XXX XXX" maxlength="9" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                </div>
+
+            <label class="mpm-lbl">M-Pesa Transaction Code</label>
+            <p class="mpm-hint">From your confirmation SMS, e.g. <strong>SJK1AB2CD3</strong></p>
+            <input id="mpm-code" type="text" class="mpm-code-input" placeholder="e.g. SJK1AB2CD3"
+                   maxlength="12" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');VP.hideErr()"
+                   autocomplete="off" autocapitalize="characters">
+            <div id="mpm-err" class="mpm-err hidden">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="mpm-err-txt">Please enter a valid M-Pesa code</span>
             </div>
-            <div class="mpesa-summary-box">
-                <div class="summary-row"><span>Vehicle</span><span id="summary-car-name">—</span></div>
-                <div class="summary-row"><span>Amount</span><span id="summary-amount">—</span></div>
-                <div class="summary-row"><span>Paybill</span><span>247247</span></div>
+
+            <label class="mpm-lbl" style="margin-top:18px">Your Phone Number</label>
+            <p class="mpm-hint">We'll send your report access to this number</p>
+            <div class="mpm-phone-row">
+                <span class="mpm-prefix">+254</span>
+                <input id="mpm-phone" type="tel" class="mpm-phone-inp"
+                       placeholder="7XX XXX XXX" maxlength="9"
+                       oninput="this.value=this.value.replace(/[^0-9]/g,'')">
             </div>
-            <button class="mpesa-submit-btn" id="submit-btn" onclick="submitMpesaCode()">
-                <span id="submit-btn-text">Verify & Get Report</span>
-                <svg id="submit-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                <svg id="submit-spinner" class="spinner hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+
+            <div class="mpm-summary">
+                <div class="mpm-sum-row"><span>Vehicle</span><strong id="mpm-sum-car">—</strong></div>
+                <div class="mpm-sum-row"><span>Amount</span><strong id="mpm-sum-amt">—</strong></div>
+                <div class="mpm-sum-row"><span>Paybill</span><strong>247247</strong></div>
+            </div>
+
+            <button class="mpm-submit-btn" id="mpm-submit" onclick="VP.submitPay()">
+                <span id="mpm-submit-txt">Verify &amp; Get Report</span>
+                <svg id="mpm-submit-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg id="mpm-spinner" class="mpm-spin hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
             </button>
         </div>
 
-        <div id="mpesa-step-3" class="mpesa-step">
-            <div class="mpesa-success-content">
-                <div class="success-icon-wrap">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        {{-- Step 3: Success --}}
+        <div id="mpm-s3" class="mpm-step">
+            <div class="mpm-success">
+                <div class="mpm-success-ico">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 </div>
-                <h2 class="success-title">Payment Verified!</h2>
-                <p class="success-msg">Your vehicle report is ready. You can now view the full inspection details.</p>
-                <div class="success-details">
-                    <div class="success-detail-row"><span>Transaction</span><strong id="success-code">—</strong></div>
-                    <div class="success-detail-row"><span>Vehicle</span><strong id="success-car">—</strong></div>
+                <h2>Payment Verified!</h2>
+                <p>Your vehicle report is ready. View the full inspection details below.</p>
+                <div class="mpm-detail-box">
+                    <div class="mpm-detail-row"><span>Transaction</span><strong id="mpm-ok-code">—</strong></div>
+                    <div class="mpm-detail-row"><span>Vehicle</span><strong id="mpm-ok-car">—</strong></div>
                 </div>
-                <a href="#" id="view-report-link" class="view-report-btn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <a href="#" id="mpm-report-link" class="mpm-view-report">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     View Full Report
                 </a>
-                <button class="mpesa-done-btn" onclick="closeMpesaModalDirect()">Close</button>
+                <button class="mpm-done" onclick="VP.closePay()">Close</button>
             </div>
         </div>
+
     </div>
 </div>
 
-<div id="copy-toast" class="copy-toast">Copied!</div>
+{{-- Toast --}}
+<div id="vp-toast" class="vp-toast">Copied!</div>
 
+
+{{-- ═══════════════════════════════════════
+     STYLES
+═══════════════════════════════════════ --}}
 <style>
-.mpesa-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center; padding:16px; }
-.mpesa-modal-overlay.open { display:flex; }
-.mpesa-modal-box { background:#fff; border-radius:16px; width:100%; max-width:480px; box-shadow:0 25px 60px rgba(0,0,0,0.25); overflow:hidden; animation:modalSlideIn 0.3s cubic-bezier(0.34,1.56,0.64,1); max-height:92vh; overflow-y:auto; }
-@keyframes modalSlideIn { from{opacity:0;transform:translateY(30px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
-.mpesa-step { display:none; padding:28px; }
-.mpesa-step.active { display:block; }
-.mpesa-modal-header { display:flex; align-items:center; gap:14px; margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid #f0f0f0; }
-.mpesa-logo-wrap { width:48px; height:48px; background:#e8f5e9; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#2e7d32; flex-shrink:0; }
-.mpesa-modal-title { font-size:18px; font-weight:700; color:#1a1a1a; margin:0; line-height:1.2; }
-.mpesa-modal-car { font-size:13px; color:#718096; margin:3px 0 0; }
-.mpesa-close-btn,.mpesa-back-btn { margin-left:auto; background:#f7fafc; border:1px solid #e2e8f0; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#4a5568; flex-shrink:0; transition:all 0.2s; }
-.mpesa-back-btn { margin-left:0; margin-right:auto; }
-.mpesa-close-btn:hover { background:#fed7d7; color:#c53030; border-color:#fc8181; }
-.mpesa-back-btn:hover { background:#ebf8ff; color:#2b6cb0; border-color:#90cdf4; }
-.mpesa-amount-display { background:linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%); border-radius:12px; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; color:white; }
-.amount-label { font-size:13px; opacity:0.85; font-weight:500; }
-.amount-value { font-size:26px; font-weight:800; letter-spacing:-0.5px; }
-.instructions-title { font-size:14px; font-weight:700; color:#2d3748; display:flex; align-items:center; gap:8px; margin-bottom:16px; }
-.steps-list { list-style:none; padding:0; margin:0 0 16px; display:flex; flex-direction:column; gap:12px; }
-.steps-list li { display:flex; align-items:flex-start; gap:12px; font-size:14px; color:#4a5568; line-height:1.5; }
-.step-num { width:24px; height:24px; background:var(--accent); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; margin-top:1px; }
-.highlight-num { color:var(--accent); font-weight:700; cursor:pointer; }
-.copy-btn { background:#f7fafc; border:1px solid #e2e8f0; border-radius:4px; padding:2px 6px; cursor:pointer; color:#718096; margin-left:6px; transition:all 0.2s; display:inline-flex; align-items:center; }
-.copy-btn:hover { background:#ebf8ff; color:#2b6cb0; border-color:#90cdf4; }
-.mpesa-note { background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:12px 14px; font-size:13px; color:#92400e; display:flex; align-items:flex-start; gap:8px; line-height:1.5; }
-.mpesa-next-btn { width:100%; background:var(--accent); color:white; border:none; padding:16px 24px; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:20px; font-family:'DM Sans',sans-serif; }
-.mpesa-next-btn:hover { background:var(--accent-hover); transform:translateY(-1px); box-shadow:0 6px 20px rgba(192,57,43,0.25); }
-.code-input-section { margin-bottom:20px; }
-.code-label { display:block; font-size:13px; font-weight:700; color:#2d3748; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
-.code-hint { font-size:13px; color:#718096; margin-bottom:10px; line-height:1.5; }
-.mpesa-code-input { width:100%; padding:14px 16px; border:2px solid #e2e8f0; border-radius:10px; font-size:18px; font-weight:700; letter-spacing:2px; color:#1a1a1a; text-transform:uppercase; transition:all 0.2s; outline:none; }
-.mpesa-code-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-light); }
-.phone-input-wrap { display:flex; align-items:center; border:2px solid #e2e8f0; border-radius:10px; overflow:hidden; transition:all 0.2s; }
-.phone-input-wrap:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-light); }
-.phone-prefix { background:#f7fafc; padding:14px; font-size:15px; font-weight:700; color:#4a5568; border-right:2px solid #e2e8f0; white-space:nowrap; }
-.phone-input { flex:1; border:none; outline:none; padding:14px; font-size:15px; color:#1a1a1a; }
-.code-error { display:flex; align-items:center; gap:6px; font-size:13px; color:#c53030; margin-top:8px; padding:8px 12px; background:#fff5f5; border-radius:6px; border:1px solid #fc8181; }
-.code-error.hidden { display:none; }
-.mpesa-summary-box { background:#f7fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:20px; display:flex; flex-direction:column; gap:8px; }
-.summary-row { display:flex; justify-content:space-between; font-size:13px; color:#4a5568; }
-.summary-row span:first-child { color:#718096; }
-.summary-row span:last-child,.summary-row strong { font-weight:600; color:#1a1a1a; }
-.mpesa-submit-btn { width:100%; background:#2e7d32; color:white; border:none; padding:16px 24px; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'DM Sans',sans-serif; }
-.mpesa-submit-btn:hover:not(:disabled) { background:#1b5e20; transform:translateY(-1px); box-shadow:0 6px 20px rgba(46,125,50,0.35); }
-.mpesa-submit-btn:disabled { opacity:0.6; cursor:not-allowed; }
-.mpesa-success-content { text-align:center; padding:10px 0; }
-.success-icon-wrap { width:80px; height:80px; background:linear-gradient(135deg,#e8f5e9,#c8e6c9); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; color:#2e7d32; animation:successPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
-@keyframes successPop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
-.success-title { font-size:24px; font-weight:800; color:#1a1a1a; margin-bottom:10px; }
-.success-msg { font-size:14px; color:#718096; line-height:1.6; margin-bottom:24px; }
-.success-details { background:#f7fafc; border-radius:10px; padding:16px; margin-bottom:24px; display:flex; flex-direction:column; gap:10px; text-align:left; }
-.success-detail-row { display:flex; justify-content:space-between; font-size:14px; color:#4a5568; }
-.success-detail-row span { color:#718096; }
-.success-detail-row strong { color:#1a1a1a; }
-.view-report-btn { display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:white; text-decoration:none; padding:14px 28px; border-radius:10px; font-size:15px; font-weight:700; transition:all 0.2s; margin-bottom:12px; width:100%; justify-content:center; }
-.view-report-btn:hover { background:var(--accent-hover); transform:translateY(-1px); }
-.mpesa-done-btn { width:100%; background:transparent; border:1px solid #e2e8f0; border-radius:10px; padding:12px; font-size:14px; color:#718096; cursor:pointer; transition:all 0.2s; font-weight:500; }
-.mpesa-done-btn:hover { background:#f7fafc; color:#4a5568; }
-.spinner { animation:spin 0.8s linear infinite; }
-@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-.hidden { display:none !important; }
-.copy-toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px); background:#1a1a1a; color:white; padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; opacity:0; transition:all 0.3s ease; pointer-events:none; z-index:99999; }
-.copy-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Outfit:wght@300;400;500;600&display=swap');
+
+/* ── Design tokens ── */
+:root{
+    --cream:      #faf6f0;
+    --cream-dk:   #f2ead e;
+    --cream-dk:   #f2eade;
+    --warm-white: #fffdf9;
+    --acc:        #b83228;
+    --acc-h:      #9e2820;
+    --acc-light:  rgba(184,50,40,.08);
+    --purple:     #b83228;
+    --purple-lt:  rgba(91,33,182,.10);
+    --ink:        #1c1712;
+    --ink-md:     #5a4b3f;
+    --ink-lt:     #9c8b7d;
+    --border:     #e6dbd0;
+    --border-lt:  #ede5db;
+    --success:    #1f6b42;
+    --warning-c:  #9a4e06;
+    --shadow-s:   0 1px 4px rgba(28,23,18,.06);
+    --shadow-m:   0 4px 18px rgba(28,23,18,.09);
+    --shadow-l:   0 14px 44px rgba(28,23,18,.13);
+    --r:          12px;
+    --r-sm:       8px;
+    --ease:       cubic-bezier(.4,0,.2,1);
+    --tr:         all .22s var(--ease);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Outfit',system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.6}
+a{text-decoration:none;color:inherit}
+button{font-family:'Outfit',system-ui,sans-serif;cursor:pointer}
+
+/* ── Layout ── */
+.vp{min-height:100vh}
+.vp-wrap{max-width:1340px;margin:0 auto;padding:0 32px}
+
+/* ── Hero ── */
+.vp-hero{background:var(--cream-dk);padding:80px 32px 44px;border-bottom:1px solid var(--border)}
+.vp-hero-text{text-align:center;margin-bottom:36px}
+.vp-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:600;letter-spacing:2px;color:var(--acc);text-transform:uppercase;margin-bottom:18px}
+.vp-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:vp-pulse 2s infinite}
+@keyframes vp-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.vp-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(36px,5.5vw,66px);font-weight:600;line-height:1.05;color:var(--ink);margin-bottom:14px;letter-spacing:-.5px}
+.vp-title em{font-style:italic;color:var(--acc)}
+.vp-sub{font-size:16px;color:var(--ink-md);font-weight:300}
+
+/* ── Search bar ── */
+.vp-search-bar{max-width:1100px;margin:0 auto 22px;display:flex;align-items:center;background:var(--warm-white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-s);overflow:hidden}
+.vp-search-left{display:flex;align-items:center;gap:0;flex-shrink:0;padding:0 14px 0 18px}
+.vp-search-ico{color:var(--ink-lt);flex-shrink:0}
+.vp-search-left input{border:none;outline:none;font-family:'Outfit',sans-serif;font-size:14px;color:var(--ink);background:transparent;padding:15px 10px;min-width:200px}
+.vp-search-left input::placeholder{color:var(--ink-lt)}
+.vp-currency{display:flex;align-items:center;gap:6px;border-left:1px solid var(--border-lt);padding:13px 14px;flex-shrink:0}
+.vp-currency svg{color:var(--ink-lt)}
+.vp-currency select{border:none;outline:none;background:transparent;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer}
+.vp-divider{width:1px;height:36px;background:var(--border);flex-shrink:0}
+.vp-pills-wrap{flex:1;display:flex;align-items:center;gap:10px;padding:10px 16px;overflow-x:auto;scrollbar-width:none}
+.vp-pills-wrap::-webkit-scrollbar{display:none}
+.vp-pills-lbl{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-lt);white-space:nowrap;flex-shrink:0}
+.vp-pills{display:flex;gap:6px;flex-shrink:0}
+.vp-pill{padding:6px 13px;border:1.5px solid var(--border);border-radius:100px;background:var(--cream);font-size:12px;font-weight:500;color:var(--ink-md);transition:var(--tr);white-space:nowrap}
+.vp-pill:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-light)}
+.vp-pill.active{background:var(--acc);color:#fff;border-color:var(--acc);box-shadow:0 2px 8px rgba(184,50,40,.2)}
+
+/* ── Quick filters ── */
+.vp-quick{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+.vp-qbtn{padding:8px 16px;border:1.5px solid var(--border);border-radius:100px;background:var(--warm-white);font-size:12.5px;font-weight:500;color:var(--ink-md);display:flex;align-items:center;gap:5px;transition:var(--tr)}
+.vp-qbtn:hover{border-color:var(--acc);color:var(--acc)}
+.vp-qbtn.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+.vp-qbtn--video:hover,.vp-qbtn--video.active{background:var(--purple);border-color:var(--purple);color:#fff}
+.vp-adv-toggle{padding:8px 16px;border:1.5px solid var(--border);border-radius:100px;background:var(--warm-white);font-size:12.5px;font-weight:500;color:var(--ink-md);display:flex;align-items:center;gap:7px;margin-left:auto;transition:var(--tr)}
+.vp-adv-toggle:hover,.vp-adv-toggle.active{border-color:var(--acc);color:var(--acc)}
+.vp-chev{transition:transform .3s var(--ease)}
+.vp-chev.open{transform:rotate(180deg)}
+
+/* ── Advanced filters ── */
+.vp-adv{max-height:0;overflow:hidden;transition:max-height .4s var(--ease)}
+.vp-adv.open{padding-top:26px}
+.vp-adv-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:13px;background:var(--warm-white);border:1.5px solid var(--border);border-radius:var(--r);padding:22px}
+.vp-fg{display:flex;flex-direction:column;gap:7px}
+.vp-fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-lt)}
+.vp-fs{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Outfit',sans-serif;font-size:13px;background:var(--cream);color:var(--ink);outline:none;appearance:auto;transition:var(--tr)}
+.vp-fs:focus,.vp-fs:hover{border-color:var(--acc)}
+.vp-fg--action{justify-content:flex-end;padding-top:24px}
+.vp-clear-btn{padding:10px 16px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:transparent;font-size:13px;font-weight:500;color:var(--ink-md);display:flex;align-items:center;gap:6px;transition:var(--tr)}
+.vp-clear-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* ── Results section ── */
+.vp-results{padding-top:40px;padding-bottom:80px}
+.vp-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--border-lt)}
+.vp-count-wrap{display:flex;align-items:baseline;gap:8px}
+.vp-count{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:600;color:var(--acc)}
+.vp-count-lbl{font-size:14px;color:var(--ink-md);font-weight:300}
+.vp-toolbar-right{display:flex;align-items:center;gap:16px}
+.vp-sort-wrap{display:flex;align-items:center;gap:9px}
+.vp-sort-wrap label{font-size:13px;font-weight:500;color:var(--ink-lt)}
+.vp-sort-sel{padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Outfit',sans-serif;font-size:13px;background:var(--warm-white);color:var(--ink);outline:none;min-width:158px;transition:var(--tr)}
+.vp-sort-sel:hover{border-color:var(--acc)}
+.vp-view-toggle{display:flex;gap:2px;background:var(--cream-dk);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:3px}
+.vp-view{background:transparent;border:none;padding:7px 11px;border-radius:6px;color:var(--ink-lt);display:flex;align-items:center;justify-content:center;transition:var(--tr)}
+.vp-view.active{background:var(--warm-white);color:var(--acc);box-shadow:var(--shadow-s)}
+
+/* ── Grid ── */
+.vp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:48px}
+.vp-grid.list-view{grid-template-columns:1fr}
+
+/* ── Card ── */
+.vp-card{background:var(--warm-white);border-radius:var(--r);overflow:hidden;border:1px solid var(--border-lt);box-shadow:var(--shadow-s);display:flex;flex-direction:column;transition:var(--tr);animation:vp-fadeup .35s var(--ease) both}
+.vp-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-l);border-color:var(--border)}
+.list-view .vp-card{display:grid;grid-template-columns:320px 1fr}
+@keyframes vp-fadeup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.vp-card:nth-child(1){animation-delay:0ms}.vp-card:nth-child(2){animation-delay:40ms}
+.vp-card:nth-child(3){animation-delay:80ms}.vp-card:nth-child(4){animation-delay:120ms}
+.vp-card:nth-child(5){animation-delay:160ms}.vp-card:nth-child(6){animation-delay:200ms}
+.vp-card:nth-child(7){animation-delay:240ms}.vp-card:nth-child(8){animation-delay:280ms}
+.vp-card:nth-child(9){animation-delay:320ms}.vp-card:nth-child(10){animation-delay:360ms}
+.vp-card:nth-child(11){animation-delay:400ms}.vp-card:nth-child(12){animation-delay:440ms}
+
+/* Card image */
+.vp-card-img{position:relative;aspect-ratio:4/3;background:var(--cream-dk);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.list-view .vp-card-img{aspect-ratio:auto;height:100%;min-height:220px}
+.vp-img-link{display:block;width:100%;height:100%}
+.vp-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s var(--ease)}
+.vp-card:hover .vp-card-img img{transform:scale(1.04)}
+
+/* Wishlist button */
+.vp-wish{position:absolute;top:11px;right:11px;width:34px;height:34px;background:rgba(255,253,249,.92);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink-lt);backdrop-filter:blur(4px);transition:var(--tr);z-index:10}
+.vp-wish:hover,.vp-wish.active{color:var(--acc)}
+.vp-wish.active svg{fill:currentColor}
+
+/* Video play button */
+.vp-play-btn{position:absolute;bottom:11px;right:11px;width:44px;height:44px;background:#b83228;border:2px solid rgba(255,255,255,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;z-index:10;backdrop-filter:blur(6px);transition:var(--tr);overflow:visible}
+.vp-play-btn:hover{background:var(--purple);transform:scale(1.1);box-shadow:0 4px 20px #b83228}
+.vp-play-btn svg{margin-left:2px;position:relative;z-index:1}
+.vp-play-ripple{position:absolute;inset:-4px;border-radius:50%;border:2px solid #b83228;animation:vp-ripple 2s ease-out infinite}
+@keyframes vp-ripple{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.75);opacity:0}}
+
+/* Badges */
+.vp-badges{position:absolute;top:11px;left:11px;display:flex;flex-direction:column;gap:5px;z-index:10}
+.vp-badge{padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.4px;display:inline-flex;align-items:center;gap:4px}
+.vp-badge--v{background:var(--success);color:#fff}
+.vp-badge--f{background:var(--warning-c);color:#fff}
+.vp-badge--vid{background:var(--purple);color:#fff}
+.vp-img-count{position:absolute;bottom:9px;left:9px;background:rgba(28,23,18,.6);color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;backdrop-filter:blur(4px)}
+
+/* Card body */
+.vp-card-body{padding:17px;display:flex;flex-direction:column;gap:11px;flex:1}
+.vp-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.vp-car-name{font-size:13.5px;font-weight:600;line-height:1.4;margin-bottom:2px}
+.vp-car-name a{color:var(--ink);transition:color .2s}
+.vp-car-name a:hover{color:var(--acc)}
+.vp-car-year{display:block;font-size:12px;color:var(--ink-lt);font-weight:400}
+.vp-price{font-size:15.5px;font-weight:700;color:var(--acc);white-space:nowrap}
+.vp-specs{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:10px 0;border-top:1px solid var(--border-lt);border-bottom:1px solid var(--border-lt)}
+.vp-spec{font-size:12px;color:var(--ink-md);display:flex;align-items:center;gap:4px}
+.vp-spec svg{color:var(--ink-lt)}
+.vp-dot-sep{width:3px;height:3px;border-radius:50%;background:var(--border)}
+.vp-card-foot{display:flex;justify-content:space-between;align-items:center}
+.vp-loc{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-lt)}
+.vp-details-link{font-size:13px;font-weight:600;color:var(--acc);transition:var(--tr);letter-spacing:-.2px}
+.vp-details-link:hover{letter-spacing:.2px}
+
+/* Video teaser strip */
+.vp-video-strip{display:flex;align-items:center;gap:9px;padding:9px 12px;background:var(--purple-lt);border:1.5px solid rgba(91,33,182,.2);border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--purple);transition:var(--tr)}
+.vp-video-strip:hover{background:rgba(91,33,182,.14);border-color:var(--purple);transform:translateY(-1px)}
+.vp-vs-icon{width:26px;height:26px;background:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+.vp-vs-icon svg{margin-left:2px}
+.vp-video-strip>span{flex:1;text-align:left}
+.vp-video-strip>svg{flex-shrink:0;opacity:.55}
+
+/* Report */
+.vp-report-wrap{border-top:1px solid var(--border-lt);padding-top:11px}
+.vp-report-btn{width:100%;background:var(--acc);color:#fff;border:none;padding:10px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:var(--tr)}
+.vp-report-btn:hover{background:var(--acc-h);transform:translateY(-1px);box-shadow:var(--shadow-m)}
+.vp-report-btn--ok{background:var(--success)}
+.vp-report-btn--ok:hover{background:#165c38}
+.vp-report-btn--pend{background:var(--ink-md);opacity:.8;cursor:default}
+
+/* Empty state */
+.vp-empty{grid-column:1/-1;text-align:center;padding:100px 20px}
+.vp-empty svg{color:var(--ink-lt);margin-bottom:24px}
+.vp-empty h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;margin-bottom:10px}
+.vp-empty p{color:var(--ink-md);margin-bottom:28px;font-weight:300}
+.vp-btn-primary{background:var(--acc);color:#fff;border:none;padding:13px 26px;border-radius:var(--r-sm);font-size:14px;font-weight:600;transition:var(--tr)}
+.vp-btn-primary:hover{background:var(--acc-h);transform:translateY(-2px)}
+
+/* Pagination */
+.vp-pager{display:flex;justify-content:center;align-items:center;gap:8px;padding:40px 0 20px}
+.vp-page-nav,.vp-page-num{background:var(--warm-white);border:1.5px solid var(--border);width:40px;height:40px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-weight:500;color:var(--ink-md);transition:var(--tr);font-size:14px}
+.vp-page-nav:hover:not(:disabled),.vp-page-num:hover{border-color:var(--acc);color:var(--acc)}
+.vp-page-num.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+.vp-page-nav:disabled{opacity:.35;cursor:not-allowed}
+.vp-page-ell{color:var(--ink-lt);padding:0 4px;font-size:16px}
+
+/* List view overrides */
+.list-view .vp-card-body{padding:22px}
+.list-view .vp-car-name{font-size:16px}
+.list-view .vp-price{font-size:20px}
+.list-view .vp-specs{flex-wrap:nowrap;gap:14px}
+.list-view .vp-report-btn{width:auto;padding:10px 18px}
+
+
+/* ══ VIDEO MODAL ══ */
+.vpm-overlay{display:none;position:fixed;inset:0;background:rgba(8,4,2,.82);backdrop-filter:blur(8px);z-index:9998;align-items:center;justify-content:center;padding:20px}
+.vpm-overlay.open{display:flex}
+.vpm-box{background:#0c0704;border-radius:16px;width:100%;max-width:860px;box-shadow:0 40px 100px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06);overflow:hidden;animation:vpm-in .3s cubic-bezier(.34,1.56,.64,1);display:flex;flex-direction:column}
+@keyframes vpm-in{from{opacity:0;transform:translateY(28px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.vpm-header{display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
+.vpm-ico{width:32px;height:32px;background:var(--purple);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.vpm-name{font-size:13.5px;font-weight:600;color:rgba(255,255,255,.86);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vpm-close{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);flex-shrink:0;transition:var(--tr)}
+.vpm-close:hover{background:rgba(184,50,40,.3);color:#fff;border-color:var(--acc)}
+.vpm-stage{position:relative;background:#000;line-height:0}
+.vpm-stage video{width:100%;max-height:520px;display:block;background:#000}
+.vpm-play-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.42);cursor:pointer;gap:13px;transition:opacity .25s}
+.vpm-big-play{width:78px;height:78px;background:#b83228;border:3px solid rgba(255,255,255,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;transition:var(--tr);box-shadow:0 8px 30px rgba(91,33,182,.45)}
+.vpm-big-play svg{margin-left:4px}
+.vpm-play-overlay:hover .vpm-big-play{transform:scale(1.09);background:var(--purple)}
+.vpm-hint{font-size:13px;color:rgba(255,255,255,.6);font-weight:500;letter-spacing:.4px}
+.vpm-footer{display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;color:rgba(255,255,255,.3)}
+.vpm-footer svg{flex-shrink:0;color:var(--purple);opacity:.65}
+
+
+/* ══ MPESA MODAL ══ */
+.mpm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:16px}
+.mpm-overlay.open{display:flex}
+.mpm-box{background:#fff;border-radius:16px;width:100%;max-width:480px;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;animation:mpm-in .3s cubic-bezier(.34,1.56,.64,1);max-height:92vh;overflow-y:auto}
+@keyframes mpm-in{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.mpm-step{display:none;padding:26px}.mpm-step.active{display:block}
+.mpm-header{display:flex;align-items:center;gap:13px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #f0f0f0}
+.mpm-logo{width:46px;height:46px;background:#e8f5e9;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#2e7d32;flex-shrink:0}
+.mpm-title{font-size:17px;font-weight:700;color:#1a1a1a;margin:0}
+.mpm-sub{font-size:13px;color:#718096;margin:3px 0 0}
+.mpm-x{margin-left:auto;background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#4a5568;flex-shrink:0;transition:all .2s}
+.mpm-back{margin-right:auto;background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#4a5568;flex-shrink:0;transition:all .2s}
+.mpm-x:hover{background:#fed7d7;color:#c53030;border-color:#fc8181}
+.mpm-back:hover{background:#ebf8ff;color:#2b6cb0;border-color:#90cdf4}
+.mpm-amount{background:linear-gradient(135deg,var(--acc) 0%,var(--acc-h) 100%);border-radius:12px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;color:#fff}
+.mpm-amount span{font-size:13px;opacity:.85;font-weight:500}
+.mpm-amount strong{font-size:25px;font-weight:800;letter-spacing:-.5px}
+.mpm-steps-title{font-size:13.5px;font-weight:700;color:#2d3748;margin-bottom:14px}
+.mpm-steps{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:14px}
+.mpm-steps li{display:flex;align-items:flex-start;gap:11px;font-size:13.5px;color:#4a5568;line-height:1.5}
+.mpm-n{width:23px;height:23px;background:var(--acc);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.mpm-hl{color:var(--acc);font-weight:700;cursor:pointer}
+.mpm-copy{background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;padding:2px 6px;color:#718096;margin-left:5px;display:inline-flex;align-items:center;transition:all .2s}
+.mpm-copy:hover{background:#ebf8ff;color:#2b6cb0;border-color:#90cdf4}
+.mpm-note{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:11px 13px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:7px;line-height:1.5}
+.mpm-next-btn{width:100%;background:var(--acc);color:#fff;border:none;padding:15px 22px;border-radius:10px;font-size:14.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:18px;transition:all .2s}
+.mpm-next-btn:hover{background:var(--acc-h);transform:translateY(-1px);box-shadow:0 5px 18px rgba(184,50,40,.22)}
+.mpm-lbl{display:block;font-size:12.5px;font-weight:700;color:#2d3748;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.mpm-hint{font-size:13px;color:#718096;margin-bottom:9px;line-height:1.5}
+.mpm-code-input{width:100%;padding:13px 15px;border:2px solid #e2e8f0;border-radius:10px;font-size:18px;font-weight:700;letter-spacing:2px;color:#1a1a1a;text-transform:uppercase;outline:none;transition:all .2s}
+.mpm-code-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-light)}
+.mpm-phone-row{display:flex;align-items:center;border:2px solid #e2e8f0;border-radius:10px;overflow:hidden;transition:all .2s}
+.mpm-phone-row:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-light)}
+.mpm-prefix{background:#f7fafc;padding:13px;font-size:14.5px;font-weight:700;color:#4a5568;border-right:2px solid #e2e8f0;white-space:nowrap}
+.mpm-phone-inp{flex:1;border:none;outline:none;padding:13px;font-size:14.5px;color:#1a1a1a}
+.mpm-err{display:flex;align-items:center;gap:6px;font-size:13px;color:#c53030;margin-top:8px;padding:8px 11px;background:#fff5f5;border-radius:6px;border:1px solid #fc8181}
+.mpm-err.hidden{display:none!important}
+.mpm-summary{background:#f7fafc;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px;margin:18px 0;display:flex;flex-direction:column;gap:8px}
+.mpm-sum-row{display:flex;justify-content:space-between;font-size:13px;color:#4a5568}
+.mpm-sum-row span{color:#718096}
+.mpm-sum-row strong{font-weight:600;color:#1a1a1a}
+.mpm-submit-btn{width:100%;background:#2e7d32;color:#fff;border:none;padding:15px 22px;border-radius:10px;font-size:14.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.mpm-submit-btn:hover:not(:disabled){background:#1b5e20;transform:translateY(-1px);box-shadow:0 5px 18px rgba(46,125,50,.3)}
+.mpm-submit-btn:disabled{opacity:.6;cursor:not-allowed}
+.mpm-success{text-align:center;padding:8px 0}
+.mpm-success-ico{width:78px;height:78px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:#2e7d32;animation:mpm-pop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes mpm-pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.mpm-success h2{font-size:22px;font-weight:800;color:#1a1a1a;margin-bottom:9px}
+.mpm-success p{font-size:13.5px;color:#718096;line-height:1.6;margin-bottom:22px}
+.mpm-detail-box{background:#f7fafc;border-radius:10px;padding:15px;margin-bottom:22px;display:flex;flex-direction:column;gap:9px;text-align:left}
+.mpm-detail-row{display:flex;justify-content:space-between;font-size:13.5px;color:#4a5568}
+.mpm-detail-row span{color:#718096}
+.mpm-detail-row strong{color:#1a1a1a}
+.mpm-view-report{display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:#fff;padding:13px 26px;border-radius:10px;font-size:14.5px;font-weight:700;transition:all .2s;margin-bottom:11px;width:100%;justify-content:center}
+.mpm-view-report:hover{background:var(--acc-h);transform:translateY(-1px)}
+.mpm-done{width:100%;background:transparent;border:1px solid #e2e8f0;border-radius:10px;padding:11px;font-size:14px;color:#718096;transition:all .2s;font-weight:500}
+.mpm-done:hover{background:#f7fafc;color:#4a5568}
+.mpm-spin{animation:mpm-spin .8s linear infinite}
+@keyframes mpm-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+
+/* Toast */
+.vp-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(16px);background:#1c1712;color:#fff;padding:9px 20px;border-radius:8px;font-size:13.5px;font-weight:600;opacity:0;transition:all .28s ease;pointer-events:none;z-index:99999}
+.vp-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Responsive ── */
+@media(max-width:1200px){.vp-grid{grid-template-columns:repeat(3,1fr)}.vp-adv-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:992px){
+    .vp-grid{grid-template-columns:repeat(2,1fr)}
+    .vp-adv-grid{grid-template-columns:repeat(3,1fr)}
+    .list-view .vp-card{grid-template-columns:1fr}
+    .list-view .vp-card-img{aspect-ratio:4/3;min-height:auto;height:auto}
+    .vp-search-bar{flex-direction:column;align-items:stretch}
+    .vp-search-left{border-bottom:1px solid var(--border-lt);padding:4px 14px}
+    .vp-divider{display:none}
+    .vp-pills-wrap{padding:10px 14px}
+    .vpm-box{max-width:100%}
+}
+@media(max-width:768px){
+    .vp-hero{padding:56px 20px 30px}
+    .vp-wrap{padding:0 20px}
+    .vp-title{font-size:36px}
+    .vp-adv-toggle{margin-left:0}
+    .vp-adv-grid{grid-template-columns:repeat(2,1fr)}
+    .vp-grid{grid-template-columns:1fr;gap:14px}
+    .vp-toolbar{flex-direction:column;align-items:flex-start;gap:14px}
+    .vp-toolbar-right{width:100%;justify-content:space-between}
+    .vpm-stage video{max-height:260px}
+}
+@media(max-width:480px){
+    .vp-title{font-size:30px}
+    .vp-adv-grid{grid-template-columns:1fr}
+    .vp-pills-lbl{display:none}
+    .vp-qbtn{flex:1;justify-content:center}
+}
+@media(min-width:1600px){
+    .vp-grid{grid-template-columns:repeat(5,1fr)}
+    .vp-wrap{max-width:1580px}
+}
 </style>
 
-<script>
-let currentCarId = null;
-let currentCarName = null;
-let currentCarPrice = null;
 
-function openPaymentModal(event, carId, reportPrice, carName) {
-    event.stopPropagation();
-    currentCarId = carId; currentCarName = carName; currentCarPrice = reportPrice;
-    document.getElementById('modal-car-name').textContent = carName;
-    document.getElementById('modal-amount').textContent = 'KSh ' + Number(reportPrice).toLocaleString();
-    document.getElementById('modal-amount-inline').textContent = Number(reportPrice).toLocaleString();
-    document.getElementById('modal-account-no').textContent = 'RPT-' + carId;
-    document.getElementById('summary-car-name').textContent = carName;
-    document.getElementById('summary-amount').textContent = 'KSh ' + Number(reportPrice).toLocaleString();
-    goToStep1();
-    document.getElementById('mpesa-code-input').value = '';
-    hideError();
-    document.getElementById('mpesa-modal').classList.add('open');
-    document.body.style.overflow = 'hidden';
-}
-function closeMpesaModal(e) { if (e.target === document.getElementById('mpesa-modal')) closeMpesaModalDirect(); }
-function closeMpesaModalDirect() { document.getElementById('mpesa-modal').classList.remove('open'); document.body.style.overflow = ''; }
-function setStep(id) { document.querySelectorAll('.mpesa-step').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function goToStep1() { setStep('mpesa-step-1'); }
-function goToStep2() { setStep('mpesa-step-2'); }
-function goToStep3() { setStep('mpesa-step-3'); }
-function formatMpesaCode(input) { input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g,''); hideError(); }
-function hideError() { document.getElementById('code-error').classList.add('hidden'); }
-function showError(msg) { document.getElementById('code-error-text').textContent = msg; document.getElementById('code-error').classList.remove('hidden'); }
-function copyText(text) {
-    navigator.clipboard.writeText(text).catch(() => { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); });
-    showToast('Copied: ' + text);
-}
-function copyAccountNo() { copyText('RPT-' + currentCarId); }
-function showToast(msg) { const t = document.getElementById('copy-toast'); if (!t) return; t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-function submitMpesaCode() {
-    const code = document.getElementById('mpesa-code-input').value.trim();
-    if (code.length < 8) { showError('Please enter a valid M-Pesa transaction code (min 8 characters)'); return; }
-    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-    if (!csrfMeta) { showError('Page error — please refresh and try again.'); return; }
-    const btn = document.getElementById('submit-btn');
-    const btnText = document.getElementById('submit-btn-text');
-    const btnIcon = document.getElementById('submit-icon');
-    const spinner = document.getElementById('submit-spinner');
-    if (btn) btn.disabled = true;
-    if (btnText) btnText.textContent = 'Submitting...';
-    if (btnIcon) btnIcon.classList.add('hidden');
-    if (spinner) spinner.classList.remove('hidden');
-    function resetBtn() { if (btn) btn.disabled = false; if (btnText) btnText.textContent = 'Verify & Get Report'; if (btnIcon) btnIcon.classList.remove('hidden'); if (spinner) spinner.classList.add('hidden'); }
-    fetch(`/vehicles/${currentCarId}/submit-report-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfMeta.getAttribute('content') },
-        body: JSON.stringify({ mpesa_code: code, amount: currentCarPrice })
-    })
-    .then(res => {
-        if (res.status === 419) throw new Error('csrf');
-        if (res.status === 401) { window.location.href = '/sell?redirect=' + encodeURIComponent(window.location.href); throw new Error('unauthenticated'); }
-        if (res.status === 422) return res.json().then(d => { throw { type: 'validation', errors: d.errors }; });
-        if (!res.ok) throw new Error('http_' + res.status);
-        return res.json();
-    })
-    .then(data => {
-        resetBtn();
-        if (data.success) { goToStep3(); }
-        else { showError(data.message || 'Something went wrong. Please try again.'); }
-    })
-    .catch(err => {
-        if (err.message === 'unauthenticated') return;
-        resetBtn();
-        if (err && err.type === 'validation') showError(Object.values(err.errors).flat().join(' '));
-        else if (err.message === 'csrf') showError('Session expired — please refresh and try again.');
-        else { showError('Request failed. Please check your connection and try again.'); console.error(err); }
+{{-- ═══════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════ --}}
+<script>
+const VP = (() => {
+    /* ── State ── */
+    let priceMin       = 0;
+    let priceMax       = 99000000;
+    let quickFilter    = 'all';
+    let advOpen        = false;
+    let curRate        = 1;
+    let curSym         = 'KSh';
+    let curCode        = 'KES';
+    let payCarId       = null;
+    let payCarName     = null;
+    let payCarPrice    = null;
+
+    /* ── DOM helpers ── */
+    const $  = id => document.getElementById(id);
+    const $$ = sel => document.querySelectorAll(sel);
+
+    /* ════════════════════════════════
+       FILTERING
+    ════════════════════════════════ */
+    function filter() {
+        const q   = ($('js-search').value || '').toLowerCase().trim();
+        const mk  = ($('js-make').value || '').toLowerCase();
+        const bt  = ($('js-body').value || '').toLowerCase();
+        const tr  = ($('js-trans').value || '').toLowerCase();
+        const fu  = ($('js-fuel').value || '').toLowerCase();
+        const yf  = $('js-year-from').value;
+        const yt  = $('js-year-to').value;
+        const mf  = $('js-mil-from').value;
+        const mt  = $('js-mil-to').value;
+
+        let visible = 0;
+        $$('.vp-card').forEach(card => {
+            const d = card.dataset;
+            let ok = true;
+
+            if (quickFilter === 'local'     && d.category !== 'local')    ok = false;
+            if (quickFilter === 'imports'   && d.category !== 'imports')  ok = false;
+            if (quickFilter === 'verified'  && d.verified !== 'true')     ok = false;
+            if (quickFilter === 'has-video' && d.hasVideo !== 'true')     ok = false;
+
+            if (q  && !(d.name || '').includes(q))       ok = false;
+            if (mk && d.make  !== mk)                    ok = false;
+            if (bt && d.body  !== bt)                    ok = false;
+            if (tr && d.trans !== tr)                    ok = false;
+            if (fu && d.fuel  !== fu)                    ok = false;
+
+            const yr = parseInt(d.year);
+            if (yf && yr < parseInt(yf))                 ok = false;
+            if (yt && yr > parseInt(yt))                 ok = false;
+
+            const pr = parseInt(d.price);
+            if (pr < priceMin || pr > priceMax)          ok = false;
+
+            const ml = parseInt(d.mileage);
+            if (mf && ml < parseInt(mf))                 ok = false;
+            if (mt && ml > parseInt(mt))                 ok = false;
+
+            card.style.display = ok ? '' : 'none';
+            if (ok) visible++;
+        });
+        $('js-count').textContent = visible;
+    }
+
+    function pill(btn, min, max) {
+        priceMin = min; priceMax = max;
+        $$('.vp-pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        filter();
+    }
+
+    function quick(type) {
+        quickFilter = type;
+        $$('.vp-qbtn').forEach(b => b.classList.toggle('active', b.dataset.filter === type));
+        filter();
+    }
+
+    function sort() {
+        const v   = $('js-sort').value;
+        const con = $('js-grid');
+        const cards = [...$$('.vp-card')];
+        cards.sort((a, b) => {
+            const ad = a.dataset, bd = b.dataset;
+            if (v === 'price-low')   return +ad.price   - +bd.price;
+            if (v === 'price-high')  return +bd.price   - +ad.price;
+            if (v === 'year-new')    return +bd.year    - +ad.year;
+            if (v === 'year-old')    return +ad.year    - +bd.year;
+            if (v === 'mileage-low') return +ad.mileage - +bd.mileage;
+            return 0;
+        });
+        cards.forEach(c => con.appendChild(c));
+    }
+
+    function clear() {
+        ['js-search','js-make','js-body','js-trans','js-fuel',
+         'js-year-from','js-year-to','js-mil-from','js-mil-to']
+            .forEach(id => { const el = $(id); if (el) el.value = ''; });
+        priceMin = 0; priceMax = 99000000;
+        quickFilter = 'all';
+        $$('.vp-qbtn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+        $$('.vp-pill').forEach(p => p.classList.remove('active'));
+        const allPill = document.querySelector('.vp-pill[data-max="99000000"]');
+        if (allPill) allPill.classList.add('active');
+        history.replaceState(null, '', window.location.pathname);
+        filter();
+    }
+
+    /* ════════════════════════════════
+       CURRENCY
+    ════════════════════════════════ */
+    function currency() {
+        const sel = $('js-currency');
+        const opt = sel.options[sel.selectedIndex];
+        curRate = parseFloat(opt.dataset.rate);
+        curSym  = opt.dataset.sym;
+        curCode = opt.value;
+        $$('.vp-price').forEach(el => {
+            const base = parseFloat(el.dataset.base);
+            el.textContent = fmtPrice(base * curRate);
+        });
+    }
+
+    function fmtPrice(n) {
+        return (['KES','UGX','TZS'].includes(curCode))
+            ? `${curSym} ${Math.round(n).toLocaleString()}`
+            : `${curSym}${Math.round(n).toLocaleString()}`;
+    }
+
+    /* ════════════════════════════════
+       ADVANCED FILTER TOGGLE
+    ════════════════════════════════ */
+    function toggleAdv() {
+        advOpen = !advOpen;
+        _setAdv(advOpen);
+    }
+
+    function _setAdv(open) {
+        advOpen = open;
+        const panel = $('js-adv-panel');
+        const chev  = $('js-adv-chev');
+        const lbl   = $('js-adv-label');
+        const btn   = $('js-adv-toggle');
+        if (open) {
+            panel.style.maxHeight = (panel.scrollHeight + 400) + 'px';
+            panel.classList.add('open');
+            chev.classList.add('open');
+            lbl.textContent = 'Hide Filters';
+            btn.classList.add('active');
+        } else {
+            panel.style.maxHeight = '0';
+            panel.classList.remove('open');
+            chev.classList.remove('open');
+            lbl.textContent = 'More Filters';
+            btn.classList.remove('active');
+        }
+    }
+
+    /* ════════════════════════════════
+       VIEW (GRID / LIST)
+    ════════════════════════════════ */
+    function view(type) {
+        $$('.vp-view').forEach(b => b.classList.toggle('active', b.dataset.view === type));
+        $('js-grid').classList.toggle('list-view', type === 'list');
+    }
+
+    /* ════════════════════════════════
+       WISHLIST
+    ════════════════════════════════ */
+    function wish(e, btn) {
+        e.preventDefault(); e.stopPropagation();
+        btn.classList.toggle('active');
+    }
+
+    /* ════════════════════════════════
+       VIDEO MODAL
+    ════════════════════════════════ */
+    function openVideo(e, url, name) {
+        e.preventDefault(); e.stopPropagation();
+
+        /* Guard: url must be a non-empty string */
+        if (!url || url.trim() === '') {
+            console.warn('[VP] openVideo called with empty URL for:', name);
+            return;
+        }
+
+        const src     = $('vpm-src');
+        const video   = $('vpm-video');
+        const overlay = $('vpm-overlay');
+        const modal   = $('vp-video-modal');
+        const nameEl  = $('vpm-name');
+
+        src.src               = url;
+        nameEl.textContent    = name + ' — Video Walkthrough';
+        video.load();
+        overlay.style.display = 'flex';   // show tap-to-play overlay
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeVideo() {
+        const modal = $('vp-video-modal');
+        const video = $('vpm-video');
+        video.pause();
+        video.currentTime = 0;
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function startVideo() {
+        const video   = $('vpm-video');
+        const overlay = $('vpm-overlay');
+        video.play()
+            .then(() => { overlay.style.display = 'none'; })
+            .catch(err => console.warn('[VP] Video play error:', err));
+    }
+
+    /* ════════════════════════════════
+       MPESA MODAL
+    ════════════════════════════════ */
+    function openPay(e, carId, price, name) {
+        e.stopPropagation();
+        payCarId    = carId;
+        payCarName  = name;
+        payCarPrice = price;
+
+        $('mpm-car-name').textContent       = name;
+        $('mpm-amount-display').textContent = 'KSh ' + Number(price).toLocaleString();
+        $('mpm-amount-inline').textContent  = Number(price).toLocaleString();
+        $('mpm-acct').textContent           = 'RPT-' + carId;
+        $('mpm-sum-car').textContent        = name;
+        $('mpm-sum-amt').textContent        = 'KSh ' + Number(price).toLocaleString();
+
+        payStep(1);
+        $('mpm-code').value = '';
+        hideErr();
+        $('vp-mpesa-modal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePay() {
+        $('vp-mpesa-modal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function payStep(n) {
+        $$('.mpm-step').forEach(s => s.classList.remove('active'));
+        $('mpm-s' + n).classList.add('active');
+    }
+
+    function hideErr() {
+        $('mpm-err').classList.add('hidden');
+    }
+
+    function _showErr(msg) {
+        $('mpm-err-txt').textContent = msg;
+        $('mpm-err').classList.remove('hidden');
+    }
+
+    function submitPay() {
+        const code = ($('mpm-code').value || '').trim();
+        if (code.length < 8) {
+            _showErr('Please enter a valid M-Pesa code (min 8 characters)');
+            return;
+        }
+        const csrf = document.querySelector('meta[name="csrf-token"]');
+        if (!csrf) { _showErr('Page error — please refresh and try again.'); return; }
+
+        const btn  = $('mpm-submit');
+        const txt  = $('mpm-submit-txt');
+        const ico  = $('mpm-submit-ico');
+        const spin = $('mpm-spinner');
+
+        btn.disabled      = true;
+        txt.textContent   = 'Submitting…';
+        ico.classList.add('hidden');
+        spin.classList.remove('hidden');
+
+        const reset = () => {
+            btn.disabled     = false;
+            txt.textContent  = 'Verify & Get Report';
+            ico.classList.remove('hidden');
+            spin.classList.add('hidden');
+        };
+
+        fetch(`/vehicles/${payCarId}/submit-report-payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf.getAttribute('content') },
+            body: JSON.stringify({ mpesa_code: code, amount: payCarPrice })
+        })
+        .then(res => {
+            if (res.status === 419) throw new Error('csrf');
+            if (res.status === 401) { window.location.href = '/sell?redirect=' + encodeURIComponent(location.href); throw new Error('unauth'); }
+            if (res.status === 422) return res.json().then(d => { throw { type: 'validation', errors: d.errors }; });
+            if (!res.ok)            throw new Error('http_' + res.status);
+            return res.json();
+        })
+        .then(data => {
+            reset();
+            if (data.success) {
+                $('mpm-ok-code').textContent = code;
+                $('mpm-ok-car').textContent  = payCarName;
+                payStep(3);
+            } else {
+                _showErr(data.message || 'Something went wrong. Please try again.');
+            }
+        })
+        .catch(err => {
+            if (err.message === 'unauth') return;
+            reset();
+            if (err?.type === 'validation') _showErr(Object.values(err.errors).flat().join(' '));
+            else if (err.message === 'csrf') _showErr('Session expired — please refresh the page.');
+            else { _showErr('Request failed. Please check your connection.'); console.error(err); }
+        });
+    }
+
+    /* ════════════════════════════════
+       COPY UTILITY
+    ════════════════════════════════ */
+    function copy(text) {
+        navigator.clipboard.writeText(text).catch(() => {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        });
+        _toast('Copied: ' + text);
+    }
+
+    function copyAcct() { copy('RPT-' + payCarId); }
+
+    function _toast(msg) {
+        const t = $('vp-toast');
+        if (!t) return;
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    /* ════════════════════════════════
+       URL PARAMS INIT
+    ════════════════════════════════ */
+    function _initFromURL() {
+        const p = new URLSearchParams(location.search);
+
+        const q = p.get('query') || p.get('search') || '';
+        if (q) $('js-search').value = q;
+
+        const make = p.get('make') || '';
+        if (make) { $('js-make').value = make.toLowerCase(); _setAdv(true); }
+
+        const body = p.get('body_type') || '';
+        if (body) { $('js-body').value = body.toLowerCase(); _setAdv(true); }
+
+        const pMin = parseInt(p.get('price_min') || '0');
+        const pMax = parseInt(p.get('price_max') || '99000000');
+        if (p.has('price_min') || p.has('price_max')) {
+            priceMin = pMin; priceMax = pMax;
+            $$('.vp-pill').forEach(pill => {
+                pill.classList.toggle('active',
+                    parseInt(pill.dataset.min) === priceMin && parseInt(pill.dataset.max) === priceMax);
+            });
+        }
+
+        ['transmission:js-trans','fuel_type:js-fuel','year_from:js-year-from',
+         'year_to:js-year-to','mileage_from:js-mil-from','mileage_to:js-mil-to']
+        .forEach(pair => {
+            const [key, id] = pair.split(':');
+            const val = p.get(key) || '';
+            if (val) { $(id).value = val.toLowerCase(); _setAdv(true); }
+        });
+
+        if ([...p.keys()].length > 0) filter();
+    }
+
+    /* ════════════════════════════════
+       GLOBAL KEYBOARD / INIT
+    ════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', () => {
+        /* Video: hide overlay when playing, show when paused at start */
+        const video   = $('vpm-video');
+        const overlay = $('vpm-overlay');
+        if (video) {
+            video.addEventListener('play',  () => { overlay.style.display = 'none'; });
+            video.addEventListener('pause', () => {
+                if (video.currentTime < 0.5) overlay.style.display = 'flex';
+            });
+        }
+
+        /* Escape key closes any open modal */
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            if ($('vp-video-modal')?.classList.contains('open'))  closeVideo();
+            if ($('vp-mpesa-modal')?.classList.contains('open'))  closePay();
+        });
+
+        _initFromURL();
     });
-}
+
+    /* ── Public API ── */
+    return { filter, pill, quick, sort, clear, currency, toggleAdv,
+             view, wish, openVideo, closeVideo, startVideo,
+             openPay, closePay, payStep, hideErr, submitPay,
+             copy, copyAcct };
+})();
 </script>
+
 @endsection

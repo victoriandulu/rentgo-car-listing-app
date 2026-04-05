@@ -236,7 +236,6 @@ body { background: var(--cream); }
   align-items: center;
 }
 
-/* Watermark — ultra-soft, centred */
 .hm-watermark {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
@@ -252,7 +251,6 @@ body { background: var(--cream); }
   color: rgba(212, 80, 26, 0.055);
 }
 
-/* Soft left glow for depth */
 .hm-vignette {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background: radial-gradient(
@@ -262,14 +260,12 @@ body { background: var(--cream); }
   );
 }
 
-/* Left column */
 .hm-hero__left {
   position: relative; z-index: 2;
   padding: clamp(80px, 9vw, 130px) clamp(32px, 5vw, 90px);
   display: flex; flex-direction: column; justify-content: center;
 }
 
-/* Coral accent bar above title */
 .hm-hero__left::before {
   content: '';
   display: block;
@@ -279,7 +275,6 @@ body { background: var(--cream); }
   margin-bottom: 30px;
 }
 
-/* Hairline between columns */
 .hm-hero__left::after {
   content: '';
   position: absolute; right: 0; top: 14%; bottom: 14%;
@@ -307,7 +302,6 @@ body { background: var(--cream); }
   animation: fadeUp 0.65s 0.18s ease both;
 }
 
-/* Stats (replaces pills) */
 .hm-stats {
   display: flex; align-items: center; gap: 24px;
   animation: fadeUp 0.65s 0.26s ease both;
@@ -324,7 +318,6 @@ body { background: var(--cream); }
 }
 .hm-stat__div { width: 1px; height: 38px; background: var(--peach-2); flex-shrink: 0; }
 
-/* Right column — car */
 .hm-hero__right {
   position: relative; z-index: 2;
   height: 100%; min-height: 100vh;
@@ -344,7 +337,6 @@ body { background: var(--cream); }
   filter: drop-shadow(0 40px 72px rgba(61,43,31,0.17));
 }
 
-/* Animations */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }

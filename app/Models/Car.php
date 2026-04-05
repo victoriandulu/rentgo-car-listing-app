@@ -23,33 +23,38 @@ class Car extends Model
         'description',
         'status',
         'availability',
-        'car_type',   // NEW: e.g., SUV, Sedan, Truck
+        'car_type',
 
         // Specs
         'engine_size',
         'fuel_type',
         'horse_power',
         'transmission',
+        'torque',
+        'aspiration',
+        'acceleration',
         'drive',
 
-        // Optional / tracking
+        // Tracking
         'views',
         'inquiries',
         'user_id',
+        'location',
 
         // Media & reports
-        'image',      // first/main image
-        'images',     // all uploaded images (JSON)
-        'report',     // PDF report path
-        'report_price', // NEW: Price for the report
+        'image',          // main/first image path
+        'images',         // all uploaded images (JSON array)
+        'video',          // ← video walkthrough path  e.g. car-videos/abc.mp4
+        'report',         // PDF report path
+        'report_price',   // price buyer pays to unlock report
 
         // JSON / structured fields
         'specification',
         'running_cost',
 
         // Origin info
-        'origin',     // 'kenya' or 'import'
-        'source',     // dealer/source info
+        'origin',         // 'kenya' or 'import'
+        'source',         // dealer / source info
     ];
 
     /**
@@ -58,45 +63,93 @@ class Car extends Model
     protected $casts = [
         'specification' => 'array',
         'running_cost'  => 'array',
-        'images'        => 'array',  // all uploaded images
+        'images'        => 'array',
         'year'          => 'integer',
         'mileage'       => 'integer',
         'price'         => 'decimal:2',
-        'report_price'  => 'decimal:2', // NEW: Cast report price
+        'report_price'  => 'decimal:2',
     ];
 
+    /* ─────────────────────────────────────────
+     * Relationships
+     * ───────────────────────────────────────── */
+
     /**
-     * Relation: a car belongs to a user
+     * A car belongs to a user (the seller).
      */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    /* ─────────────────────────────────────────
+     * Accessors
+     * ───────────────────────────────────────── */
+
     /**
-     * Accessor: Get main image URL
+     * Full URL of the main/first image.
+     * Returns null when no image is stored.
      */
-    public function getMainImageUrlAttribute()
+    public function getMainImageUrlAttribute(): ?string
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        return $this->image
+            ? asset('storage/' . ltrim($this->image, '/'))
+            : null;
     }
 
     /**
-     * Accessor: Get all image URLs
+     * Array of full URLs for all uploaded images.
+     * Returns an empty array when none are stored.
      */
-    public function getImageUrlsAttribute()
+    public function getImageUrlsAttribute(): array
     {
-        if ($this->images && is_array($this->images)) {
-            return array_map(fn($img) => asset('storage/' . $img), $this->images);
+        if (empty($this->images) || !is_array($this->images)) {
+            return [];
         }
-        return [];
+
+        return array_values(
+            array_filter(
+                array_map(
+                    fn($img) => $img ? asset('storage/' . ltrim($img, '/')) : null,
+                    $this->images
+                )
+            )
+        );
     }
 
     /**
-     * Accessor: Get report URL
+     * Full URL of the video walkthrough.
+     * Returns null when no video is stored.
      */
-    public function getReportUrlAttribute()
+    public function getVideoUrlAttribute(): ?string
     {
-        return $this->report ? asset('storage/' . $this->report) : null;
+        $raw = trim((string) ($this->video ?? ''));
+
+        if ($raw === '' || $raw === 'null') {
+            return null;
+        }
+
+        return asset('storage/' . ltrim($raw, '/'));
+    }
+
+    /**
+     * Whether this car has a video walkthrough.
+     * Safe to call as $car->has_video in Blade.
+     */
+    public function getHasVideoAttribute(): bool
+    {
+        $raw = trim((string) ($this->video ?? ''));
+        return $raw !== '' && $raw !== 'null';
+    }
+
+    /**
+     * Full URL of the inspection report PDF.
+     * Returns null when no report is stored.
+     */
+    public function getReportUrlAttribute(): ?string
+    {
+        return $this->report
+            ? asset('storage/' . ltrim($this->report, '/'))
+            : null;
     }
 }

@@ -53,7 +53,7 @@
                 <textarea id="description" name="description" class="form-textarea" rows="4">{{ old('description', $car->description) }}</textarea>
             </div>
 
-            <!-- Image Upload Section with existing images loaded -->
+            <!-- Image Upload Section -->
             <div class="form-group">
                 <label for="images" class="form-label">Upload Photos</label>
                 <div class="image-upload-container">
@@ -198,6 +198,41 @@
             </div>
         </div>
 
+        <!-- Video Upload -->
+        <div class="form-section">
+            <h2 class="section-title">🎥 Car Video</h2>
+            <div class="form-group">
+                <label class="form-label">Upload Video (MP4, WebM, MOV · Max 50MB)</label>
+                <input type="file" name="video" id="videoInput"
+                       accept="video/mp4,video/webm,video/quicktime"
+                       class="form-file"
+                       onchange="previewNewVideo(this)">
+
+                @if($car->video)
+                    <p class="current-report" style="margin-top:0.75rem;">
+                        Current video: <a href="{{ asset('storage/' . $car->video) }}" target="_blank">▶ View Current Video</a>
+                    </p>
+                    <div class="video-current-wrap">
+                        <video controls preload="metadata">
+                            <source src="{{ asset('storage/' . $car->video) }}" type="video/mp4">
+                            Your browser does not support video playback.
+                        </video>
+                        <p class="form-help-text" style="margin-top:0.5rem;">Upload a new video below to replace this one.</p>
+                    </div>
+                @endif
+
+                <div id="newVideoPreview" class="video-new-wrap" style="display:none;">
+                    <p class="form-help-text" style="margin-bottom:0.5rem;">📽️ New video preview:</p>
+                    <video id="newVideoEl" controls preload="metadata"></video>
+                    <p id="newVideoMeta" class="form-help-text" style="margin-top:0.4rem;"></p>
+                </div>
+
+                <p class="form-help-text" style="margin-top:0.5rem;">
+                    💡 A short walkthrough or 360° tour significantly increases buyer interest.
+                </p>
+            </div>
+        </div>
+
         <!-- Submit -->
         <div class="form-submit">
             <button type="submit" class="submit-button">💾 Update Car</button>
@@ -235,7 +270,6 @@ body {
     margin-bottom: 2rem;
     text-align: center;
     color: var(--rentgo-dark-gray);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .message-box {
@@ -246,28 +280,15 @@ body {
     font-weight: 500;
     line-height: 1.5;
 }
-
 .message-box.error {
     background-color: #fca5a5;
     color: #7f1d1d;
     border: 2px solid #ef4444;
 }
+.message-box ul { list-style: none; padding: 0; margin: 0; }
+.message-box li { margin-bottom: 0.5rem; }
 
-.message-box ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.message-box li {
-    margin-bottom: 0.5rem;
-}
-
-.car-form {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
+.car-form { display: flex; flex-direction: column; gap: 2rem; }
 
 .form-section {
     background-color: var(--rentgo-light-gray);
@@ -289,16 +310,8 @@ body {
     gap: 1.5rem;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.form-label {
-    font-weight: 600;
-    font-size: 0.9rem;
-}
+.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-label { font-weight: 600; font-size: 0.9rem; }
 
 .form-input, .form-textarea, .form-file, select {
     width: 100%;
@@ -310,47 +323,46 @@ body {
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     box-sizing: border-box;
 }
-
 .form-input:focus, .form-textarea:focus, .form-file:focus, select:focus {
     outline: none;
     border-color: var(--rentgo-yellow);
     box-shadow: 0 0 0 4px rgba(252, 203, 21, 0.2);
 }
-
-.form-textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
-.form-help-text {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-top: 0.5rem;
-}
+.form-textarea { resize: vertical; min-height: 100px; }
+.form-help-text { font-size: 0.8rem; color: #6b7280; }
 
 .current-report {
     margin-top: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.5rem 0.75rem;
     background-color: #f0fdf4;
     border-radius: 0.5rem;
     border: 1px solid #22c55e;
+    font-size: 0.85rem;
 }
-
 .current-report a {
     color: var(--rentgo-red);
     text-decoration: none;
     font-weight: 600;
 }
+.current-report a:hover { text-decoration: underline; }
 
-.current-report a:hover {
-    text-decoration: underline;
+/* ── Video sections ── */
+.video-current-wrap,
+.video-new-wrap {
+    margin-top: 0.75rem;
+}
+.video-current-wrap video,
+.video-new-wrap video {
+    width: 100%;
+    border-radius: 0.75rem;
+    max-height: 320px;
+    background: #000;
+    display: block;
+    border: 2px solid #e5e7eb;
 }
 
 /* Image Upload Styles */
-.image-upload-container {
-    width: 100%;
-}
-
+.image-upload-container { width: 100%; }
 .upload-area {
     border: 2px dashed #d1d5db;
     border-radius: 1rem;
@@ -360,32 +372,11 @@ body {
     transition: all 0.3s ease;
     background-color: #fafafa;
 }
-
-.upload-area:hover {
-    border-color: var(--rentgo-yellow);
-    background-color: #fffbeb;
-}
-
-.upload-area.drag-over {
-    border-color: var(--rentgo-red);
-    background-color: #fef2f2;
-}
-
-.upload-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
-
-.upload-text {
-    font-weight: 600;
-    color: var(--rentgo-dark-gray);
-    margin-bottom: 0.5rem;
-}
-
-.upload-subtext {
-    font-size: 0.9rem;
-    color: #6b7280;
-}
+.upload-area:hover { border-color: var(--rentgo-yellow); background-color: #fffbeb; }
+.upload-area.drag-over { border-color: var(--rentgo-red); background-color: #fef2f2; }
+.upload-icon { font-size: 3rem; margin-bottom: 1rem; }
+.upload-text { font-weight: 600; color: var(--rentgo-dark-gray); margin-bottom: 0.5rem; }
+.upload-subtext { font-size: 0.9rem; color: #6b7280; }
 
 .image-preview-grid {
     display: grid;
@@ -393,7 +384,6 @@ body {
     gap: 1rem;
     margin-top: 1.5rem;
 }
-
 .image-preview-item {
     position: relative;
     aspect-ratio: 1;
@@ -402,237 +392,123 @@ body {
     border: 2px solid #e5e7eb;
     background-color: white;
 }
-
 .image-preview-item.main-image {
     border-color: var(--rentgo-yellow);
     box-shadow: 0 0 0 2px rgba(252, 203, 21, 0.2);
 }
-
-.image-preview-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
+.image-preview-item img { width: 100%; height: 100%; object-fit: cover; }
 .image-preview-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s ease;
 }
-
-.image-preview-item:hover .image-preview-overlay {
-    opacity: 1;
-}
-
+.image-preview-item:hover .image-preview-overlay { opacity: 1; }
 .delete-button {
-    background: var(--rentgo-red);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: var(--rentgo-red); color: white; border: none;
+    border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: transform 0.2s ease;
 }
-
-.delete-button:hover {
-    transform: scale(1.1);
-}
-
+.delete-button:hover { transform: scale(1.1); }
 .main-image-badge {
-    position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
-    background: var(--rentgo-yellow);
-    color: var(--rentgo-dark-gray);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    position: absolute; top: 0.5rem; left: 0.5rem;
+    background: var(--rentgo-yellow); color: var(--rentgo-dark-gray);
+    padding: 0.25rem 0.5rem; border-radius: 0.5rem;
+    font-size: 0.75rem; font-weight: 600;
 }
 
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 1rem;
-}
-
-.feature-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.feature-label:hover {
-    color: var(--rentgo-red);
-}
-
+.features-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1rem; }
+.feature-label { display: flex; align-items: center; cursor: pointer; font-weight: 500; transition: color 0.3s ease; }
+.feature-label:hover { color: var(--rentgo-red); }
 .feature-checkbox {
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 0.25rem;
-    border: 2px solid #d1d5db;
-    appearance: none;
-    background-color: white;
-    transition: all 0.2s ease;
-    margin-right: 0.75rem;
+    width: 1.25rem; height: 1.25rem; border-radius: 0.25rem;
+    border: 2px solid #d1d5db; appearance: none; background-color: white;
+    transition: all 0.2s ease; margin-right: 0.75rem;
 }
+.feature-checkbox:checked { background-color: var(--rentgo-red); border-color: var(--rentgo-red); }
 
-.feature-checkbox:checked {
-    background-color: var(--rentgo-red);
-    border-color: var(--rentgo-red);
-}
-
-.form-submit {
-    text-align: center;
-    margin-top: 2rem;
-}
-
+.form-submit { text-align: center; margin-top: 2rem; }
 .submit-button {
-    padding: 1rem 2.5rem;
-    border-radius: 2rem;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: white;
-    border: none;
-    cursor: pointer;
+    padding: 1rem 2.5rem; border-radius: 2rem;
+    font-size: 1.1rem; font-weight: 700; color: white; border: none; cursor: pointer;
     background-image: linear-gradient(135deg, var(--rentgo-red) 0%, var(--rentgo-yellow) 100%);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;
 }
-
-.submit-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
+.submit-button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); }
 
 @media (min-width: 768px) {
-    .form-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .features-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .image-preview-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-}
-
-@media (min-width: 1024px) {
-    .image-preview-grid {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    }
+    .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .features-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .image-preview-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 }
 </style>
 
 <script>
-// Load existing images and then allow new uploads
 let selectedFiles = [];
 let mainImageIndex = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
-    const imageInput = document.getElementById('images');
-    const uploadArea = document.querySelector('.upload-area');
+    const imageInput  = document.getElementById('images');
+    const uploadArea  = document.querySelector('.upload-area');
     const previewContainer = document.getElementById('imagePreviewContainer');
 
-    // Load existing images first
     loadExistingImages();
 
-    // Handle file input change
-    imageInput.addEventListener('change', function(e) {
-        handleFiles(e.target.files);
-    });
+    imageInput.addEventListener('change', function(e) { handleFiles(e.target.files); });
 
-    // Drag and drop functionality
     uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        uploadArea.classList.add('drag-over');
+        e.preventDefault(); uploadArea.classList.add('drag-over');
     });
-
     uploadArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        uploadArea.classList.remove('drag-over');
+        e.preventDefault(); uploadArea.classList.remove('drag-over');
     });
-
     uploadArea.addEventListener('drop', function(e) {
         e.preventDefault();
         uploadArea.classList.remove('drag-over');
-        const files = e.dataTransfer.files;
-        handleFiles(files);
+        handleFiles(e.dataTransfer.files);
     });
 
     function loadExistingImages() {
         const existingImages = @json($car->images ?? []);
-
         existingImages.forEach((imagePath, index) => {
             fetch('{{ asset("storage/") }}/' + imagePath)
-                .then(response => response.blob())
+                .then(r => r.blob())
                 .then(blob => {
                     const file = new File([blob], `existing-image-${index}.jpg`, { type: blob.type });
                     file.isExisting = true;
                     file.existingPath = imagePath;
                     selectedFiles.push(file);
-
-                    if (index === existingImages.length - 1) {
-                        updateImagePreviews();
-                    }
+                    if (index === existingImages.length - 1) updateImagePreviews();
                 })
-                .catch(error => {
-                    console.error('Error loading existing image:', error);
-                });
+                .catch(err => console.error('Error loading existing image:', err));
         });
     }
 
     function handleFiles(files) {
         const maxFiles = 10;
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-
+        const allowedTypes = ['image/jpeg','image/jpg','image/png','image/gif','image/webp'];
         for (let i = 0; i < files.length; i++) {
-            if (selectedFiles.length >= maxFiles) {
-                alert(`Maximum ${maxFiles} images allowed`);
-                break;
-            }
-
+            if (selectedFiles.length >= maxFiles) { alert(`Maximum ${maxFiles} images allowed`); break; }
             const file = files[i];
-            if (allowedTypes.includes(file.type)) {
-                selectedFiles.push(file);
-            } else {
-                alert(`File "${file.name}" is not a supported image format`);
-            }
+            if (allowedTypes.includes(file.type)) selectedFiles.push(file);
+            else alert(`File "${file.name}" is not a supported image format`);
         }
-
         updateImagePreviews();
         updateFileInput();
     }
 
     function updateImagePreviews() {
         previewContainer.innerHTML = '';
-
         selectedFiles.forEach((file, index) => {
             if (file.isExisting) {
-                const previewItem = createImagePreview('{{ asset("storage/") }}/' + file.existingPath, index, true);
-                previewContainer.appendChild(previewItem);
+                const item = createImagePreview('{{ asset("storage/") }}/' + file.existingPath, index, true);
+                previewContainer.appendChild(item);
             } else {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewItem = createImagePreview(e.target.result, index, false);
-                    previewContainer.appendChild(previewItem);
+                reader.onload = e => {
+                    const item = createImagePreview(e.target.result, index, false);
+                    previewContainer.appendChild(item);
                 };
                 reader.readAsDataURL(file);
             }
@@ -640,43 +516,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function createImagePreview(src, index, isExisting) {
-        const previewItem = document.createElement('div');
-        previewItem.className = `image-preview-item${index === mainImageIndex ? ' main-image' : ''}`;
-
-        previewItem.innerHTML = `
+        const item = document.createElement('div');
+        item.className = `image-preview-item${index === mainImageIndex ? ' main-image' : ''}`;
+        item.innerHTML = `
             <img src="${src}" alt="Preview ${index + 1}">
             <div class="image-preview-overlay">
                 <button type="button" class="delete-button" onclick="removeImage(${index})">×</button>
             </div>
             ${index === mainImageIndex ? '<div class="main-image-badge">Main</div>' : ''}
         `;
-
-        // Make image clickable to set as main image
         if (index !== mainImageIndex) {
-            previewItem.addEventListener('click', function(e) {
-                if (!e.target.classList.contains('delete-button')) {
-                    setMainImage(index);
-                }
+            item.addEventListener('click', e => {
+                if (!e.target.classList.contains('delete-button')) setMainImage(index);
             });
-            previewItem.style.cursor = 'pointer';
-            previewItem.title = 'Click to set as main image';
+            item.style.cursor = 'pointer';
+            item.title = 'Click to set as main image';
         }
-
-        return previewItem;
+        return item;
     }
 
     window.removeImage = function(index) {
         selectedFiles.splice(index, 1);
-
-        // Adjust main image index if necessary
-        if (index === mainImageIndex && selectedFiles.length > 0) {
-            mainImageIndex = 0;
-        } else if (index < mainImageIndex) {
-            mainImageIndex--;
-        } else if (mainImageIndex >= selectedFiles.length) {
-            mainImageIndex = Math.max(0, selectedFiles.length - 1);
-        }
-
+        if (index === mainImageIndex && selectedFiles.length > 0) mainImageIndex = 0;
+        else if (index < mainImageIndex) mainImageIndex--;
+        else if (mainImageIndex >= selectedFiles.length) mainImageIndex = Math.max(0, selectedFiles.length - 1);
         updateImagePreviews();
         updateFileInput();
     };
@@ -687,16 +550,41 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function updateFileInput() {
-        // Create a new FileList-like object with only new files
         const dt = new DataTransfer();
-        selectedFiles.forEach(file => {
-            if (!file.isExisting) {
-                dt.items.add(file);
-            }
-        });
+        selectedFiles.forEach(file => { if (!file.isExisting) dt.items.add(file); });
         imageInput.files = dt.files;
     }
 });
+
+/* ── New video preview ── */
+function previewNewVideo(input) {
+    const wrap   = document.getElementById('newVideoPreview');
+    const videoEl = document.getElementById('newVideoEl');
+    const metaEl  = document.getElementById('newVideoMeta');
+
+    if (!input.files[0]) { wrap.style.display = 'none'; return; }
+
+    const file = input.files[0];
+    const maxBytes = 50 * 1024 * 1024;
+
+    if (file.size > maxBytes) {
+        alert('Video is too large. Please choose a file under 50 MB.');
+        input.value = '';
+        wrap.style.display = 'none';
+        return;
+    }
+
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    videoEl.src = URL.createObjectURL(file);
+    wrap.style.display = 'block';
+    metaEl.textContent = `${file.name} · ${sizeMB} MB`;
+
+    videoEl.onloadedmetadata = () => {
+        const mins = Math.floor(videoEl.duration / 60);
+        const secs = Math.floor(videoEl.duration % 60);
+        metaEl.textContent = `${file.name} · ${sizeMB} MB · ${mins}m ${secs}s`;
+    };
+}
 </script>
 
 @endsection

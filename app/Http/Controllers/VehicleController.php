@@ -118,4 +118,17 @@ class VehicleController extends Controller
             'payment' => $payment,
         ]);
     }
+
+    /**
+     * Stream / serve a car video — returns a redirect to the public storage URL.
+     * You can add auth checks here if videos should be private.
+     */
+    public function streamVideo(Request $request, Car $car)
+    {
+        if (!$car->video) {
+            abort(404, 'No video available for this vehicle.');
+        }
+
+        return redirect(asset('storage/' . $car->video));
+    }
 }
