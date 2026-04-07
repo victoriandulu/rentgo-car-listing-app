@@ -20,6 +20,19 @@ function resolveVideo($car): array {
 }
 @endphp
 
+{{-- ── Font preload (replaces slow @import inside CSS) ── --}}
+@push('head')
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Outfit:wght@300;400;500;600&display=swap"
+      onload="this.rel='stylesheet'">
+<noscript>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Outfit:wght@300;400;500;600&display=swap">
+</noscript>
+@endpush
+
 <div class="vp">
 
     {{-- ╔══════════════════════════════════════╗
@@ -250,7 +263,7 @@ function resolveVideo($car): array {
                         ? asset('storage/' . ltrim($images[0], '/'))
                         : 'https://via.placeholder.com/600x400/f5ede0/9b8b7e?text=No+Photo';
 
-                    /* ── Video — THE FIX ── */
+                    /* ── Video ── */
                     $videoRaw  = trim((string) ($car->video ?? ''));
                     $hasVideo  = ($videoRaw !== '' && $videoRaw !== 'null' && $videoRaw !== '0');
                     $videoPath = $hasVideo
@@ -295,13 +308,6 @@ function resolveVideo($car): array {
                                  loading="lazy"
                                  onerror="this.src='https://via.placeholder.com/600x400/f5ede0/9b8b7e?text=No+Photo'">
                         </a>
-
-                        {{-- Wishlist --}}
-                        <button class="vp-wish" onclick="VP.wish(event,this)" aria-label="Save to wishlist">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                            </svg>
-                        </button>
 
                         {{-- Video play button — rendered ONLY when car has a video --}}
                         @if($hasVideo)
@@ -628,14 +634,14 @@ function resolveVideo($car): array {
 
 {{-- ═══════════════════════════════════════
      STYLES
+     NOTE: Google Fonts are loaded via @push('head') above using
+     rel="preload" for non-blocking font delivery. The @import
+     that was here caused render-blocking — it has been removed.
 ═══════════════════════════════════════ --}}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Outfit:wght@300;400;500;600&display=swap');
-
 /* ── Design tokens ── */
 :root{
     --cream:      #faf6f0;
-    --cream-dk:   #f2ead e;
     --cream-dk:   #f2eade;
     --warm-white: #fffdf9;
     --acc:        #b83228;
@@ -657,12 +663,17 @@ function resolveVideo($car): array {
     --r-sm:       8px;
     --ease:       cubic-bezier(.4,0,.2,1);
     --tr:         all .22s var(--ease);
+
+    /* Font stack with system fallbacks so text renders immediately
+       before the web font arrives */
+    --font-body:  'Outfit', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
 }
 
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Outfit',system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.6}
+body{font-family:var(--font-body);color:var(--ink);background:var(--cream);line-height:1.6}
 a{text-decoration:none;color:inherit}
-button{font-family:'Outfit',system-ui,sans-serif;cursor:pointer}
+button{font-family:var(--font-body);cursor:pointer}
 
 /* ── Layout ── */
 .vp{min-height:100vh}
@@ -674,7 +685,7 @@ button{font-family:'Outfit',system-ui,sans-serif;cursor:pointer}
 .vp-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:600;letter-spacing:2px;color:var(--acc);text-transform:uppercase;margin-bottom:18px}
 .vp-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:vp-pulse 2s infinite}
 @keyframes vp-pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.vp-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(36px,5.5vw,66px);font-weight:600;line-height:1.05;color:var(--ink);margin-bottom:14px;letter-spacing:-.5px}
+.vp-title{font-family:var(--font-serif);font-size:clamp(36px,5.5vw,66px);font-weight:600;line-height:1.05;color:var(--ink);margin-bottom:14px;letter-spacing:-.5px}
 .vp-title em{font-style:italic;color:var(--acc)}
 .vp-sub{font-size:16px;color:var(--ink-md);font-weight:300}
 
@@ -682,11 +693,11 @@ button{font-family:'Outfit',system-ui,sans-serif;cursor:pointer}
 .vp-search-bar{max-width:1100px;margin:0 auto 22px;display:flex;align-items:center;background:var(--warm-white);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-s);overflow:hidden}
 .vp-search-left{display:flex;align-items:center;gap:0;flex-shrink:0;padding:0 14px 0 18px}
 .vp-search-ico{color:var(--ink-lt);flex-shrink:0}
-.vp-search-left input{border:none;outline:none;font-family:'Outfit',sans-serif;font-size:14px;color:var(--ink);background:transparent;padding:15px 10px;min-width:200px}
+.vp-search-left input{border:none;outline:none;font-family:var(--font-body);font-size:14px;color:var(--ink);background:transparent;padding:15px 10px;min-width:200px}
 .vp-search-left input::placeholder{color:var(--ink-lt)}
 .vp-currency{display:flex;align-items:center;gap:6px;border-left:1px solid var(--border-lt);padding:13px 14px;flex-shrink:0}
 .vp-currency svg{color:var(--ink-lt)}
-.vp-currency select{border:none;outline:none;background:transparent;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer}
+.vp-currency select{border:none;outline:none;background:transparent;font-family:var(--font-body);font-size:13px;font-weight:500;color:var(--ink);cursor:pointer}
 .vp-divider{width:1px;height:36px;background:var(--border);flex-shrink:0}
 .vp-pills-wrap{flex:1;display:flex;align-items:center;gap:10px;padding:10px 16px;overflow-x:auto;scrollbar-width:none}
 .vp-pills-wrap::-webkit-scrollbar{display:none}
@@ -713,7 +724,7 @@ button{font-family:'Outfit',system-ui,sans-serif;cursor:pointer}
 .vp-adv-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:13px;background:var(--warm-white);border:1.5px solid var(--border);border-radius:var(--r);padding:22px}
 .vp-fg{display:flex;flex-direction:column;gap:7px}
 .vp-fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-lt)}
-.vp-fs{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Outfit',sans-serif;font-size:13px;background:var(--cream);color:var(--ink);outline:none;appearance:auto;transition:var(--tr)}
+.vp-fs{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--font-body);font-size:13px;background:var(--cream);color:var(--ink);outline:none;appearance:auto;transition:var(--tr)}
 .vp-fs:focus,.vp-fs:hover{border-color:var(--acc)}
 .vp-fg--action{justify-content:flex-end;padding-top:24px}
 .vp-clear-btn{padding:10px 16px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:transparent;font-size:13px;font-weight:500;color:var(--ink-md);display:flex;align-items:center;gap:6px;transition:var(--tr)}
@@ -723,12 +734,12 @@ button{font-family:'Outfit',system-ui,sans-serif;cursor:pointer}
 .vp-results{padding-top:40px;padding-bottom:80px}
 .vp-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--border-lt)}
 .vp-count-wrap{display:flex;align-items:baseline;gap:8px}
-.vp-count{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:600;color:var(--acc)}
+.vp-count{font-family:var(--font-serif);font-size:34px;font-weight:600;color:var(--acc)}
 .vp-count-lbl{font-size:14px;color:var(--ink-md);font-weight:300}
 .vp-toolbar-right{display:flex;align-items:center;gap:16px}
 .vp-sort-wrap{display:flex;align-items:center;gap:9px}
 .vp-sort-wrap label{font-size:13px;font-weight:500;color:var(--ink-lt)}
-.vp-sort-sel{padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Outfit',sans-serif;font-size:13px;background:var(--warm-white);color:var(--ink);outline:none;min-width:158px;transition:var(--tr)}
+.vp-sort-sel{padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--font-body);font-size:13px;background:var(--warm-white);color:var(--ink);outline:none;min-width:158px;transition:var(--tr)}
 .vp-sort-sel:hover{border-color:var(--acc)}
 .vp-view-toggle{display:flex;gap:2px;background:var(--cream-dk);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:3px}
 .vp-view{background:transparent;border:none;padding:7px 11px;border-radius:6px;color:var(--ink-lt);display:flex;align-items:center;justify-content:center;transition:var(--tr)}
@@ -750,17 +761,30 @@ button{font-family:'Outfit',system-ui,sans-serif;cursor:pointer}
 .vp-card:nth-child(9){animation-delay:320ms}.vp-card:nth-child(10){animation-delay:360ms}
 .vp-card:nth-child(11){animation-delay:400ms}.vp-card:nth-child(12){animation-delay:440ms}
 
-/* Card image */
-.vp-card-img{position:relative;aspect-ratio:4/3;background:var(--cream-dk);overflow:hidden;display:flex;align-items:center;justify-content:center}
+/* ── Card image
+   KEY FIX: object-fit changed from "cover" (which crops) to "contain"
+   (which shows the full image with no cropping). Background colour
+   fills any letterbox area so it blends with the card. ── */
+.vp-card-img{
+    position:relative;
+    aspect-ratio:4/3;
+    background:var(--cream-dk);
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
 .list-view .vp-card-img{aspect-ratio:auto;height:100%;min-height:220px}
 .vp-img-link{display:block;width:100%;height:100%}
-.vp-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s var(--ease)}
+.vp-card-img img{
+    width:100%;
+    height:100%;
+    object-fit:contain;          /* ← CHANGED: was "cover". Now shows full image, no cropping */
+    object-position:center;
+    background:var(--cream-dk);  /* letterbox colour matches card bg */
+    transition:transform .4s var(--ease);
+}
 .vp-card:hover .vp-card-img img{transform:scale(1.04)}
-
-/* Wishlist button */
-.vp-wish{position:absolute;top:11px;right:11px;width:34px;height:34px;background:rgba(255,253,249,.92);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink-lt);backdrop-filter:blur(4px);transition:var(--tr);z-index:10}
-.vp-wish:hover,.vp-wish.active{color:var(--acc)}
-.vp-wish.active svg{fill:currentColor}
 
 /* Video play button */
 .vp-play-btn{position:absolute;bottom:11px;right:11px;width:44px;height:44px;background:#b83228;border:2px solid rgba(255,255,255,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;z-index:10;backdrop-filter:blur(6px);transition:var(--tr);overflow:visible}
@@ -813,7 +837,7 @@ button{font-family:'Outfit',system-ui,sans-serif;cursor:pointer}
 /* Empty state */
 .vp-empty{grid-column:1/-1;text-align:center;padding:100px 20px}
 .vp-empty svg{color:var(--ink-lt);margin-bottom:24px}
-.vp-empty h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;margin-bottom:10px}
+.vp-empty h3{font-family:var(--font-serif);font-size:28px;margin-bottom:10px}
 .vp-empty p{color:var(--ink-md);margin-bottom:28px;font-weight:300}
 .vp-btn-primary{background:var(--acc);color:#fff;border:none;padding:13px 26px;border-radius:var(--r-sm);font-size:14px;font-weight:600;transition:var(--tr)}
 .vp-btn-primary:hover{background:var(--acc-h);transform:translateY(-2px)}
@@ -1126,9 +1150,6 @@ const VP = (() => {
         $('js-grid').classList.toggle('list-view', type === 'list');
     }
 
-    /* ════════════════════════════════
-       WISHLIST
-    ════════════════════════════════ */
     function wish(e, btn) {
         e.preventDefault(); e.stopPropagation();
         btn.classList.toggle('active');
@@ -1140,7 +1161,6 @@ const VP = (() => {
     function openVideo(e, url, name) {
         e.preventDefault(); e.stopPropagation();
 
-        /* Guard: url must be a non-empty string */
         if (!url || url.trim() === '') {
             console.warn('[VP] openVideo called with empty URL for:', name);
             return;
@@ -1155,7 +1175,7 @@ const VP = (() => {
         src.src               = url;
         nameEl.textContent    = name + ' — Video Walkthrough';
         video.load();
-        overlay.style.display = 'flex';   // show tap-to-play overlay
+        overlay.style.display = 'flex';
         modal.classList.add('open');
         document.body.style.overflow = 'hidden';
     }
@@ -1341,7 +1361,6 @@ const VP = (() => {
        GLOBAL KEYBOARD / INIT
     ════════════════════════════════ */
     document.addEventListener('DOMContentLoaded', () => {
-        /* Video: hide overlay when playing, show when paused at start */
         const video   = $('vpm-video');
         const overlay = $('vpm-overlay');
         if (video) {
@@ -1351,7 +1370,6 @@ const VP = (() => {
             });
         }
 
-        /* Escape key closes any open modal */
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
             if ($('vp-video-modal')?.classList.contains('open'))  closeVideo();

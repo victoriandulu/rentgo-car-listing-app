@@ -168,10 +168,10 @@ class AdminController extends Controller
             return back()->with('error', 'Cannot delete admin users!');
         }
 
-        foreach ($user->cars as $car) {
-            $this->deleteCarFiles($car);
-            $car->delete();
-        }
+       foreach ($user->cars ?? [] as $car) {
+    $this->deleteCarFiles($car);
+    $car->delete();
+}
 
         if ($user->verification) {
             $this->deleteVerificationFiles($user->verification);

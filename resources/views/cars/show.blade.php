@@ -3,217 +3,158 @@
 
 @section('content')
 
-<div class="vd-root">
+@php
+    $images = [];
+    if ($car->images) {
+        $raw = is_string($car->images) ? json_decode($car->images, true) : (array) $car->images;
+        $images = array_values(array_filter((array) $raw));
+    }
+    $mainImage = count($images)
+        ? asset('storage/' . ltrim($images[0], '/'))
+        : 'https://via.placeholder.com/1200x800/1a1a2e/ffffff?text=No+Photo';
 
-    {{-- ══════════════ HERO STRIP ══════════════ --}}
-    <div class="vd-hero">
-        <div class="vd-hero__inner">
-            <div class="vd-hero__meta">
-                <a href="{{ url('/vehicles') }}" class="vd-back">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                    Back to Vehicles
-                </a>
-                <div class="vd-badges">
-                    @if($car->availability === 'Available')
-                        <span class="badge badge--green">● Available</span>
-                    @else
-                        <span class="badge badge--grey">● {{ $car->availability }}</span>
-                    @endif
-                    @if($car->origin === 'local')
-                        <span class="badge badge--outline">In Kenya</span>
-                    @else
-                        {{-- <span class="badge badge--outline">Import</span> --}}
-                    @endif
-                </div>
-            </div>
+    $hasVideo = !empty($car->video) && $car->video !== 'null';
+    $videoUrl = $hasVideo ? asset('storage/' . ltrim($car->video, '/')) : '';
+@endphp
 
-            <div class="vd-hero__title-row">
-                <div>
-                    <h1 class="vd-name">{{ $car->name }}</h1>
-                    <span class="vd-year">{{ $car->year }} · {{ $car->car_type }}</span>
+<div class="cs-root">
+
+    {{-- ══════════ HERO STRIP ══════════ --}}
+    <div class="cs-hero">
+        <div class="cs-hero__inner">
+            <a href="{{ url('/vehicles') }}" class="cs-back">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                All Vehicles
+            </a>
+
+            <div class="cs-hero__content">
+                <div class="cs-hero__left">
+                    <div class="cs-hero__tags">
+                        @if(isset($car->availability) && $car->availability === 'Available')
+                            <span class="cs-tag cs-tag--green">Available</span>
+                        @else
+                            <span class="cs-tag cs-tag--grey">{{ $car->availability ?? 'Listed' }}</span>
+                        @endif
+                        @if(isset($car->origin) && $car->origin === 'local')
+                            <span class="cs-tag cs-tag--outline">In Kenya</span>
+                        @else
+                            <span class="cs-tag cs-tag--outline">Import</span>
+                        @endif
+                        @if($hasVideo)
+                            <span class="cs-tag cs-tag--video">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                                Has Video
+                            </span>
+                        @endif
+                    </div>
+                    <h1 class="cs-title">{{ $car->name ?? 'Vehicle' }}</h1>
+                    <p class="cs-subtitle">{{ $car->year ?? '' }}{{ isset($car->car_type) ? ' · ' . $car->car_type : '' }}{{ isset($car->location) ? ' · ' . $car->location : '' }}</p>
                 </div>
-                <div class="vd-price-block">
-                    <span class="vd-price-label">Price</span>
-                    <span class="vd-price">KSh {{ number_format($car->price) }}</span>
+                <div class="cs-hero__right">
+                    <span class="cs-price-label">Listed Price</span>
+                    <span class="cs-price">KSh {{ number_format($car->price ?? 0) }}</span>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ══════════════ MAIN LAYOUT ══════════════ --}}
-    <div class="vd-body">
-        <div class="vd-body__inner">
+    {{-- ══════════ MAIN BODY ══════════ --}}
+    <div class="cs-body">
+        <div class="cs-body__inner">
 
             {{-- LEFT COLUMN --}}
-            <div class="vd-col-left">
+            <div class="cs-left">
 
-                {{-- Gallery --}}
-                @if($car->images && count($car->images) > 0)
-                <div class="vd-gallery">
-                    <div class="vd-gallery__main">
-                        <img id="mainImg" src="{{ asset('storage/' . $car->images[0]) }}" alt="{{ $car->name }}">
-                        <div class="vd-gallery__overlay-count">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                            {{ count($car->images) }} Photos
+                {{-- ── GALLERY ── --}}
+                <div class="cs-gallery">
+                    <div class="cs-gallery__main" id="galleryMain">
+                        <img id="mainImg" src="{{ $mainImage }}" alt="{{ $car->name ?? 'Vehicle' }}"
+                             onerror="this.src='https://via.placeholder.com/1200x800/1a1a2e/ffffff?text=No+Photo'">
+
+                        {{-- Lightbox trigger --}}
+                        <button class="cs-gallery__expand" onclick="LB.open(0)" aria-label="View fullscreen">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+                            Expand
+                        </button>
+
+                        @if(count($images) > 1)
+                        <button class="cs-gallery__arrow cs-gallery__arrow--prev" onclick="LB.galleryNav(-1)" aria-label="Previous">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <button class="cs-gallery__arrow cs-gallery__arrow--next" onclick="LB.galleryNav(1)" aria-label="Next">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        @endif
+
+                        <div class="cs-gallery__count">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            <span id="photoCounter">1</span> / {{ count($images) }}
                         </div>
                     </div>
-                    @if(count($car->images) > 1)
-                    <div class="vd-gallery__thumbs">
-                        @foreach($car->images as $index => $img)
-                            <div class="vd-gallery__thumb {{ $index === 0 ? 'active' : '' }}"
-                                 onclick="changeImage('{{ asset('storage/' . $img) }}', this)">
-                                <img src="{{ asset('storage/' . $img) }}" alt="{{ $car->name }}">
-                            </div>
+
+                    @if(count($images) > 1)
+                    <div class="cs-gallery__thumbs" id="thumbsRow">
+                        @foreach($images as $index => $img)
+                            <button class="cs-thumb {{ $index === 0 ? 'active' : '' }}"
+                                    onclick="LB.setMain({{ $index }})"
+                                    data-index="{{ $index }}">
+                                <img src="{{ asset('storage/' . ltrim($img, '/')) }}"
+                                     alt="Photo {{ $index + 1 }}"
+                                     onerror="this.src='https://via.placeholder.com/200x140/1a1a2e/ffffff?text=Photo'">
+                            </button>
                         @endforeach
                     </div>
                     @endif
                 </div>
-                @endif
 
-                {{-- Video --}}
-                @if($car->video)
-                <div class="vd-card vd-video-card">
-                    <div class="vd-card__header">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                {{-- ── VIDEO PREVIEW ── --}}
+                @if($hasVideo)
+                <div class="cs-video-section">
+                    <div class="cs-video-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
                         Video Walkthrough
+                        <button class="cs-video-modal-btn" onclick="VM.open()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+                            Open in fullscreen
+                        </button>
                     </div>
-                    <div class="vd-video__wrap">
-                        <video id="carVideo" controls preload="metadata">
-                            <source src="{{ asset('storage/' . $car->video) }}" type="video/mp4">
-                            <source src="{{ asset('storage/' . $car->video) }}" type="video/webm">
+                    <div class="cs-video-preview" onclick="VM.open()">
+                        <video id="inlineVideo" preload="metadata" muted>
+                            <source src="{{ $videoUrl }}" type="video/mp4">
                         </video>
-                        <div class="vd-video__bar">
-                            <span>🔊 Turn up sound for best experience</span>
-                            <button onclick="openFullscreen()" class="vd-fs-btn">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
-                                Fullscreen
-                            </button>
+                        <div class="cs-video-overlay">
+                            <div class="cs-play-btn">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            </div>
+                            <p>Click to watch full walkthrough</p>
                         </div>
                     </div>
                 </div>
                 @endif
 
-                {{-- Description --}}
-                @if($car->description)
-                <div class="vd-card">
-                    <div class="vd-card__header">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+                {{-- ── DESCRIPTION ── --}}
+                @if(!empty($car->description))
+                <div class="cs-card">
+                    <div class="cs-card__head">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
                         Description
                     </div>
-                    <p class="vd-description">{{ $car->description }}</p>
+                    <p class="cs-desc">{{ $car->description }}</p>
                 </div>
                 @endif
 
-            </div>
-
-            {{-- RIGHT COLUMN --}}
-            <div class="vd-col-right">
-
-                {{-- Quick Stats --}}
-                <div class="vd-stats-grid">
-                    @if($car->mileage)
-                    <div class="vd-stat">
-                        <div class="vd-stat__icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        </div>
-                        <div class="vd-stat__info">
-                            <span class="vd-stat__val">{{ number_format($car->mileage) }} km</span>
-                            <span class="vd-stat__label">Mileage</span>
-                        </div>
+                {{-- ── FEATURES ── --}}
+                @if(!empty($car->specification) && count(array_filter((array)$car->specification)))
+                <div class="cs-card">
+                    <div class="cs-card__head">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                        Features & Specifications
                     </div>
-                    @endif
-                    @if($car->engine_size)
-                    <div class="vd-stat">
-                        <div class="vd-stat__icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 7V5a1 1 0 011-1h4a1 1 0 011 1v2"/><line x1="12" y1="12" x2="12" y2="12"/></svg>
-                        </div>
-                        <div class="vd-stat__info">
-                            <span class="vd-stat__val">{{ $car->engine_size }}cc</span>
-                            <span class="vd-stat__label">Engine</span>
-                        </div>
-                    </div>
-                    @endif
-                    @if($car->fuel_type)
-                    <div class="vd-stat">
-                        <div class="vd-stat__icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 22V10l9-8 9 8v12H3z"/><path d="M9 22V12h6v10"/></svg>
-                        </div>
-                        <div class="vd-stat__info">
-                            <span class="vd-stat__val">{{ $car->fuel_type }}</span>
-                            <span class="vd-stat__label">Fuel Type</span>
-                        </div>
-                    </div>
-                    @endif
-                    @if($car->transmission)
-                    <div class="vd-stat">
-                        <div class="vd-stat__icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><line x1="5" y1="8" x2="5" y2="14"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="5" y1="14" x2="12" y2="16"/><line x1="19" y1="14" x2="12" y2="16"/></svg>
-                        </div>
-                        <div class="vd-stat__info">
-                            <span class="vd-stat__val">{{ $car->transmission }}</span>
-                            <span class="vd-stat__label">Transmission</span>
-                        </div>
-                    </div>
-                    @endif
-                    @if($car->horse_power)
-                    <div class="vd-stat">
-                        <div class="vd-stat__icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        </div>
-                        <div class="vd-stat__info">
-                            <span class="vd-stat__val">{{ $car->horse_power }} hp</span>
-                            <span class="vd-stat__label">Power</span>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-
-                {{-- Vehicle Details Card --}}
-                <div class="vd-card">
-                    <div class="vd-card__header">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        Vehicle Details
-                    </div>
-                    <div class="vd-details-list">
-                        <div class="vd-detail-row">
-                            <span class="vd-detail-key">Type</span>
-                            <span class="vd-detail-val">{{ $car->car_type }}</span>
-                        </div>
-                        <div class="vd-detail-row">
-                            <span class="vd-detail-key">Origin</span>
-                            <span class="vd-detail-val">{{ ucfirst($car->origin) }}</span>
-                        </div>
-                        <div class="vd-detail-row">
-                            <span class="vd-detail-key">Status</span>
-                            <span class="vd-detail-val">
-                                @if($car->availability === 'Available')
-                                    <span class="inline-dot green"></span> {{ $car->availability }}
-                                @else
-                                    <span class="inline-dot grey"></span> {{ $car->availability }}
-                                @endif
-                            </span>
-                        </div>
-                        @if($car->year)
-                        <div class="vd-detail-row">
-                            <span class="vd-detail-key">Year</span>
-                            <span class="vd-detail-val">{{ $car->year }}</span>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Features --}}
-                @if($car->specification && count(array_filter($car->specification)))
-                <div class="vd-card">
-                    <div class="vd-card__header">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-                        Features & Specs
-                    </div>
-                    <div class="vd-features">
-                        @foreach($car->specification as $feature => $value)
+                    <div class="cs-features">
+                        @foreach((array)$car->specification as $feature => $value)
                             @if($value)
-                                <span class="vd-feature-tag">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span class="cs-feature-tag">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                                     {{ ucwords(str_replace(['_', 'And'], [' ', ' & '], $feature)) }}
                                 </span>
                             @endif
@@ -222,17 +163,141 @@
                 </div>
                 @endif
 
-                {{-- CTA --}}
-                <div class="vd-cta-card">
-                    <div class="vd-cta__price-row">
-                        <span>Listed Price</span>
-                        <strong>KSh {{ number_format($car->price) }}</strong>
+            </div>
+
+            {{-- RIGHT COLUMN --}}
+            <div class="cs-right">
+
+                {{-- Quick Stats --}}
+                <div class="cs-stats">
+                    @if(!empty($car->mileage))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ number_format($car->mileage) }} km</span>
+                            <span class="cs-stat__lbl">Mileage</span>
+                        </div>
                     </div>
-                    <button class="vd-cta-btn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.2 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+                    @endif
+                    @if(!empty($car->engine_size))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 7V5a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ $car->engine_size }}cc</span>
+                            <span class="cs-stat__lbl">Engine</span>
+                        </div>
+                    </div>
+                    @endif
+                    @if(!empty($car->fuel_type))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 22V10l9-8 9 8v12H3z"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ $car->fuel_type }}</span>
+                            <span class="cs-stat__lbl">Fuel</span>
+                        </div>
+                    </div>
+                    @endif
+                    @if(!empty($car->transmission))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><line x1="5" y1="8" x2="5" y2="14"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="5" y1="14" x2="12" y2="16"/><line x1="19" y1="14" x2="12" y2="16"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ $car->transmission }}</span>
+                            <span class="cs-stat__lbl">Transmission</span>
+                        </div>
+                    </div>
+                    @endif
+                    @if(!empty($car->horse_power))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ $car->horse_power }} hp</span>
+                            <span class="cs-stat__lbl">Power</span>
+                        </div>
+                    </div>
+                    @endif
+                    @if(!empty($car->year))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ $car->year }}</span>
+                            <span class="cs-stat__lbl">Year</span>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
+                {{-- Vehicle Details --}}
+                <div class="cs-card">
+                    <div class="cs-card__head">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        Vehicle Details
+                    </div>
+                    <div class="cs-details">
+                        <div class="cs-detail-row">
+                            <span>Type</span>
+                            <strong>{{ $car->car_type ?? '—' }}</strong>
+                        </div>
+                        <div class="cs-detail-row">
+                            <span>Origin</span>
+                            <strong>{{ ucfirst($car->origin ?? '—') }}</strong>
+                        </div>
+                        <div class="cs-detail-row">
+                            <span>Status</span>
+                            <strong class="cs-status {{ ($car->availability ?? '') === 'Available' ? 'cs-status--green' : 'cs-status--grey' }}">
+                                <span class="cs-dot"></span>
+                                {{ $car->availability ?? '—' }}
+                            </strong>
+                        </div>
+                        @if(!empty($car->year))
+                        <div class="cs-detail-row">
+                            <span>Year</span>
+                            <strong>{{ $car->year }}</strong>
+                        </div>
+                        @endif
+                        @if(!empty($car->location))
+                        <div class="cs-detail-row">
+                            <span>Location</span>
+                            <strong>{{ $car->location }}</strong>
+                        </div>
+                        @endif
+                        @if(!empty($car->color))
+                        <div class="cs-detail-row">
+                            <span>Colour</span>
+                            <strong>{{ $car->color }}</strong>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- CTA Card --}}
+                <div class="cs-cta">
+                    <div class="cs-cta__price-row">
+                        <span>Listed Price</span>
+                        <strong>KSh {{ number_format($car->price ?? 0) }}</strong>
+                    </div>
+                    <button class="cs-cta__btn cs-cta__btn--primary">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.2 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
                         Enquire About This Car
                     </button>
-                    <a href="{{ url('/vehicles') }}" class="vd-back-btn">← Back to All Vehicles</a>
+                    @if($hasVideo)
+                    <button class="cs-cta__btn cs-cta__btn--video" onclick="VM.open()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                        Watch Video Walkthrough
+                    </button>
+                    @endif
+                    <a href="{{ url('/vehicles') }}" class="cs-cta__back">← Back to All Vehicles</a>
                 </div>
 
             </div>
@@ -240,453 +305,831 @@
     </div>
 </div>
 
+
+{{-- ══════════════════════════════════════════
+     LIGHTBOX MODAL
+══════════════════════════════════════════ --}}
+<div id="lb-modal" class="lb-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this)LB.close()">
+    <button class="lb-close" onclick="LB.close()" aria-label="Close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <button class="lb-arrow lb-arrow--prev" id="lbPrev" onclick="LB.nav(-1)" aria-label="Previous">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <div class="lb-stage">
+        <img id="lb-img" src="" alt="Vehicle photo">
+        <div class="lb-counter" id="lbCounter">1 / 1</div>
+    </div>
+
+    <button class="lb-arrow lb-arrow--next" id="lbNext" onclick="LB.nav(1)" aria-label="Next">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+    <div class="lb-thumbs" id="lbThumbs"></div>
+</div>
+
+
+{{-- ══════════════════════════════════════════
+     VIDEO MODAL
+══════════════════════════════════════════ --}}
+@if($hasVideo)
+<div id="vm-modal" class="vm-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this)VM.close()">
+    <div class="vm-box">
+        <div class="vm-header">
+            <div class="vm-header__left">
+                <span class="vm-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                </span>
+                <span>{{ $car->name ?? 'Vehicle' }} — Video Walkthrough</span>
+            </div>
+            <button class="vm-close" onclick="VM.close()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="vm-stage">
+            <video id="vm-video" controls preload="metadata" playsinline>
+                <source src="{{ $videoUrl }}" type="video/mp4">
+                <source src="{{ $videoUrl }}" type="video/webm">
+            </video>
+        </div>
+    </div>
+</div>
+@endif
+
+
+{{-- ══════════════════════════════════════════
+     STYLES
+══════════════════════════════════════════ --}}
 <style>
-/* ═══════════════════════════════════════════
-   IMPORTS & TOKENS
-═══════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Figtree:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --red:        #D93025;
-    --red-light:  #fdf2f1;
-    --dark:       #111827;
-    --mid:        #6B7280;
-    --light:      #9CA3AF;
-    --border:     #E5E7EB;
-    --surface:    #F9FAFB;
-    --white:      #ffffff;
-    --radius:     12px;
-    --shadow-sm:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
-    --shadow-md:  0 4px 16px rgba(0,0,0,.10);
-    --transition: 0.2s ease;
+    --red:       #C8281E;
+    --red-h:     #a5201a;
+    --red-lt:    rgba(200,40,30,.08);
+    --ink:       #111418;
+    --ink-md:    #52575e;
+    --ink-lt:    #8a9099;
+    --bone:      #f8f5f1;
+    --white:     #ffffff;
+    --border:    #e8e3dc;
+    --border-lt: #f0ece6;
+    --success:   #1a6b3a;
+    --r:         14px;
+    --r-sm:      8px;
+    --sh-s:      0 1px 4px rgba(0,0,0,.06);
+    --sh-m:      0 6px 24px rgba(0,0,0,.10);
+    --sh-l:      0 20px 60px rgba(0,0,0,.18);
+    --ease:      cubic-bezier(.4,0,.2,1);
+    --tr:        all .2s var(--ease);
 }
 
-/* ═══ ROOT ═══ */
-.vd-root {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--surface);
-    min-height: 100vh;
-    color: var(--dark);
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Figtree',system-ui,sans-serif; background:var(--bone); color:var(--ink); }
+button { font-family:'Figtree',system-ui,sans-serif; cursor:pointer; }
+a { text-decoration:none; color:inherit; }
+
+/* ── ROOT ── */
+.cs-root { min-height:100vh; }
+
+/* ── HERO ── */
+.cs-hero {
+    background:var(--white);
+    border-bottom:1px solid var(--border);
+    padding:96px 0 28px;
+}
+.cs-hero__inner {
+    max-width:1200px;
+    margin:0 auto;
+    padding:0 28px;
+}
+.cs-back {
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-lt);
+    margin-bottom:22px;
+    transition:var(--tr);
+}
+.cs-back:hover { color:var(--ink); }
+.cs-hero__content {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:24px;
+    flex-wrap:wrap;
+}
+.cs-hero__tags {
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+}
+.cs-tag {
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:4px 11px;
+    border-radius:100px;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+}
+.cs-tag--green   { background:#ecfdf5; color:#065f46; }
+.cs-tag--grey    { background:#f3f4f6; color:#374151; }
+.cs-tag--outline { background:transparent; border:1.5px solid var(--border); color:var(--ink-md); }
+.cs-tag--video   { background:#fdf4ff; color:#7e22ce; border:1.5px solid #e9d5ff; }
+
+.cs-title {
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:clamp(26px,3.5vw,44px);
+    font-weight:700;
+    line-height:1.12;
+    margin-bottom:8px;
+    color:var(--ink);
+}
+.cs-subtitle { font-size:14.5px; color:var(--ink-lt); font-weight:400; }
+
+.cs-hero__right { text-align:right; flex-shrink:0; }
+.cs-price-label { display:block; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-lt); margin-bottom:4px; }
+.cs-price {
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:clamp(24px,3vw,38px);
+    font-weight:700;
+    color:var(--red);
 }
 
-/* ═══ HERO ═══ */
-.vd-hero {
-    background: var(--white);
-    border-bottom: 1px solid var(--border);
-    padding: 100px 0 28px;
-}
-.vd-hero__inner {
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 0 24px;
-}
-.vd-hero__meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-.vd-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--mid);
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: color var(--transition);
-}
-.vd-back:hover { color: var(--dark); }
-
-.vd-badges { display: flex; gap: 8px; flex-wrap: wrap; }
-.badge {
-    font-family: 'Sora', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: .04em;
-    padding: 4px 12px;
-    border-radius: 100px;
-    text-transform: uppercase;
-}
-.badge--green  { background: #ECFDF5; color: #065F46; }
-.badge--grey   { background: #F3F4F6; color: #374151; }
-.badge--outline{ background: transparent; border: 1.5px solid var(--border); color: var(--mid); }
-
-.vd-hero__title-row {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-.vd-name {
-    font-family: 'Sora', sans-serif;
-    font-size: 2.4rem;
-    font-weight: 700;
-    margin: 0 0 6px;
-    line-height: 1.15;
-    color: var(--dark);
-}
-.vd-year {
-    font-size: 0.95rem;
-    color: var(--mid);
-    font-weight: 500;
-}
-.vd-price-block {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-}
-.vd-price-label { font-size: 0.78rem; color: var(--light); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
-.vd-price {
-    font-family: 'Sora', sans-serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--red);
-    line-height: 1;
+/* ── BODY ── */
+.cs-body { padding:32px 0 100px; }
+.cs-body__inner {
+    max-width:1200px;
+    margin:0 auto;
+    padding:0 28px;
+    display:grid;
+    grid-template-columns:1fr 360px;
+    gap:28px;
+    align-items:start;
 }
 
-/* ═══ BODY LAYOUT ═══ */
-.vd-body { padding: 32px 0 80px; }
-.vd-body__inner {
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 0 24px;
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 28px;
-    align-items: start;
+/* ── GALLERY ── */
+.cs-gallery { margin-bottom:24px; }
+.cs-gallery__main {
+    position:relative;
+    width:100%;
+    aspect-ratio:16/10;
+    border-radius:var(--r);
+    overflow:hidden;
+    background:#111;
+    box-shadow:var(--sh-m);
+    margin-bottom:12px;
+    cursor:zoom-in;
+}
+.cs-gallery__main img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:transform .45s var(--ease);
+}
+.cs-gallery__main:hover img { transform:scale(1.03); }
+
+.cs-gallery__expand {
+    position:absolute;
+    top:14px;
+    right:14px;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:8px;
+    color:#fff;
+    font-size:12px;
+    font-weight:600;
+    padding:7px 13px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:var(--tr);
+    z-index:5;
+}
+.cs-gallery__expand:hover { background:rgba(0,0,0,.75); }
+
+.cs-gallery__arrow {
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:42px;
+    height:42px;
+    background:rgba(255,255,255,.92);
+    border:none;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--ink);
+    box-shadow:var(--sh-m);
+    transition:var(--tr);
+    z-index:5;
+    opacity:0;
+}
+.cs-gallery__main:hover .cs-gallery__arrow { opacity:1; }
+.cs-gallery__arrow--prev { left:14px; }
+.cs-gallery__arrow--next { right:14px; }
+.cs-gallery__arrow:hover { background:var(--white); transform:translateY(-50%) scale(1.08); }
+
+.cs-gallery__count {
+    position:absolute;
+    bottom:14px;
+    left:14px;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(8px);
+    color:#fff;
+    font-size:12px;
+    font-weight:500;
+    padding:6px 12px;
+    border-radius:100px;
+    display:flex;
+    align-items:center;
+    gap:6px;
 }
 
-/* ═══ GALLERY ═══ */
-.vd-gallery { margin-bottom: 24px; }
-.vd-gallery__main {
-    position: relative;
-    width: 100%;
-    height: 440px;
-    border-radius: var(--radius);
-    overflow: hidden;
-    background: #000;
-    box-shadow: var(--shadow-md);
-    margin-bottom: 12px;
+.cs-gallery__thumbs {
+    display:flex;
+    gap:9px;
+    overflow-x:auto;
+    padding-bottom:4px;
+    scrollbar-width:thin;
+    scrollbar-color:var(--border) transparent;
 }
-.vd-gallery__main img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
+.cs-thumb {
+    flex-shrink:0;
+    width:88px;
+    height:60px;
+    border-radius:8px;
+    overflow:hidden;
+    border:2.5px solid transparent;
+    background:none;
+    padding:0;
+    opacity:.6;
+    transition:var(--tr);
+    cursor:pointer;
 }
-.vd-gallery__main:hover img { transform: scale(1.02); }
+.cs-thumb img { width:100%; height:100%; object-fit:cover; }
+.cs-thumb:hover { opacity:.85; }
+.cs-thumb.active { border-color:var(--red); opacity:1; }
 
-.vd-gallery__overlay-count {
-    position: absolute;
-    bottom: 14px;
-    right: 14px;
-    background: rgba(0,0,0,.62);
-    backdrop-filter: blur(8px);
-    color: #fff;
-    font-size: 0.8rem;
-    font-weight: 500;
-    padding: 6px 12px;
-    border-radius: 100px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+/* ── VIDEO SECTION ── */
+.cs-video-section {
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:var(--r);
+    overflow:hidden;
+    margin-bottom:24px;
+    box-shadow:var(--sh-s);
+}
+.cs-video-header {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:14px 18px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    border-bottom:1px solid var(--border);
+    background:var(--bone);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+.cs-video-header svg { color:var(--red); }
+.cs-video-modal-btn {
+    margin-left:auto;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--red);
+    background:var(--red-lt);
+    border:1.5px solid rgba(200,40,30,.18);
+    border-radius:6px;
+    padding:5px 11px;
+    transition:var(--tr);
+    text-transform:none;
+    letter-spacing:0;
+}
+.cs-video-modal-btn:hover { background:rgba(200,40,30,.15); }
+.cs-video-preview {
+    position:relative;
+    cursor:pointer;
+    background:#000;
+    aspect-ratio:16/9;
+}
+.cs-video-preview video { width:100%; height:100%; object-fit:cover; display:block; opacity:.55; }
+.cs-video-overlay {
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    transition:var(--tr);
+}
+.cs-video-preview:hover .cs-video-overlay { background:rgba(0,0,0,.2); }
+.cs-play-btn {
+    width:72px;
+    height:72px;
+    background:var(--red);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    box-shadow:0 8px 28px rgba(200,40,30,.45);
+    transition:var(--tr);
+}
+.cs-play-btn svg { margin-left:4px; }
+.cs-video-preview:hover .cs-play-btn { transform:scale(1.08); }
+.cs-video-overlay p { color:rgba(255,255,255,.8); font-size:13px; font-weight:500; }
+
+/* ── CARD ── */
+.cs-card {
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:var(--r);
+    overflow:hidden;
+    margin-bottom:20px;
+    box-shadow:var(--sh-s);
+}
+.cs-card__head {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:14px 18px;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+    color:var(--ink);
+    border-bottom:1px solid var(--border);
+    background:var(--bone);
+}
+.cs-card__head svg { color:var(--red); }
+.cs-desc {
+    padding:18px;
+    font-size:14.5px;
+    line-height:1.8;
+    color:#374151;
+}
+.cs-features {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    padding:16px 18px;
+}
+.cs-feature-tag {
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    background:var(--bone);
+    border:1px solid var(--border);
+    color:#374151;
+    font-size:12.5px;
+    font-weight:500;
+    padding:5px 12px;
+    border-radius:100px;
+    transition:var(--tr);
+}
+.cs-feature-tag svg { color:#10b981; }
+.cs-feature-tag:hover { background:var(--red-lt); border-color:rgba(200,40,30,.25); color:var(--red); }
+
+/* ── STATS ── */
+.cs-stats {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:18px;
+}
+.cs-stat {
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:var(--r-sm);
+    padding:14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    box-shadow:var(--sh-s);
+    transition:var(--tr);
+}
+.cs-stat:hover { box-shadow:var(--sh-m); transform:translateY(-1px); }
+.cs-stat__ico {
+    width:38px;
+    height:38px;
+    background:var(--red-lt);
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    color:var(--red);
+}
+.cs-stat__val { display:block; font-size:14px; font-weight:700; color:var(--ink); line-height:1.2; }
+.cs-stat__lbl { display:block; font-size:11px; color:var(--ink-lt); text-transform:uppercase; letter-spacing:.05em; font-weight:500; margin-top:2px; }
+
+/* ── DETAILS ── */
+.cs-details { padding:4px 0; }
+.cs-detail-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 18px;
+    border-bottom:1px solid var(--border-lt);
+    font-size:13.5px;
+}
+.cs-detail-row:last-child { border-bottom:none; }
+.cs-detail-row span { color:var(--ink-md); font-weight:400; }
+.cs-detail-row strong { font-weight:600; color:var(--ink); }
+.cs-status { display:flex; align-items:center; gap:6px; }
+.cs-dot { width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.cs-status--green { color:var(--success); }
+.cs-status--grey  { color:var(--ink-lt); }
+
+/* ── CTA ── */
+.cs-cta {
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:var(--r);
+    padding:22px;
+    box-shadow:var(--sh-m);
+    position:sticky;
+    top:24px;
+}
+.cs-cta__price-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-bottom:16px;
+    margin-bottom:16px;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+    color:var(--ink-md);
+}
+.cs-cta__price-row strong {
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:22px;
+    font-weight:700;
+    color:var(--ink);
+}
+.cs-cta__btn {
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border:none;
+    border-radius:10px;
+    padding:14px;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.02em;
+    margin-bottom:10px;
+    transition:var(--tr);
+}
+.cs-cta__btn--primary { background:var(--red); color:#fff; }
+.cs-cta__btn--primary:hover { background:var(--red-h); transform:translateY(-1px); box-shadow:0 6px 20px rgba(200,40,30,.3); }
+.cs-cta__btn--video { background:var(--bone); color:var(--ink); border:1.5px solid var(--border); }
+.cs-cta__btn--video:hover { background:var(--border); transform:translateY(-1px); }
+.cs-cta__back {
+    display:block;
+    text-align:center;
+    color:var(--ink-lt);
+    font-size:13px;
+    font-weight:500;
+    padding:10px;
+    border-radius:8px;
+    transition:var(--tr);
+}
+.cs-cta__back:hover { background:var(--bone); color:var(--ink); }
+
+/* ══ LIGHTBOX ══ */
+.lb-overlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(5,4,3,.94);
+    backdrop-filter:blur(12px);
+    z-index:9998;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+.lb-overlay.open { display:flex; }
+
+.lb-close {
+    position:absolute;
+    top:18px;
+    right:18px;
+    width:42px;
+    height:42px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:10px;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:10;
+    transition:var(--tr);
+}
+.lb-close:hover { background:rgba(255,255,255,.2); }
+
+.lb-arrow {
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:50px;
+    height:50px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:50%;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:10;
+    transition:var(--tr);
+    margin-top:-40px;
+}
+.lb-arrow:hover { background:rgba(255,255,255,.2); transform:translateY(-50%) scale(1.08); }
+.lb-arrow--prev { left:20px; }
+.lb-arrow--next { right:20px; }
+
+.lb-stage {
+    position:relative;
+    max-width:90vw;
+    max-height:75vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+#lb-img {
+    max-width:90vw;
+    max-height:75vh;
+    object-fit:contain;
+    border-radius:10px;
+    box-shadow:var(--sh-l);
+    animation:lb-in .25s var(--ease);
+}
+@keyframes lb-in { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
+
+.lb-counter {
+    position:absolute;
+    bottom:-38px;
+    left:50%;
+    transform:translateX(-50%);
+    color:rgba(255,255,255,.55);
+    font-size:13px;
+    font-weight:500;
+    white-space:nowrap;
 }
 
-.vd-gallery__thumbs {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+.lb-thumbs {
+    position:absolute;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:8px;
+    max-width:80vw;
+    overflow-x:auto;
+    padding:4px;
+    scrollbar-width:none;
 }
-.vd-gallery__thumb {
-    flex-shrink: 0;
-    width: 92px;
-    height: 64px;
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2.5px solid transparent;
-    transition: all var(--transition);
-    opacity: .65;
+.lb-thumbs::-webkit-scrollbar { display:none; }
+.lb-thumb-item {
+    flex-shrink:0;
+    width:64px;
+    height:44px;
+    border-radius:6px;
+    overflow:hidden;
+    border:2px solid transparent;
+    cursor:pointer;
+    opacity:.5;
+    transition:var(--tr);
 }
-.vd-gallery__thumb img { width: 100%; height: 100%; object-fit: cover; }
-.vd-gallery__thumb:hover { opacity: .9; }
-.vd-gallery__thumb.active { border-color: var(--red); opacity: 1; }
+.lb-thumb-item img { width:100%; height:100%; object-fit:cover; }
+.lb-thumb-item:hover { opacity:.8; }
+.lb-thumb-item.active { border-color:#fff; opacity:1; }
 
-/* ═══ CARD ═══ */
-.vd-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow-sm);
+/* ══ VIDEO MODAL ══ */
+.vm-overlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.88);
+    backdrop-filter:blur(10px);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
 }
-.vd-card__header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 16px 20px;
-    font-family: 'Sora', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    letter-spacing: .03em;
-    text-transform: uppercase;
-    color: var(--dark);
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-}
-.vd-card__header svg { color: var(--red); flex-shrink: 0; }
+.vm-overlay.open { display:flex; }
 
-/* ═══ VIDEO ═══ */
-.vd-video-card { margin-bottom: 24px; }
-.vd-video__wrap { background: #000; }
-.vd-video__wrap video {
-    width: 100%;
-    max-height: 380px;
-    display: block;
+.vm-box {
+    background:#0a0a0a;
+    border-radius:16px;
+    width:100%;
+    max-width:960px;
+    box-shadow:var(--sh-l), 0 0 0 1px rgba(255,255,255,.06);
+    overflow:hidden;
+    animation:vm-in .3s cubic-bezier(.34,1.56,.64,1);
 }
-.vd-video__bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    background: #18181b;
-    color: #9ca3af;
-    font-size: 0.78rem;
-}
-.vd-fs-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: transparent;
-    border: 1px solid #3f3f46;
-    color: #d1d5db;
-    padding: 5px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.76rem;
-    font-family: inherit;
-    transition: all var(--transition);
-}
-.vd-fs-btn:hover { background: #27272a; color: white; border-color: #71717a; }
+@keyframes vm-in { from{opacity:0;transform:scale(.94) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
 
-/* ═══ DESCRIPTION ═══ */
-.vd-description {
-    padding: 18px 20px;
-    margin: 0;
-    color: #374151;
-    line-height: 1.75;
-    font-size: 0.95rem;
+.vm-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 18px;
+    border-bottom:1px solid rgba(255,255,255,.07);
 }
+.vm-header__left {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:13.5px;
+    font-weight:600;
+    color:rgba(255,255,255,.8);
+}
+.vm-icon {
+    width:30px;
+    height:30px;
+    background:var(--red);
+    border-radius:7px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    flex-shrink:0;
+}
+.vm-close {
+    width:36px;
+    height:36px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:8px;
+    color:rgba(255,255,255,.6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:var(--tr);
+}
+.vm-close:hover { background:rgba(200,40,30,.3); color:#fff; border-color:var(--red); }
 
-/* ═══ STATS GRID ═══ */
-.vd-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-.vd-stat {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow var(--transition);
-}
-.vd-stat:hover { box-shadow: var(--shadow-md); }
-.vd-stat__icon {
-    width: 40px;
-    height: 40px;
-    background: var(--red-light);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    color: var(--red);
-}
-.vd-stat__val {
-    display: block;
-    font-family: 'Sora', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--dark);
-    line-height: 1.2;
-}
-.vd-stat__label {
-    display: block;
-    font-size: 0.72rem;
-    color: var(--light);
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    font-weight: 500;
-    margin-top: 2px;
-}
+.vm-stage { background:#000; line-height:0; }
+.vm-stage video { width:100%; max-height:65vh; display:block; }
 
-/* ═══ DETAILS LIST ═══ */
-.vd-details-list { padding: 4px 0; }
-.vd-detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
+/* ── Responsive ── */
+@media(max-width:900px){
+    .cs-body__inner { grid-template-columns:1fr; }
+    .cs-right { order:-1; }
+    .cs-cta { position:static; }
+    .cs-stats { grid-template-columns:repeat(3,1fr); }
+    .cs-gallery__main { aspect-ratio:4/3; }
 }
-.vd-detail-row:last-child { border-bottom: none; }
-.vd-detail-key {
-    font-size: 0.85rem;
-    color: var(--mid);
-    font-weight: 500;
-}
-.vd-detail-val {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--dark);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.inline-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-}
-.inline-dot.green { background: #10B981; }
-.inline-dot.grey  { background: #9CA3AF; }
-
-/* ═══ FEATURES ═══ */
-.vd-features {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 16px 20px;
-}
-.vd-feature-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: #374151;
-    font-size: 0.8rem;
-    font-weight: 500;
-    padding: 5px 12px;
-    border-radius: 100px;
-    transition: all var(--transition);
-}
-.vd-feature-tag svg { color: #10B981; flex-shrink: 0; }
-.vd-feature-tag:hover { background: var(--red-light); border-color: #fca5a5; color: var(--red); }
-
-/* ═══ CTA CARD ═══ */
-.vd-cta-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 22px;
-    box-shadow: var(--shadow-md);
-}
-.vd-cta__price-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.875rem;
-    color: var(--mid);
-}
-.vd-cta__price-row strong {
-    font-family: 'Sora', sans-serif;
-    font-size: 1.3rem;
-    color: var(--dark);
-    font-weight: 700;
-}
-.vd-cta-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: var(--red);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 14px;
-    font-family: 'Sora', sans-serif;
-    font-size: 0.92rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition);
-    margin-bottom: 10px;
-    letter-spacing: .02em;
-}
-.vd-cta-btn:hover {
-    background: #B91C1C;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(217, 48, 37, .35);
-}
-.vd-back-btn {
-    display: block;
-    text-align: center;
-    color: var(--mid);
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 500;
-    padding: 10px;
-    border-radius: 8px;
-    transition: all var(--transition);
-}
-.vd-back-btn:hover { background: var(--surface); color: var(--dark); }
-
-/* ═══ RESPONSIVE ═══ */
-@media (max-width: 900px) {
-    .vd-body__inner {
-        grid-template-columns: 1fr;
-    }
-    .vd-col-right {
-        order: -1;
-    }
-    .vd-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .vd-gallery__main { height: 280px; }
-    .vd-name { font-size: 1.8rem; }
-    .vd-price { font-size: 1.6rem; }
-    .vd-hero { padding-top: 80px; }
-}
-
-@media (max-width: 500px) {
-    .vd-hero__title-row { flex-direction: column; align-items: flex-start; }
-    .vd-price-block { align-items: flex-start; }
-    .vd-stats-grid { grid-template-columns: 1fr 1fr; }
-    .vd-name { font-size: 1.5rem; }
+@media(max-width:600px){
+    .cs-hero__content { flex-direction:column; align-items:flex-start; }
+    .cs-hero__right { text-align:left; }
+    .cs-stats { grid-template-columns:1fr 1fr; }
+    .lb-arrow { width:38px; height:38px; }
+    .lb-arrow--prev { left:8px; }
+    .lb-arrow--next { right:8px; }
 }
 </style>
 
-<script>
-function changeImage(src, el) {
-    document.getElementById('mainImg').src = src;
-    document.querySelectorAll('.vd-gallery__thumb').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-}
 
-function openFullscreen() {
-    const v = document.getElementById('carVideo');
-    if (!v) return;
-    (v.requestFullscreen || v.webkitRequestFullscreen || v.mozRequestFullScreen || v.msRequestFullscreen).call(v);
-}
+{{-- ══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════ --}}
+<script>
+/* ── Image data from PHP ── */
+const IMAGES = @json(array_map(fn($img) => asset('storage/' . ltrim($img, '/')), $images));
+let currentIndex = 0;
+
+/* ══ LIGHTBOX ══ */
+const LB = (() => {
+    const overlay  = document.getElementById('lb-modal');
+    const img      = document.getElementById('lb-img');
+    const counter  = document.getElementById('lbCounter');
+    const thumbs   = document.getElementById('lbThumbs');
+    const prevBtn  = document.getElementById('lbPrev');
+    const nextBtn  = document.getElementById('lbNext');
+
+    function buildThumbs() {
+        thumbs.innerHTML = '';
+        IMAGES.forEach((src, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'lb-thumb-item' + (i === 0 ? ' active' : '');
+            btn.style.cssText = 'background:none;border:none;padding:0;';
+            btn.innerHTML = `<img src="${src}" alt="Photo ${i+1}">`;
+            btn.onclick = () => go(i);
+            thumbs.appendChild(btn);
+        });
+    }
+
+    function go(index) {
+        currentIndex = ((index % IMAGES.length) + IMAGES.length) % IMAGES.length;
+        img.style.opacity = '0';
+        setTimeout(() => {
+            img.src = IMAGES[currentIndex];
+            img.style.opacity = '1';
+        }, 120);
+        img.style.transition = 'opacity .12s ease';
+        counter.textContent = `${currentIndex + 1} / ${IMAGES.length}`;
+        thumbs.querySelectorAll('.lb-thumb-item').forEach((t,i) =>
+            t.classList.toggle('active', i === currentIndex));
+        prevBtn.style.display = IMAGES.length > 1 ? '' : 'none';
+        nextBtn.style.display = IMAGES.length > 1 ? '' : 'none';
+    }
+
+    function open(index) {
+        buildThumbs();
+        go(index ?? currentIndex);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function nav(dir) { go(currentIndex + dir); }
+
+    /* Gallery nav (arrows on main image) */
+    function galleryNav(dir) {
+        const next = ((currentIndex + dir) % IMAGES.length + IMAGES.length) % IMAGES.length;
+        setMain(next);
+    }
+
+    function setMain(index) {
+        currentIndex = index;
+        const mainImg = document.getElementById('mainImg');
+        mainImg.src = IMAGES[index];
+        document.getElementById('photoCounter').textContent = index + 1;
+        document.querySelectorAll('.cs-thumb').forEach((t, i) =>
+            t.classList.toggle('active', i === index));
+    }
+
+    /* Keyboard */
+    document.addEventListener('keydown', e => {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'ArrowLeft')  nav(-1);
+        if (e.key === 'ArrowRight') nav(1);
+        if (e.key === 'Escape')     close();
+    });
+
+    /* Click main image to open lightbox */
+    document.getElementById('galleryMain')?.addEventListener('click', e => {
+        if (!e.target.closest('.cs-gallery__expand') &&
+            !e.target.closest('.cs-gallery__arrow')) {
+            open(currentIndex);
+        }
+    });
+
+    return { open, close, nav, galleryNav, setMain };
+})();
+
+
+/* ══ VIDEO MODAL ══ */
+const VM = (() => {
+    const overlay = document.getElementById('vm-modal');
+    const video   = document.getElementById('vm-video');
+
+    function open() {
+        if (!overlay) return;
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        video?.play().catch(() => {});
+    }
+
+    function close() {
+        if (!overlay) return;
+        video?.pause();
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && overlay?.classList.contains('open')) close();
+    });
+
+    return { open, close };
+})();
 </script>
 
 @endsection

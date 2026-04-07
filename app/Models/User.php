@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Car;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -40,8 +41,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'is_admin' => 'boolean',
-        'is_verified' => 'boolean',
+        'is_admin'          => 'boolean',
+        'is_verified'       => 'boolean',
     ];
 
     /**
@@ -52,7 +53,6 @@ class User extends Authenticatable
         static::creating(function ($user) {
             $user->email = trim($user->email);
 
-            // Auto-verify admins
             if ($user->is_admin) {
                 $user->is_verified = true;
             }
@@ -61,7 +61,6 @@ class User extends Authenticatable
         static::updating(function ($user) {
             $user->email = trim($user->email);
 
-            // Ensure admins always stay verified
             if ($user->is_admin) {
                 $user->is_verified = true;
             }
@@ -90,5 +89,13 @@ class User extends Authenticatable
     public function verification()
     {
         return $this->hasOne(UserVerification::class);
+    }
+
+    /**
+     * Relation to cars
+     */
+    public function cars()
+    {
+        return $this->hasMany(Car::class);
     }
 }
