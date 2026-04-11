@@ -75,9 +75,17 @@
     <div class="hm-container">
       <span class="hm-tag hm-tag--coral">Find Your Vehicle</span>
       <h2 class="hm-section-title">Search our <em>fleet.</em></h2>
-      <form action="{{ route('search.vehicle') }}" method="GET" class="hm-search__form">
-        <input type="text" name="query" id="search-input" class="hm-search__input"
-          placeholder="Search by make, model, or keyword…" required />
+
+      {{-- ACTION points directly to /vehicles so the query lands on that page --}}
+      <form action="{{ url('/vehicles') }}" method="GET" class="hm-search__form" id="search-form">
+        <input
+          type="text"
+          name="query"
+          id="search-input"
+          class="hm-search__input"
+          placeholder="Search by make, model, or keyword…"
+          autocomplete="off"
+        />
         <button type="submit" class="hm-btn hm-btn--primary hm-search__btn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -160,11 +168,21 @@ function filterByBrand(brand) {
 function filterByBodyType(type) {
   if (type) window.location.href = `{{ url('/vehicles') }}?body_type=${type}`;
 }
+
 document.addEventListener('DOMContentLoaded', function () {
-  const form = document.querySelector('.hm-search__form');
+  const form = document.getElementById('search-form');
   const input = document.getElementById('search-input');
-  if (form) form.addEventListener('submit', e => {
-    if (!input.value.trim()) { e.preventDefault(); input.focus(); }
+
+  form.addEventListener('submit', function (e) {
+    const val = input.value.trim();
+    if (!val) {
+      // Empty search → just go to /vehicles with no query param
+      e.preventDefault();
+      window.location.href = '{{ url('/vehicles') }}';
+      return;
+    }
+    // Non-empty: let the form submit normally to /vehicles?query=...
+    // The vehicles page controller reads $_GET['query'] and filters results
   });
 });
 </script>

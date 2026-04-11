@@ -15,11 +15,15 @@
 
     $hasVideo = !empty($car->video) && $car->video !== 'null';
     $videoUrl = $hasVideo ? asset('storage/' . ltrim($car->video, '/')) : '';
+
+    $whatsappNumber = '2547174753336';
+    $whatsappMessage = urlencode('Hello! I am interested in the ' . ($car->name ?? 'vehicle') . ' listed at KSh ' . number_format($car->price ?? 0) . '. Please provide more details.');
+    $whatsappUrl = 'https://wa.me/' . $whatsappNumber . '?text=' . $whatsappMessage;
 @endphp
 
 <div class="cs-root">
 
-    {{-- ══════════ HERO STRIP ══════════ --}}
+    {{-- HERO --}}
     <div class="cs-hero">
         <div class="cs-hero__inner">
             <a href="{{ url('/vehicles') }}" class="cs-back">
@@ -58,20 +62,19 @@
         </div>
     </div>
 
-    {{-- ══════════ MAIN BODY ══════════ --}}
+    {{-- MAIN BODY --}}
     <div class="cs-body">
         <div class="cs-body__inner">
 
             {{-- LEFT COLUMN --}}
             <div class="cs-left">
 
-                {{-- ── GALLERY ── --}}
+                {{-- GALLERY --}}
                 <div class="cs-gallery">
                     <div class="cs-gallery__main" id="galleryMain">
                         <img id="mainImg" src="{{ $mainImage }}" alt="{{ $car->name ?? 'Vehicle' }}"
                              onerror="this.src='https://via.placeholder.com/1200x800/1a1a2e/ffffff?text=No+Photo'">
 
-                        {{-- Lightbox trigger --}}
                         <button class="cs-gallery__expand" onclick="LB.open(0)" aria-label="View fullscreen">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
                             Expand
@@ -107,7 +110,25 @@
                     @endif
                 </div>
 
-                {{-- ── VIDEO PREVIEW ── --}}
+                {{-- MOBILE CTA (shown only on small screens) --}}
+                <div class="cs-mobile-cta">
+                    <div class="cs-cta__price-row">
+                        <span>Listed Price</span>
+                        <strong>KSh {{ number_format($car->price ?? 0) }}</strong>
+                    </div>
+                    <a href="{{ $whatsappUrl }}" target="_blank" rel="noopener noreferrer" class="cs-cta__btn cs-cta__btn--whatsapp">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Enquire on WhatsApp
+                    </a>
+                    @if($hasVideo)
+                    <button class="cs-cta__btn cs-cta__btn--video" onclick="VM.open()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                        Watch Video Walkthrough
+                    </button>
+                    @endif
+                </div>
+
+                {{-- VIDEO PREVIEW --}}
                 @if($hasVideo)
                 <div class="cs-video-section">
                     <div class="cs-video-header">
@@ -115,24 +136,24 @@
                         Video Walkthrough
                         <button class="cs-video-modal-btn" onclick="VM.open()">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
-                            Open in fullscreen
+                            Open fullscreen
                         </button>
                     </div>
                     <div class="cs-video-preview" onclick="VM.open()">
-                        <video id="inlineVideo" preload="metadata" muted>
+                        <video id="inlineVideo" preload="metadata" muted playsinline>
                             <source src="{{ $videoUrl }}" type="video/mp4">
                         </video>
                         <div class="cs-video-overlay">
                             <div class="cs-play-btn">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                             </div>
-                            <p>Click to watch full walkthrough</p>
+                            <p>Tap to watch full walkthrough</p>
                         </div>
                     </div>
                 </div>
                 @endif
 
-                {{-- ── DESCRIPTION ── --}}
+                {{-- DESCRIPTION --}}
                 @if(!empty($car->description))
                 <div class="cs-card">
                     <div class="cs-card__head">
@@ -143,7 +164,7 @@
                 </div>
                 @endif
 
-                {{-- ── FEATURES ── --}}
+                {{-- FEATURES --}}
                 @if(!empty($car->specification) && count(array_filter((array)$car->specification)))
                 <div class="cs-card">
                     <div class="cs-card__head">
@@ -245,52 +266,36 @@
                         Vehicle Details
                     </div>
                     <div class="cs-details">
-                        <div class="cs-detail-row">
-                            <span>Type</span>
-                            <strong>{{ $car->car_type ?? '—' }}</strong>
-                        </div>
-                        <div class="cs-detail-row">
-                            <span>Origin</span>
-                            <strong>{{ ucfirst($car->origin ?? '—') }}</strong>
-                        </div>
+                        <div class="cs-detail-row"><span>Type</span><strong>{{ $car->car_type ?? '—' }}</strong></div>
+                        <div class="cs-detail-row"><span>Origin</span><strong>{{ ucfirst($car->origin ?? '—') }}</strong></div>
                         <div class="cs-detail-row">
                             <span>Status</span>
                             <strong class="cs-status {{ ($car->availability ?? '') === 'Available' ? 'cs-status--green' : 'cs-status--grey' }}">
-                                <span class="cs-dot"></span>
-                                {{ $car->availability ?? '—' }}
+                                <span class="cs-dot"></span>{{ $car->availability ?? '—' }}
                             </strong>
                         </div>
                         @if(!empty($car->year))
-                        <div class="cs-detail-row">
-                            <span>Year</span>
-                            <strong>{{ $car->year }}</strong>
-                        </div>
+                        <div class="cs-detail-row"><span>Year</span><strong>{{ $car->year }}</strong></div>
                         @endif
                         @if(!empty($car->location))
-                        <div class="cs-detail-row">
-                            <span>Location</span>
-                            <strong>{{ $car->location }}</strong>
-                        </div>
+                        <div class="cs-detail-row"><span>Location</span><strong>{{ $car->location }}</strong></div>
                         @endif
                         @if(!empty($car->color))
-                        <div class="cs-detail-row">
-                            <span>Colour</span>
-                            <strong>{{ $car->color }}</strong>
-                        </div>
+                        <div class="cs-detail-row"><span>Colour</span><strong>{{ $car->color }}</strong></div>
                         @endif
                     </div>
                 </div>
 
-                {{-- CTA Card --}}
-                <div class="cs-cta">
+                {{-- CTA Card (desktop) --}}
+                <div class="cs-cta cs-desktop-cta">
                     <div class="cs-cta__price-row">
                         <span>Listed Price</span>
                         <strong>KSh {{ number_format($car->price ?? 0) }}</strong>
                     </div>
-                    <button class="cs-cta__btn cs-cta__btn--primary">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.2 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
-                        Enquire About This Car
-                    </button>
+                    <a href="{{ $whatsappUrl }}" target="_blank" rel="noopener noreferrer" class="cs-cta__btn cs-cta__btn--whatsapp">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Enquire on WhatsApp
+                    </a>
                     @if($hasVideo)
                     <button class="cs-cta__btn cs-cta__btn--video" onclick="VM.open()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
@@ -303,37 +308,35 @@
             </div>
         </div>
     </div>
+
+    {{-- FLOATING WHATSAPP BUTTON (mobile) --}}
+    <a href="{{ $whatsappUrl }}" target="_blank" rel="noopener noreferrer" class="cs-wa-fab" aria-label="Enquire on WhatsApp">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <span>Chat with us</span>
+    </a>
 </div>
 
 
-{{-- ══════════════════════════════════════════
-     LIGHTBOX MODAL
-══════════════════════════════════════════ --}}
+{{-- LIGHTBOX MODAL --}}
 <div id="lb-modal" class="lb-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this)LB.close()">
     <button class="lb-close" onclick="LB.close()" aria-label="Close">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-
     <button class="lb-arrow lb-arrow--prev" id="lbPrev" onclick="LB.nav(-1)" aria-label="Previous">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-
     <div class="lb-stage">
         <img id="lb-img" src="" alt="Vehicle photo">
         <div class="lb-counter" id="lbCounter">1 / 1</div>
     </div>
-
     <button class="lb-arrow lb-arrow--next" id="lbNext" onclick="LB.nav(1)" aria-label="Next">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
-
     <div class="lb-thumbs" id="lbThumbs"></div>
 </div>
 
 
-{{-- ══════════════════════════════════════════
-     VIDEO MODAL
-══════════════════════════════════════════ --}}
+{{-- VIDEO MODAL --}}
 @if($hasVideo)
 <div id="vm-modal" class="vm-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this)VM.close()">
     <div class="vm-box">
@@ -359,9 +362,6 @@
 @endif
 
 
-{{-- ══════════════════════════════════════════
-     STYLES
-══════════════════════════════════════════ --}}
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Figtree:wght@300;400;500;600;700&display=swap');
 
@@ -369,6 +369,8 @@
     --red:       #C8281E;
     --red-h:     #a5201a;
     --red-lt:    rgba(200,40,30,.08);
+    --wa:        #25D366;
+    --wa-h:      #1da851;
     --ink:       #111418;
     --ink-md:    #52575e;
     --ink-lt:    #8a9099;
@@ -391,363 +393,199 @@ body { font-family:'Figtree',system-ui,sans-serif; background:var(--bone); color
 button { font-family:'Figtree',system-ui,sans-serif; cursor:pointer; }
 a { text-decoration:none; color:inherit; }
 
-/* ── ROOT ── */
-.cs-root { min-height:100vh; }
+/* ROOT */
+.cs-root { min-height:100vh; padding-bottom:80px; }
 
-/* ── HERO ── */
+/* HERO */
 .cs-hero {
     background:var(--white);
     border-bottom:1px solid var(--border);
     padding:96px 0 28px;
 }
-.cs-hero__inner {
-    max-width:1200px;
-    margin:0 auto;
-    padding:0 28px;
-}
+.cs-hero__inner { max-width:1200px; margin:0 auto; padding:0 20px; }
 .cs-back {
-    display:inline-flex;
-    align-items:center;
-    gap:5px;
-    font-size:13px;
-    font-weight:500;
-    color:var(--ink-lt);
-    margin-bottom:22px;
-    transition:var(--tr);
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:13px; font-weight:500; color:var(--ink-lt);
+    margin-bottom:22px; transition:var(--tr);
 }
 .cs-back:hover { color:var(--ink); }
 .cs-hero__content {
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    gap:24px;
-    flex-wrap:wrap;
+    display:flex; justify-content:space-between;
+    align-items:flex-end; gap:24px; flex-wrap:wrap;
 }
-.cs-hero__tags {
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    margin-bottom:14px;
-}
+.cs-hero__tags { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
 .cs-tag {
-    font-size:11px;
-    font-weight:600;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    padding:4px 11px;
-    border-radius:100px;
-    display:inline-flex;
-    align-items:center;
-    gap:5px;
+    font-size:11px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; padding:4px 11px; border-radius:100px;
+    display:inline-flex; align-items:center; gap:5px;
 }
 .cs-tag--green   { background:#ecfdf5; color:#065f46; }
 .cs-tag--grey    { background:#f3f4f6; color:#374151; }
 .cs-tag--outline { background:transparent; border:1.5px solid var(--border); color:var(--ink-md); }
 .cs-tag--video   { background:#fdf4ff; color:#7e22ce; border:1.5px solid #e9d5ff; }
-
 .cs-title {
     font-family:'Playfair Display',Georgia,serif;
-    font-size:clamp(26px,3.5vw,44px);
-    font-weight:700;
-    line-height:1.12;
-    margin-bottom:8px;
-    color:var(--ink);
+    font-size:clamp(22px,3.5vw,44px); font-weight:700;
+    line-height:1.12; margin-bottom:8px; color:var(--ink);
 }
 .cs-subtitle { font-size:14.5px; color:var(--ink-lt); font-weight:400; }
-
 .cs-hero__right { text-align:right; flex-shrink:0; }
 .cs-price-label { display:block; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-lt); margin-bottom:4px; }
-.cs-price {
-    font-family:'Playfair Display',Georgia,serif;
-    font-size:clamp(24px,3vw,38px);
-    font-weight:700;
-    color:var(--red);
-}
+.cs-price { font-family:'Playfair Display',Georgia,serif; font-size:clamp(22px,3vw,38px); font-weight:700; color:var(--red); }
 
-/* ── BODY ── */
-.cs-body { padding:32px 0 100px; }
+/* BODY */
+.cs-body { padding:32px 0 40px; }
 .cs-body__inner {
-    max-width:1200px;
-    margin:0 auto;
-    padding:0 28px;
-    display:grid;
-    grid-template-columns:1fr 360px;
-    gap:28px;
-    align-items:start;
+    max-width:1200px; margin:0 auto; padding:0 20px;
+    display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start;
 }
 
-/* ── GALLERY ── */
+/* GALLERY */
 .cs-gallery { margin-bottom:24px; }
 .cs-gallery__main {
-    position:relative;
-    width:100%;
-    aspect-ratio:16/10;
-    border-radius:var(--r);
-    overflow:hidden;
-    background:#111;
-    box-shadow:var(--sh-m);
-    margin-bottom:12px;
-    cursor:zoom-in;
+    position:relative; width:100%; aspect-ratio:16/10;
+    border-radius:var(--r); overflow:hidden; background:#111;
+    box-shadow:var(--sh-m); margin-bottom:12px; cursor:zoom-in;
 }
-.cs-gallery__main img {
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    transition:transform .45s var(--ease);
-}
+.cs-gallery__main img { width:100%; height:100%; object-fit:cover; transition:transform .45s var(--ease); }
 .cs-gallery__main:hover img { transform:scale(1.03); }
-
 .cs-gallery__expand {
-    position:absolute;
-    top:14px;
-    right:14px;
-    background:rgba(0,0,0,.55);
-    backdrop-filter:blur(8px);
-    border:1px solid rgba(255,255,255,.15);
-    border-radius:8px;
-    color:#fff;
-    font-size:12px;
-    font-weight:600;
-    padding:7px 13px;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    transition:var(--tr);
-    z-index:5;
+    position:absolute; top:14px; right:14px;
+    background:rgba(0,0,0,.55); backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.15); border-radius:8px;
+    color:#fff; font-size:12px; font-weight:600;
+    padding:7px 13px; display:flex; align-items:center; gap:6px;
+    transition:var(--tr); z-index:5;
 }
 .cs-gallery__expand:hover { background:rgba(0,0,0,.75); }
-
 .cs-gallery__arrow {
-    position:absolute;
-    top:50%;
-    transform:translateY(-50%);
-    width:42px;
-    height:42px;
-    background:rgba(255,255,255,.92);
-    border:none;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:var(--ink);
-    box-shadow:var(--sh-m);
-    transition:var(--tr);
-    z-index:5;
-    opacity:0;
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:42px; height:42px; background:rgba(255,255,255,.92);
+    border:none; border-radius:50%; display:flex;
+    align-items:center; justify-content:center;
+    color:var(--ink); box-shadow:var(--sh-m); transition:var(--tr);
+    z-index:5; opacity:0;
 }
 .cs-gallery__main:hover .cs-gallery__arrow { opacity:1; }
 .cs-gallery__arrow--prev { left:14px; }
 .cs-gallery__arrow--next { right:14px; }
 .cs-gallery__arrow:hover { background:var(--white); transform:translateY(-50%) scale(1.08); }
-
 .cs-gallery__count {
-    position:absolute;
-    bottom:14px;
-    left:14px;
-    background:rgba(0,0,0,.55);
-    backdrop-filter:blur(8px);
-    color:#fff;
-    font-size:12px;
-    font-weight:500;
-    padding:6px 12px;
-    border-radius:100px;
-    display:flex;
-    align-items:center;
-    gap:6px;
+    position:absolute; bottom:14px; left:14px;
+    background:rgba(0,0,0,.55); backdrop-filter:blur(8px);
+    color:#fff; font-size:12px; font-weight:500;
+    padding:6px 12px; border-radius:100px;
+    display:flex; align-items:center; gap:6px;
 }
-
 .cs-gallery__thumbs {
-    display:flex;
-    gap:9px;
-    overflow-x:auto;
-    padding-bottom:4px;
-    scrollbar-width:thin;
+    display:flex; gap:9px; overflow-x:auto;
+    padding-bottom:4px; scrollbar-width:thin;
     scrollbar-color:var(--border) transparent;
 }
 .cs-thumb {
-    flex-shrink:0;
-    width:88px;
-    height:60px;
-    border-radius:8px;
-    overflow:hidden;
-    border:2.5px solid transparent;
-    background:none;
-    padding:0;
-    opacity:.6;
-    transition:var(--tr);
-    cursor:pointer;
+    flex-shrink:0; width:88px; height:60px;
+    border-radius:8px; overflow:hidden;
+    border:2.5px solid transparent; background:none;
+    padding:0; opacity:.6; transition:var(--tr); cursor:pointer;
 }
 .cs-thumb img { width:100%; height:100%; object-fit:cover; }
 .cs-thumb:hover { opacity:.85; }
 .cs-thumb.active { border-color:var(--red); opacity:1; }
 
-/* ── VIDEO SECTION ── */
+/* MOBILE CTA */
+.cs-mobile-cta {
+    display:none;
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--r); padding:18px;
+    box-shadow:var(--sh-s); margin-bottom:24px;
+}
+
+/* VIDEO SECTION */
 .cs-video-section {
-    background:var(--white);
-    border:1px solid var(--border);
-    border-radius:var(--r);
-    overflow:hidden;
-    margin-bottom:24px;
-    box-shadow:var(--sh-s);
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--r); overflow:hidden;
+    margin-bottom:24px; box-shadow:var(--sh-s);
 }
 .cs-video-header {
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:14px 18px;
-    font-size:13px;
-    font-weight:600;
-    color:var(--ink);
-    border-bottom:1px solid var(--border);
-    background:var(--bone);
-    text-transform:uppercase;
-    letter-spacing:.05em;
+    display:flex; align-items:center; gap:8px;
+    padding:14px 18px; font-size:13px; font-weight:600;
+    color:var(--ink); border-bottom:1px solid var(--border);
+    background:var(--bone); text-transform:uppercase; letter-spacing:.05em;
 }
 .cs-video-header svg { color:var(--red); }
 .cs-video-modal-btn {
-    margin-left:auto;
-    display:inline-flex;
-    align-items:center;
-    gap:5px;
-    font-size:12px;
-    font-weight:600;
-    color:var(--red);
-    background:var(--red-lt);
-    border:1.5px solid rgba(200,40,30,.18);
-    border-radius:6px;
-    padding:5px 11px;
-    transition:var(--tr);
-    text-transform:none;
-    letter-spacing:0;
+    margin-left:auto; display:inline-flex; align-items:center; gap:5px;
+    font-size:12px; font-weight:600; color:var(--red);
+    background:var(--red-lt); border:1.5px solid rgba(200,40,30,.18);
+    border-radius:6px; padding:5px 11px; transition:var(--tr);
+    text-transform:none; letter-spacing:0;
 }
 .cs-video-modal-btn:hover { background:rgba(200,40,30,.15); }
-.cs-video-preview {
-    position:relative;
-    cursor:pointer;
-    background:#000;
-    aspect-ratio:16/9;
-}
+.cs-video-preview { position:relative; cursor:pointer; background:#000; aspect-ratio:16/9; }
 .cs-video-preview video { width:100%; height:100%; object-fit:cover; display:block; opacity:.55; }
 .cs-video-overlay {
-    position:absolute;
-    inset:0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:14px;
-    transition:var(--tr);
+    position:absolute; inset:0; display:flex;
+    flex-direction:column; align-items:center;
+    justify-content:center; gap:14px; transition:var(--tr);
 }
 .cs-video-preview:hover .cs-video-overlay { background:rgba(0,0,0,.2); }
 .cs-play-btn {
-    width:72px;
-    height:72px;
-    background:var(--red);
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#fff;
-    box-shadow:0 8px 28px rgba(200,40,30,.45);
-    transition:var(--tr);
+    width:72px; height:72px; background:var(--red);
+    border-radius:50%; display:flex; align-items:center;
+    justify-content:center; color:#fff;
+    box-shadow:0 8px 28px rgba(200,40,30,.45); transition:var(--tr);
 }
 .cs-play-btn svg { margin-left:4px; }
 .cs-video-preview:hover .cs-play-btn { transform:scale(1.08); }
 .cs-video-overlay p { color:rgba(255,255,255,.8); font-size:13px; font-weight:500; }
 
-/* ── CARD ── */
+/* CARD */
 .cs-card {
-    background:var(--white);
-    border:1px solid var(--border);
-    border-radius:var(--r);
-    overflow:hidden;
-    margin-bottom:20px;
-    box-shadow:var(--sh-s);
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--r); overflow:hidden;
+    margin-bottom:20px; box-shadow:var(--sh-s);
 }
 .cs-card__head {
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:14px 18px;
-    font-size:11.5px;
-    font-weight:700;
-    letter-spacing:.07em;
-    text-transform:uppercase;
-    color:var(--ink);
-    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:8px;
+    padding:14px 18px; font-size:11.5px; font-weight:700;
+    letter-spacing:.07em; text-transform:uppercase;
+    color:var(--ink); border-bottom:1px solid var(--border);
     background:var(--bone);
 }
 .cs-card__head svg { color:var(--red); }
-.cs-desc {
-    padding:18px;
-    font-size:14.5px;
-    line-height:1.8;
-    color:#374151;
-}
-.cs-features {
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    padding:16px 18px;
-}
+.cs-desc { padding:18px; font-size:14.5px; line-height:1.8; color:#374151; }
+.cs-features { display:flex; flex-wrap:wrap; gap:8px; padding:16px 18px; }
 .cs-feature-tag {
-    display:inline-flex;
-    align-items:center;
-    gap:5px;
-    background:var(--bone);
-    border:1px solid var(--border);
-    color:#374151;
-    font-size:12.5px;
-    font-weight:500;
-    padding:5px 12px;
-    border-radius:100px;
-    transition:var(--tr);
+    display:inline-flex; align-items:center; gap:5px;
+    background:var(--bone); border:1px solid var(--border);
+    color:#374151; font-size:12.5px; font-weight:500;
+    padding:5px 12px; border-radius:100px; transition:var(--tr);
 }
 .cs-feature-tag svg { color:#10b981; }
 .cs-feature-tag:hover { background:var(--red-lt); border-color:rgba(200,40,30,.25); color:var(--red); }
 
-/* ── STATS ── */
-.cs-stats {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-bottom:18px;
-}
+/* STATS */
+.cs-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
 .cs-stat {
-    background:var(--white);
-    border:1px solid var(--border);
-    border-radius:var(--r-sm);
-    padding:14px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    box-shadow:var(--sh-s);
-    transition:var(--tr);
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--r-sm); padding:14px;
+    display:flex; align-items:center; gap:12px;
+    box-shadow:var(--sh-s); transition:var(--tr);
 }
 .cs-stat:hover { box-shadow:var(--sh-m); transform:translateY(-1px); }
 .cs-stat__ico {
-    width:38px;
-    height:38px;
-    background:var(--red-lt);
-    border-radius:10px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-    color:var(--red);
+    width:38px; height:38px; background:var(--red-lt);
+    border-radius:10px; display:flex; align-items:center;
+    justify-content:center; flex-shrink:0; color:var(--red);
 }
 .cs-stat__val { display:block; font-size:14px; font-weight:700; color:var(--ink); line-height:1.2; }
 .cs-stat__lbl { display:block; font-size:11px; color:var(--ink-lt); text-transform:uppercase; letter-spacing:.05em; font-weight:500; margin-top:2px; }
 
-/* ── DETAILS ── */
+/* DETAILS */
 .cs-details { padding:4px 0; }
 .cs-detail-row {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:12px 18px;
-    border-bottom:1px solid var(--border-lt);
-    font-size:13.5px;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--border-lt); font-size:13.5px;
 }
 .cs-detail-row:last-child { border-bottom:none; }
 .cs-detail-row span { color:var(--ink-md); font-weight:400; }
@@ -757,277 +595,182 @@ a { text-decoration:none; color:inherit; }
 .cs-status--green { color:var(--success); }
 .cs-status--grey  { color:var(--ink-lt); }
 
-/* ── CTA ── */
+/* CTA */
 .cs-cta {
-    background:var(--white);
-    border:1px solid var(--border);
-    border-radius:var(--r);
-    padding:22px;
-    box-shadow:var(--sh-m);
-    position:sticky;
-    top:24px;
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--r); padding:22px;
+    box-shadow:var(--sh-m); position:sticky; top:24px;
 }
 .cs-cta__price-row {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding-bottom:16px;
-    margin-bottom:16px;
+    display:flex; justify-content:space-between; align-items:center;
+    padding-bottom:16px; margin-bottom:16px;
     border-bottom:1px solid var(--border);
-    font-size:13px;
-    color:var(--ink-md);
+    font-size:13px; color:var(--ink-md);
 }
 .cs-cta__price-row strong {
     font-family:'Playfair Display',Georgia,serif;
-    font-size:22px;
-    font-weight:700;
-    color:var(--ink);
+    font-size:22px; font-weight:700; color:var(--ink);
 }
 .cs-cta__btn {
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    border:none;
-    border-radius:10px;
-    padding:14px;
-    font-size:14px;
-    font-weight:700;
-    letter-spacing:.02em;
-    margin-bottom:10px;
-    transition:var(--tr);
+    width:100%; display:flex; align-items:center; justify-content:center;
+    gap:8px; border:none; border-radius:10px; padding:14px;
+    font-size:14px; font-weight:700; letter-spacing:.02em;
+    margin-bottom:10px; transition:var(--tr); cursor:pointer;
+    text-decoration:none;
 }
-.cs-cta__btn--primary { background:var(--red); color:#fff; }
-.cs-cta__btn--primary:hover { background:var(--red-h); transform:translateY(-1px); box-shadow:0 6px 20px rgba(200,40,30,.3); }
+.cs-cta__btn--whatsapp { background:var(--wa); color:#fff; }
+.cs-cta__btn--whatsapp:hover { background:var(--wa-h); transform:translateY(-1px); box-shadow:0 6px 20px rgba(37,211,102,.35); }
 .cs-cta__btn--video { background:var(--bone); color:var(--ink); border:1.5px solid var(--border); }
 .cs-cta__btn--video:hover { background:var(--border); transform:translateY(-1px); }
 .cs-cta__back {
-    display:block;
-    text-align:center;
-    color:var(--ink-lt);
-    font-size:13px;
-    font-weight:500;
-    padding:10px;
-    border-radius:8px;
-    transition:var(--tr);
+    display:block; text-align:center; color:var(--ink-lt);
+    font-size:13px; font-weight:500; padding:10px;
+    border-radius:8px; transition:var(--tr);
 }
 .cs-cta__back:hover { background:var(--bone); color:var(--ink); }
 
-/* ══ LIGHTBOX ══ */
-.lb-overlay {
+/* FLOATING WHATSAPP FAB */
+.cs-wa-fab {
     display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(5,4,3,.94);
-    backdrop-filter:blur(12px);
-    z-index:9998;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--wa); color:#fff;
+    border-radius:100px; padding:14px 24px;
+    font-size:15px; font-weight:700;
+    align-items:center; gap:10px;
+    box-shadow:0 6px 28px rgba(37,211,102,.45);
+    z-index:999; transition:var(--tr);
+    text-decoration:none; white-space:nowrap;
+}
+.cs-wa-fab:hover { background:var(--wa-h); transform:translateX(-50%) translateY(-2px); box-shadow:0 10px 36px rgba(37,211,102,.5); }
+
+/* LIGHTBOX */
+.lb-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(5,4,3,.94); backdrop-filter:blur(12px);
+    z-index:9998; flex-direction:column;
+    align-items:center; justify-content:center; padding:20px;
 }
 .lb-overlay.open { display:flex; }
-
 .lb-close {
-    position:absolute;
-    top:18px;
-    right:18px;
-    width:42px;
-    height:42px;
-    background:rgba(255,255,255,.1);
-    border:1px solid rgba(255,255,255,.15);
-    border-radius:10px;
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:10;
-    transition:var(--tr);
+    position:absolute; top:18px; right:18px;
+    width:42px; height:42px; background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.15); border-radius:10px;
+    color:#fff; display:flex; align-items:center;
+    justify-content:center; z-index:10; transition:var(--tr);
 }
 .lb-close:hover { background:rgba(255,255,255,.2); }
-
 .lb-arrow {
-    position:absolute;
-    top:50%;
-    transform:translateY(-50%);
-    width:50px;
-    height:50px;
-    background:rgba(255,255,255,.1);
-    border:1px solid rgba(255,255,255,.2);
-    border-radius:50%;
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:10;
-    transition:var(--tr);
-    margin-top:-40px;
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:50px; height:50px; background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.2); border-radius:50%;
+    color:#fff; display:flex; align-items:center;
+    justify-content:center; z-index:10; transition:var(--tr); margin-top:-40px;
 }
 .lb-arrow:hover { background:rgba(255,255,255,.2); transform:translateY(-50%) scale(1.08); }
 .lb-arrow--prev { left:20px; }
 .lb-arrow--next { right:20px; }
-
 .lb-stage {
-    position:relative;
-    max-width:90vw;
-    max-height:75vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    position:relative; max-width:90vw; max-height:75vh;
+    display:flex; align-items:center; justify-content:center;
 }
 #lb-img {
-    max-width:90vw;
-    max-height:75vh;
-    object-fit:contain;
-    border-radius:10px;
-    box-shadow:var(--sh-l);
+    max-width:90vw; max-height:75vh; object-fit:contain;
+    border-radius:10px; box-shadow:var(--sh-l);
     animation:lb-in .25s var(--ease);
 }
 @keyframes lb-in { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
-
 .lb-counter {
-    position:absolute;
-    bottom:-38px;
-    left:50%;
-    transform:translateX(-50%);
-    color:rgba(255,255,255,.55);
-    font-size:13px;
-    font-weight:500;
-    white-space:nowrap;
+    position:absolute; bottom:-38px; left:50%; transform:translateX(-50%);
+    color:rgba(255,255,255,.55); font-size:13px; font-weight:500; white-space:nowrap;
 }
-
 .lb-thumbs {
-    position:absolute;
-    bottom:20px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:8px;
-    max-width:80vw;
-    overflow-x:auto;
-    padding:4px;
-    scrollbar-width:none;
+    position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+    display:flex; gap:8px; max-width:80vw; overflow-x:auto;
+    padding:4px; scrollbar-width:none;
 }
 .lb-thumbs::-webkit-scrollbar { display:none; }
 .lb-thumb-item {
-    flex-shrink:0;
-    width:64px;
-    height:44px;
-    border-radius:6px;
-    overflow:hidden;
-    border:2px solid transparent;
-    cursor:pointer;
-    opacity:.5;
-    transition:var(--tr);
+    flex-shrink:0; width:64px; height:44px; border-radius:6px;
+    overflow:hidden; border:2px solid transparent; cursor:pointer;
+    opacity:.5; transition:var(--tr);
 }
 .lb-thumb-item img { width:100%; height:100%; object-fit:cover; }
 .lb-thumb-item:hover { opacity:.8; }
 .lb-thumb-item.active { border-color:#fff; opacity:1; }
 
-/* ══ VIDEO MODAL ══ */
+/* VIDEO MODAL */
 .vm-overlay {
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.88);
-    backdrop-filter:blur(10px);
-    z-index:9999;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.88); backdrop-filter:blur(10px);
+    z-index:9999; align-items:center; justify-content:center; padding:20px;
 }
 .vm-overlay.open { display:flex; }
-
 .vm-box {
-    background:#0a0a0a;
-    border-radius:16px;
-    width:100%;
-    max-width:960px;
+    background:#0a0a0a; border-radius:16px; width:100%; max-width:960px;
     box-shadow:var(--sh-l), 0 0 0 1px rgba(255,255,255,.06);
-    overflow:hidden;
-    animation:vm-in .3s cubic-bezier(.34,1.56,.64,1);
+    overflow:hidden; animation:vm-in .3s cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes vm-in { from{opacity:0;transform:scale(.94) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
-
 .vm-header {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 18px;
-    border-bottom:1px solid rgba(255,255,255,.07);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 18px; border-bottom:1px solid rgba(255,255,255,.07);
 }
 .vm-header__left {
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-size:13.5px;
-    font-weight:600;
-    color:rgba(255,255,255,.8);
+    display:flex; align-items:center; gap:10px;
+    font-size:13.5px; font-weight:600; color:rgba(255,255,255,.8);
 }
 .vm-icon {
-    width:30px;
-    height:30px;
-    background:var(--red);
-    border-radius:7px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#fff;
-    flex-shrink:0;
+    width:30px; height:30px; background:var(--red); border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; flex-shrink:0;
 }
 .vm-close {
-    width:36px;
-    height:36px;
-    background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:8px;
-    color:rgba(255,255,255,.6);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition:var(--tr);
+    width:36px; height:36px; background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12); border-radius:8px;
+    color:rgba(255,255,255,.6); display:flex; align-items:center;
+    justify-content:center; transition:var(--tr);
 }
 .vm-close:hover { background:rgba(200,40,30,.3); color:#fff; border-color:var(--red); }
-
 .vm-stage { background:#000; line-height:0; }
 .vm-stage video { width:100%; max-height:65vh; display:block; }
 
-/* ── Responsive ── */
-@media(max-width:900px){
+/* RESPONSIVE */
+@media(max-width:900px) {
     .cs-body__inner { grid-template-columns:1fr; }
-    .cs-right { order:-1; }
-    .cs-cta { position:static; }
+    .cs-right { order:2; }
+    .cs-desktop-cta { display:none; }
+    .cs-mobile-cta { display:block; }
+    .cs-wa-fab { display:flex; }
+    .cs-root { padding-bottom:100px; }
     .cs-stats { grid-template-columns:repeat(3,1fr); }
     .cs-gallery__main { aspect-ratio:4/3; }
 }
-@media(max-width:600px){
+@media(max-width:600px) {
+    .cs-hero { padding:80px 0 22px; }
     .cs-hero__content { flex-direction:column; align-items:flex-start; }
     .cs-hero__right { text-align:left; }
     .cs-stats { grid-template-columns:1fr 1fr; }
     .lb-arrow { width:38px; height:38px; }
     .lb-arrow--prev { left:8px; }
     .lb-arrow--next { right:8px; }
+    .cs-gallery__arrow { opacity:1; width:36px; height:36px; }
+    .cs-thumb { width:72px; height:50px; }
+    .cs-wa-fab { bottom:16px; font-size:14px; padding:12px 20px; }
 }
 </style>
 
 
-{{-- ══════════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════════ --}}
 <script>
-/* ── Image data from PHP ── */
 const IMAGES = @json(array_map(fn($img) => asset('storage/' . ltrim($img, '/')), $images));
 let currentIndex = 0;
 
-/* ══ LIGHTBOX ══ */
 const LB = (() => {
-    const overlay  = document.getElementById('lb-modal');
-    const img      = document.getElementById('lb-img');
-    const counter  = document.getElementById('lbCounter');
-    const thumbs   = document.getElementById('lbThumbs');
-    const prevBtn  = document.getElementById('lbPrev');
-    const nextBtn  = document.getElementById('lbNext');
+    const overlay = document.getElementById('lb-modal');
+    const img     = document.getElementById('lb-img');
+    const counter = document.getElementById('lbCounter');
+    const thumbs  = document.getElementById('lbThumbs');
+    const prevBtn = document.getElementById('lbPrev');
+    const nextBtn = document.getElementById('lbNext');
 
     function buildThumbs() {
         thumbs.innerHTML = '';
@@ -1044,33 +787,23 @@ const LB = (() => {
     function go(index) {
         currentIndex = ((index % IMAGES.length) + IMAGES.length) % IMAGES.length;
         img.style.opacity = '0';
-        setTimeout(() => {
-            img.src = IMAGES[currentIndex];
-            img.style.opacity = '1';
-        }, 120);
         img.style.transition = 'opacity .12s ease';
+        setTimeout(() => { img.src = IMAGES[currentIndex]; img.style.opacity = '1'; }, 120);
         counter.textContent = `${currentIndex + 1} / ${IMAGES.length}`;
-        thumbs.querySelectorAll('.lb-thumb-item').forEach((t,i) =>
-            t.classList.toggle('active', i === currentIndex));
+        thumbs.querySelectorAll('.lb-thumb-item').forEach((t,i) => t.classList.toggle('active', i === currentIndex));
         prevBtn.style.display = IMAGES.length > 1 ? '' : 'none';
         nextBtn.style.display = IMAGES.length > 1 ? '' : 'none';
     }
 
     function open(index) {
-        buildThumbs();
-        go(index ?? currentIndex);
+        buildThumbs(); go(index ?? currentIndex);
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
     }
 
-    function close() {
-        overlay.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-
+    function close() { overlay.classList.remove('open'); document.body.style.overflow = ''; }
     function nav(dir) { go(currentIndex + dir); }
 
-    /* Gallery nav (arrows on main image) */
     function galleryNav(dir) {
         const next = ((currentIndex + dir) % IMAGES.length + IMAGES.length) % IMAGES.length;
         setMain(next);
@@ -1078,14 +811,11 @@ const LB = (() => {
 
     function setMain(index) {
         currentIndex = index;
-        const mainImg = document.getElementById('mainImg');
-        mainImg.src = IMAGES[index];
+        document.getElementById('mainImg').src = IMAGES[index];
         document.getElementById('photoCounter').textContent = index + 1;
-        document.querySelectorAll('.cs-thumb').forEach((t, i) =>
-            t.classList.toggle('active', i === index));
+        document.querySelectorAll('.cs-thumb').forEach((t,i) => t.classList.toggle('active', i === index));
     }
 
-    /* Keyboard */
     document.addEventListener('keydown', e => {
         if (!overlay.classList.contains('open')) return;
         if (e.key === 'ArrowLeft')  nav(-1);
@@ -1093,10 +823,8 @@ const LB = (() => {
         if (e.key === 'Escape')     close();
     });
 
-    /* Click main image to open lightbox */
     document.getElementById('galleryMain')?.addEventListener('click', e => {
-        if (!e.target.closest('.cs-gallery__expand') &&
-            !e.target.closest('.cs-gallery__arrow')) {
+        if (!e.target.closest('.cs-gallery__expand') && !e.target.closest('.cs-gallery__arrow')) {
             open(currentIndex);
         }
     });
@@ -1104,8 +832,6 @@ const LB = (() => {
     return { open, close, nav, galleryNav, setMain };
 })();
 
-
-/* ══ VIDEO MODAL ══ */
 const VM = (() => {
     const overlay = document.getElementById('vm-modal');
     const video   = document.getElementById('vm-video');
