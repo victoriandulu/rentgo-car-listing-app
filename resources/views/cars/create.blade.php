@@ -606,6 +606,21 @@ textarea { resize: vertical; }
                         <label>Car Name <span class="cl-req">*</span></label>
                         <input type="text" name="name" placeholder="e.g., Toyota Camry 2021" value="{{ old('name') }}" required>
                     </div>
+
+                    {{-- NEW: Make / Model / Variant --}}
+                    <div class="cl-field">
+                        <label>Make</label>
+                        <input type="text" name="make" placeholder="e.g., Toyota" value="{{ old('make') }}">
+                    </div>
+                    <div class="cl-field">
+                        <label>Model</label>
+                        <input type="text" name="model" placeholder="e.g., Prado" value="{{ old('model') }}">
+                    </div>
+                    <div class="cl-field" style="grid-column:1/-1">
+                        <label>Variant</label>
+                        <input type="text" name="variant" placeholder="e.g., Vx-L 2.8gd Auto" value="{{ old('variant') }}">
+                    </div>
+
                     <div class="cl-field">
                         <label>Year <span class="cl-req">*</span></label>
                         <input type="number" name="year" placeholder="2021" min="1980" max="2025" value="{{ old('year') }}" required>
@@ -621,6 +636,23 @@ textarea { resize: vertical; }
                             </select>
                         </div>
                     </div>
+
+                    {{-- NEW: Seats / Doors --}}
+                    <div class="cl-field">
+                        <label>No. of Seats</label>
+                        <input type="number" name="seats" placeholder="7" min="1" max="20" value="{{ old('seats') }}">
+                    </div>
+                    <div class="cl-field">
+                        <label>No. of Doors</label>
+                        <input type="number" name="doors" placeholder="5" min="1" max="10" value="{{ old('doors') }}">
+                    </div>
+
+                    {{-- NEW: Branch / Location --}}
+                    <div class="cl-field" style="grid-column:1/-1">
+                        <label>Branch / Location</label>
+                        <input type="text" name="location" placeholder="e.g., Silver Lakes (GP)" value="{{ old('location') }}">
+                    </div>
+
                     <div class="cl-field" style="grid-column:1/-1">
                         <label>Price (KSh) <span class="cl-req">*</span></label>
                         <div class="cl-price-wrap">
@@ -718,10 +750,34 @@ textarea { resize: vertical; }
                         <label>Fuel Type</label>
                         <input type="text" name="fuel_type" placeholder="Petrol" value="{{ old('fuel_type') }}">
                     </div>
+
+                    {{-- NEW: Fuel consumption / tank capacity --}}
+                    <div class="cl-field">
+                        <label>Fuel Consumption</label>
+                        <input type="text" name="fuel_consumption" placeholder="e.g., 7.9 l/100km" value="{{ old('fuel_consumption') }}">
+                    </div>
+                    <div class="cl-field">
+                        <label>Fuel Tank Capacity</label>
+                        <input type="text" name="fuel_tank_capacity" placeholder="e.g., 150 l" value="{{ old('fuel_tank_capacity') }}">
+                    </div>
+
+                    {{-- NEW: Cylinder layout --}}
+                    <div class="cl-field">
+                        <label>Cylinder Layout</label>
+                        <input type="text" name="cylinder_layout" placeholder="e.g., I4" value="{{ old('cylinder_layout') }}">
+                    </div>
+
                     <div class="cl-field">
                         <label>Horsepower</label>
                         <input type="text" name="horse_power" placeholder="150 hp" value="{{ old('horse_power') }}">
                     </div>
+
+                    {{-- NEW: Kilowatts --}}
+                    <div class="cl-field">
+                        <label>Kilowatts</label>
+                        <input type="text" name="kilowatts" placeholder="e.g., 150 kW" value="{{ old('kilowatts') }}">
+                    </div>
+
                     <div class="cl-field">
                         <label>Transmission</label>
                         <div class="cl-select-wrap">
@@ -733,6 +789,13 @@ textarea { resize: vertical; }
                             </select>
                         </div>
                     </div>
+
+                    {{-- NEW: Gears --}}
+                    <div class="cl-field">
+                        <label>Gears</label>
+                        <input type="text" name="gears" placeholder="e.g., 6" value="{{ old('gears') }}">
+                    </div>
+
                     <div class="cl-field">
                         <label>Drive</label>
                         <div class="cl-select-wrap">
@@ -744,6 +807,21 @@ textarea { resize: vertical; }
                             </select>
                         </div>
                     </div>
+
+                    {{-- NEW: Torque / Aspiration / Acceleration --}}
+                    <div class="cl-field">
+                        <label>Torque</label>
+                        <input type="text" name="torque" placeholder="e.g., 450 Nm" value="{{ old('torque') }}">
+                    </div>
+                    <div class="cl-field">
+                        <label>Aspiration</label>
+                        <input type="text" name="aspiration" placeholder="e.g., Turbocharged" value="{{ old('aspiration') }}">
+                    </div>
+                    <div class="cl-field">
+                        <label>0–100 km/h Acceleration</label>
+                        <input type="text" name="acceleration" placeholder="e.g., 8.5s" value="{{ old('acceleration') }}">
+                    </div>
+
                     <div class="cl-field" style="grid-column:1/-1">
                         <label>Availability</label>
                         <div class="cl-select-wrap">

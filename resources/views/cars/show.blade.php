@@ -19,6 +19,10 @@
     $whatsappNumber = '2547174753336';
     $whatsappMessage = urlencode('Hello! I am interested in the ' . ($car->name ?? 'vehicle') . ' listed at KSh ' . number_format($car->price ?? 0) . '. Please provide more details.');
     $whatsappUrl = 'https://wa.me/' . $whatsappNumber . '?text=' . $whatsappMessage;
+
+    // Runtime costs (if provided) as key => value pairs, same pattern as specification
+    $runningCosts = (array) ($car->running_cost ?? []);
+    $hasRunningCosts = count(array_filter($runningCosts, fn($v) => $v !== null && $v !== ''));
 @endphp
 
 <div class="cs-root">
@@ -164,6 +168,65 @@
                 </div>
                 @endif
 
+                {{-- PERFORMANCE & MECHANICAL --}}
+                @if(!empty($car->drive) || !empty($car->gears) || !empty($car->torque) || !empty($car->cylinder_layout) || !empty($car->kilowatts) || !empty($car->aspiration) || !empty($car->acceleration) || !empty($car->fuel_consumption) || !empty($car->fuel_tank_capacity))
+                <div class="cs-card">
+                    <div class="cs-card__head">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Performance & Mechanical
+                    </div>
+                    <div class="cs-details">
+                        @if(!empty($car->drive))
+                        <div class="cs-detail-row"><span>Drive</span><strong>{{ $car->drive }}</strong></div>
+                        @endif
+                        @if(!empty($car->gears))
+                        <div class="cs-detail-row"><span>Gears</span><strong>{{ $car->gears }}</strong></div>
+                        @endif
+                        @if(!empty($car->torque))
+                        <div class="cs-detail-row"><span>Torque</span><strong>{{ $car->torque }}</strong></div>
+                        @endif
+                        @if(!empty($car->kilowatts))
+                        <div class="cs-detail-row"><span>Power Output</span><strong>{{ $car->kilowatts }} kW</strong></div>
+                        @endif
+                        @if(!empty($car->cylinder_layout))
+                        <div class="cs-detail-row"><span>Cylinder Layout</span><strong>{{ $car->cylinder_layout }}</strong></div>
+                        @endif
+                        @if(!empty($car->aspiration))
+                        <div class="cs-detail-row"><span>Aspiration</span><strong>{{ $car->aspiration }}</strong></div>
+                        @endif
+                        @if(!empty($car->acceleration))
+                        <div class="cs-detail-row"><span>0–100 km/h</span><strong>{{ $car->acceleration }}</strong></div>
+                        @endif
+                        @if(!empty($car->fuel_consumption))
+                        <div class="cs-detail-row"><span>Fuel Consumption</span><strong>{{ $car->fuel_consumption }}</strong></div>
+                        @endif
+                        @if(!empty($car->fuel_tank_capacity))
+                        <div class="cs-detail-row"><span>Fuel Tank Capacity</span><strong>{{ $car->fuel_tank_capacity }}</strong></div>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                {{-- RUNNING COSTS --}}
+                @if($hasRunningCosts)
+                <div class="cs-card">
+                    <div class="cs-card__head">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                        Running Costs
+                    </div>
+                    <div class="cs-details">
+                        @foreach($runningCosts as $costLabel => $costValue)
+                            @if($costValue !== null && $costValue !== '')
+                            <div class="cs-detail-row">
+                                <span>{{ ucwords(str_replace(['_', 'And'], [' ', ' & '], $costLabel)) }}</span>
+                                <strong>{{ $costValue }}</strong>
+                            </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 {{-- FEATURES --}}
                 @if(!empty($car->specification) && count(array_filter((array)$car->specification)))
                 <div class="cs-card">
@@ -224,6 +287,17 @@
                         </div>
                     </div>
                     @endif
+                    @if(!empty($car->fuel_consumption))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-6 0v4"/><rect x="5" y="9" width="9" height="12" rx="1"/><path d="M14 12h3a2 2 0 012 2v5a2 2 0 002 2"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ $car->fuel_consumption }}</span>
+                            <span class="cs-stat__lbl">Fuel Consumption</span>
+                        </div>
+                    </div>
+                    @endif
                     @if(!empty($car->transmission))
                     <div class="cs-stat">
                         <div class="cs-stat__ico">
@@ -235,6 +309,17 @@
                         </div>
                     </div>
                     @endif
+                    @if(!empty($car->drive))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 12a4 4 0 014-4M4 12a4 4 0 004 4M20 12a4 4 0 00-4-4M20 12a4 4 0 01-4 4"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ $car->drive }}</span>
+                            <span class="cs-stat__lbl">Drive</span>
+                        </div>
+                    </div>
+                    @endif
                     @if(!empty($car->horse_power))
                     <div class="cs-stat">
                         <div class="cs-stat__ico">
@@ -243,6 +328,28 @@
                         <div>
                             <span class="cs-stat__val">{{ $car->horse_power }} hp</span>
                             <span class="cs-stat__lbl">Power</span>
+                        </div>
+                    </div>
+                    @endif
+                    @if(!empty($car->seats))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20v-6a2 2 0 012-2h12a2 2 0 012 2v6"/><path d="M6 12V6a2 2 0 012-2h8a2 2 0 012 2v6"/><line x1="4" y1="20" x2="4" y2="22"/><line x1="20" y1="20" x2="20" y2="22"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ $car->seats }}</span>
+                            <span class="cs-stat__lbl">Seats</span>
+                        </div>
+                    </div>
+                    @endif
+                    @if(!empty($car->doors))
+                    <div class="cs-stat">
+                        <div class="cs-stat__ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="1"/><line x1="12" y1="11" x2="12" y2="13"/></svg>
+                        </div>
+                        <div>
+                            <span class="cs-stat__val">{{ $car->doors }}</span>
+                            <span class="cs-stat__lbl">Doors</span>
                         </div>
                     </div>
                     @endif
@@ -266,6 +373,15 @@
                         Vehicle Details
                     </div>
                     <div class="cs-details">
+                        @if(!empty($car->make))
+                        <div class="cs-detail-row"><span>Make</span><strong>{{ $car->make }}</strong></div>
+                        @endif
+                        @if(!empty($car->model))
+                        <div class="cs-detail-row"><span>Model</span><strong>{{ $car->model }}</strong></div>
+                        @endif
+                        @if(!empty($car->variant))
+                        <div class="cs-detail-row"><span>Variant</span><strong>{{ $car->variant }}</strong></div>
+                        @endif
                         <div class="cs-detail-row"><span>Type</span><strong>{{ $car->car_type ?? '—' }}</strong></div>
                         <div class="cs-detail-row"><span>Origin</span><strong>{{ ucfirst($car->origin ?? '—') }}</strong></div>
                         <div class="cs-detail-row">
@@ -277,11 +393,20 @@
                         @if(!empty($car->year))
                         <div class="cs-detail-row"><span>Year</span><strong>{{ $car->year }}</strong></div>
                         @endif
+                        @if(!empty($car->drive))
+                        <div class="cs-detail-row"><span>Drive</span><strong>{{ $car->drive }}</strong></div>
+                        @endif
+                        @if(!empty($car->fuel_consumption))
+                        <div class="cs-detail-row"><span>Fuel Consumption</span><strong>{{ $car->fuel_consumption }}</strong></div>
+                        @endif
                         @if(!empty($car->location))
                         <div class="cs-detail-row"><span>Location</span><strong>{{ $car->location }}</strong></div>
                         @endif
                         @if(!empty($car->color))
                         <div class="cs-detail-row"><span>Colour</span><strong>{{ $car->color }}</strong></div>
+                        @endif
+                        @if(!empty($car->source))
+                        <div class="cs-detail-row"><span>Source</span><strong>{{ $car->source }}</strong></div>
                         @endif
                     </div>
                 </div>
@@ -571,6 +696,7 @@ a { text-decoration:none; color:inherit; }
     border-radius:var(--r-sm); padding:14px;
     display:flex; align-items:center; gap:12px;
     box-shadow:var(--sh-s); transition:var(--tr);
+    min-width:0;
 }
 .cs-stat:hover { box-shadow:var(--sh-m); transform:translateY(-1px); }
 .cs-stat__ico {
@@ -578,18 +704,18 @@ a { text-decoration:none; color:inherit; }
     border-radius:10px; display:flex; align-items:center;
     justify-content:center; flex-shrink:0; color:var(--red);
 }
-.cs-stat__val { display:block; font-size:14px; font-weight:700; color:var(--ink); line-height:1.2; }
+.cs-stat__val { display:block; font-size:14px; font-weight:700; color:var(--ink); line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .cs-stat__lbl { display:block; font-size:11px; color:var(--ink-lt); text-transform:uppercase; letter-spacing:.05em; font-weight:500; margin-top:2px; }
 
 /* DETAILS */
 .cs-details { padding:4px 0; }
 .cs-detail-row {
     display:flex; justify-content:space-between; align-items:center;
-    padding:12px 18px; border-bottom:1px solid var(--border-lt); font-size:13.5px;
+    gap:12px; padding:12px 18px; border-bottom:1px solid var(--border-lt); font-size:13.5px;
 }
 .cs-detail-row:last-child { border-bottom:none; }
 .cs-detail-row span { color:var(--ink-md); font-weight:400; }
-.cs-detail-row strong { font-weight:600; color:var(--ink); }
+.cs-detail-row strong { font-weight:600; color:var(--ink); text-align:right; }
 .cs-status { display:flex; align-items:center; gap:6px; }
 .cs-dot { width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0; }
 .cs-status--green { color:var(--success); }
@@ -735,6 +861,9 @@ a { text-decoration:none; color:inherit; }
 .vm-stage video { width:100%; max-height:65vh; display:block; }
 
 /* RESPONSIVE */
+@media(max-width:1100px) {
+    .cs-body__inner { grid-template-columns:1fr 320px; gap:20px; }
+}
 @media(max-width:900px) {
     .cs-body__inner { grid-template-columns:1fr; }
     .cs-right { order:2; }
@@ -756,6 +885,12 @@ a { text-decoration:none; color:inherit; }
     .cs-gallery__arrow { opacity:1; width:36px; height:36px; }
     .cs-thumb { width:72px; height:50px; }
     .cs-wa-fab { bottom:16px; font-size:14px; padding:12px 20px; }
+    .cs-detail-row { flex-wrap:wrap; }
+}
+@media(max-width:400px) {
+    .cs-stats { grid-template-columns:1fr; }
+    .cs-body__inner { padding:0 14px; }
+    .cs-hero__inner { padding:0 14px; }
 }
 </style>
 

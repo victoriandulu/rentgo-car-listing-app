@@ -47,6 +47,36 @@
                         <option value="Truck" {{ old('car_type', $car->car_type) == 'Truck' ? 'selected' : '' }}>Truck</option>
                     </select>
                 </div>
+
+                {{-- NEW: Make / Model / Variant --}}
+                <div class="form-group">
+                    <label for="make" class="form-label">Make</label>
+                    <input type="text" id="make" name="make" class="form-input" value="{{ old('make', $car->make) }}" placeholder="e.g., Toyota">
+                </div>
+                <div class="form-group">
+                    <label for="model" class="form-label">Model</label>
+                    <input type="text" id="model" name="model" class="form-input" value="{{ old('model', $car->model) }}" placeholder="e.g., Prado">
+                </div>
+                <div class="form-group">
+                    <label for="variant" class="form-label">Variant</label>
+                    <input type="text" id="variant" name="variant" class="form-input" value="{{ old('variant', $car->variant) }}" placeholder="e.g., Vx-L 2.8gd Auto">
+                </div>
+
+                {{-- NEW: Seats / Doors --}}
+                <div class="form-group">
+                    <label for="seats" class="form-label">No. of Seats</label>
+                    <input type="number" id="seats" name="seats" class="form-input" min="1" max="20" value="{{ old('seats', $car->seats) }}" placeholder="7">
+                </div>
+                <div class="form-group">
+                    <label for="doors" class="form-label">No. of Doors</label>
+                    <input type="number" id="doors" name="doors" class="form-input" min="1" max="10" value="{{ old('doors', $car->doors) }}" placeholder="5">
+                </div>
+
+                {{-- NEW: Branch / Location --}}
+                <div class="form-group">
+                    <label for="location" class="form-label">Branch / Location</label>
+                    <input type="text" id="location" name="location" class="form-input" value="{{ old('location', $car->location) }}" placeholder="e.g., Silver Lakes (GP)">
+                </div>
             </div>
             <div class="form-group">
                 <label for="description" class="form-label">Description</label>
@@ -118,10 +148,34 @@
                     <label for="fuel_type" class="form-label">Fuel Type</label>
                     <input type="text" id="fuel_type" name="fuel_type" class="form-input" value="{{ old('fuel_type', $car->fuel_type) }}">
                 </div>
+
+                {{-- NEW: Fuel consumption / tank capacity --}}
+                <div class="form-group">
+                    <label for="fuel_consumption" class="form-label">Fuel Consumption</label>
+                    <input type="text" id="fuel_consumption" name="fuel_consumption" class="form-input" value="{{ old('fuel_consumption', $car->fuel_consumption) }}" placeholder="e.g., 7.9 l/100km">
+                </div>
+                <div class="form-group">
+                    <label for="fuel_tank_capacity" class="form-label">Fuel Tank Capacity</label>
+                    <input type="text" id="fuel_tank_capacity" name="fuel_tank_capacity" class="form-input" value="{{ old('fuel_tank_capacity', $car->fuel_tank_capacity) }}" placeholder="e.g., 150 l">
+                </div>
+
+                {{-- NEW: Cylinder layout --}}
+                <div class="form-group">
+                    <label for="cylinder_layout" class="form-label">Cylinder Layout</label>
+                    <input type="text" id="cylinder_layout" name="cylinder_layout" class="form-input" value="{{ old('cylinder_layout', $car->cylinder_layout) }}" placeholder="e.g., I4">
+                </div>
+
                 <div class="form-group">
                     <label for="horse_power" class="form-label">Horse Power</label>
                     <input type="text" id="horse_power" name="horse_power" class="form-input" value="{{ old('horse_power', $car->horse_power) }}">
                 </div>
+
+                {{-- NEW: Kilowatts --}}
+                <div class="form-group">
+                    <label for="kilowatts" class="form-label">Kilowatts</label>
+                    <input type="text" id="kilowatts" name="kilowatts" class="form-input" value="{{ old('kilowatts', $car->kilowatts) }}" placeholder="e.g., 150 kW">
+                </div>
+
                 <div class="form-group">
                     <label for="transmission" class="form-label">Transmission</label>
                     <select id="transmission" name="transmission" class="form-input">
@@ -131,6 +185,13 @@
                         <option value="CVT" {{ old('transmission', $car->transmission) == 'CVT' ? 'selected' : '' }}>CVT</option>
                     </select>
                 </div>
+
+                {{-- NEW: Gears --}}
+                <div class="form-group">
+                    <label for="gears" class="form-label">Gears</label>
+                    <input type="text" id="gears" name="gears" class="form-input" value="{{ old('gears', $car->gears) }}" placeholder="e.g., 6">
+                </div>
+
                 <div class="form-group">
                     <label for="drive" class="form-label">Drive</label>
                     <select id="drive" name="drive" class="form-input">
@@ -141,6 +202,21 @@
                         <option value="AWD" {{ old('drive', $car->drive) == 'AWD' ? 'selected' : '' }}>AWD</option>
                     </select>
                 </div>
+
+                {{-- NEW: Torque / Aspiration / Acceleration --}}
+                <div class="form-group">
+                    <label for="torque" class="form-label">Torque</label>
+                    <input type="text" id="torque" name="torque" class="form-input" value="{{ old('torque', $car->torque) }}" placeholder="e.g., 450 Nm">
+                </div>
+                <div class="form-group">
+                    <label for="aspiration" class="form-label">Aspiration</label>
+                    <input type="text" id="aspiration" name="aspiration" class="form-input" value="{{ old('aspiration', $car->aspiration) }}" placeholder="e.g., Turbocharged">
+                </div>
+                <div class="form-group">
+                    <label for="acceleration" class="form-label">0–100 km/h Acceleration</label>
+                    <input type="text" id="acceleration" name="acceleration" class="form-input" value="{{ old('acceleration', $car->acceleration) }}" placeholder="e.g., 8.5s">
+                </div>
+
                 <div class="form-group">
                     <label for="availability" class="form-label">Availability</label>
                     <select id="availability" name="availability" class="form-input">

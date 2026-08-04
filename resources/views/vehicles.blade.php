@@ -11,6 +11,43 @@ function resolveVideo($car): array {
     $path = str_starts_with($raw, 'storage/') ? $raw : 'storage/' . $raw;
     return ['has_video' => true, 'url' => asset($path)];
 }
+
+/**
+ * Pull the "specification" json blob into a flat list of active feature labels.
+ */
+function activeFeatures($car): array {
+    $map = [
+        'heatedSeats'              => ['🔥', 'Heated Seats'],
+        'powerWindows'             => ['🪟', 'Power Windows'],
+        'steeringControls'         => ['🎮', 'Steering Controls'],
+        'phoneConnectivity'        => ['📱', 'Phone Connectivity'],
+        'autoStartStop'            => ['⚡', 'Auto Start/Stop'],
+        'isofixAnchors'            => ['👶', 'ISOFIX Anchors'],
+        'keylessEntryAndPushStart' => ['🔑', 'Keyless Entry'],
+    ];
+    $raw = $car->specification ?? null;
+    $spec = is_string($raw) ? json_decode($raw, true) : (array) $raw;
+    $spec = is_array($spec) ? $spec : [];
+    $out = [];
+    foreach ($map as $key => [$icon, $label]) {
+        if (!empty($spec[$key])) $out[] = ['icon' => $icon, 'label' => $label];
+    }
+    return $out;
+}
+
+/**
+ * Pull the "running_cost" json blob into a flat, display-ready array.
+ */
+function runningCosts($car): array {
+    $raw = $car->running_cost ?? null;
+    $rc  = is_string($raw) ? json_decode($raw, true) : (array) $raw;
+    $rc  = is_array($rc) ? $rc : [];
+    return [
+        'insurance'   => $rc['insuranceAnnualCost'] ?? null,
+        'fuel_urban'  => $rc['fuelUrban']   ?? null,
+        'fuel_hwy'    => $rc['fuelHighway'] ?? null,
+    ];
+}
 @endphp
 
 @push('head')
@@ -39,7 +76,7 @@ function resolveVideo($car): array {
                     <svg class="vp-s-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
-                    <input id="js-search" type="text" placeholder="Make, model or keyword…"
+                    <input id="js-search" type="text" placeholder="Make, model, variant or keyword…"
                            oninput="VP.filter()" autocomplete="off" spellcheck="false">
                     <div class="vp-currency-sel">
                         <select id="js-currency" onchange="VP.currency()">
@@ -103,6 +140,10 @@ function resolveVideo($car): array {
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                     Has Video
                 </button>
+                <button class="vp-chip" data-filter="has-report" onclick="VP.quick('has-report')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Has Report
+                </button>
                 <button class="vp-chip vp-chip--more" id="js-adv-toggle" onclick="VP.toggleAdv()">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
                     <span id="js-adv-label">Filters</span>
@@ -110,7 +151,7 @@ function resolveVideo($car): array {
                 </button>
             </div>
 
-            {{-- Advanced filters --}}
+            {{-- Advanced filters ── now covers the full spec set --}}
             <div class="vp-adv" id="js-adv-panel">
                 <div class="vp-adv-grid">
                     <div class="vp-fg">
@@ -138,7 +179,11 @@ function resolveVideo($car): array {
                             <option value="suv">SUV</option>
                             <option value="sedan">Sedan</option>
                             <option value="hatchback">Hatchback</option>
+                            <option value="coupe">Coupe</option>
+                            <option value="convertible">Convertible</option>
                             <option value="pickup">Pickup</option>
+                            <option value="van">Van</option>
+                            <option value="truck">Truck</option>
                         </select>
                     </div>
                     <div class="vp-fg">
@@ -165,6 +210,7 @@ function resolveVideo($car): array {
                             <option value="">All</option>
                             <option value="automatic">Automatic</option>
                             <option value="manual">Manual</option>
+                            <option value="cvt">CVT</option>
                         </select>
                     </div>
                     <div class="vp-fg">
@@ -178,12 +224,45 @@ function resolveVideo($car): array {
                         </select>
                     </div>
                     <div class="vp-fg">
+                        <label>Drive</label>
+                        <select id="js-drive" onchange="VP.filter()">
+                            <option value="">All</option>
+                            <option value="fwd">FWD</option>
+                            <option value="rwd">RWD</option>
+                            <option value="4wd">4WD</option>
+                            <option value="awd">AWD</option>
+                        </select>
+                    </div>
+                    <div class="vp-fg">
+                        <label>Seats</label>
+                        <select id="js-seats" onchange="VP.filter()">
+                            <option value="">Any</option>
+                            <option value="2">2</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="7">7</option>
+                            <option value="8">8+</option>
+                        </select>
+                    </div>
+                    <div class="vp-fg">
                         <label>Min Mileage (km)</label>
                         <input id="js-mil-from" type="number" placeholder="0" oninput="VP.filter()">
                     </div>
                     <div class="vp-fg">
                         <label>Max Mileage (km)</label>
                         <input id="js-mil-to" type="number" placeholder="150,000" oninput="VP.filter()">
+                    </div>
+                    <div class="vp-fg">
+                        <label>Min Engine (cc)</label>
+                        <input id="js-eng-from" type="number" placeholder="0" oninput="VP.filter()">
+                    </div>
+                    <div class="vp-fg">
+                        <label>Max Engine (cc)</label>
+                        <input id="js-eng-to" type="number" placeholder="5000" oninput="VP.filter()">
+                    </div>
+                    <div class="vp-fg">
+                        <label>Min Horsepower</label>
+                        <input id="js-hp-from" type="number" placeholder="0" oninput="VP.filter()">
                     </div>
                     <div class="vp-fg vp-fg--clear">
                         <button onclick="VP.clear()">
@@ -213,6 +292,7 @@ function resolveVideo($car): array {
                     <option value="year-new">Newest first</option>
                     <option value="year-old">Oldest first</option>
                     <option value="mileage-low">Lowest mileage</option>
+                    <option value="hp-high">Most powerful</option>
                 </select>
                 <div class="vp-view-btns">
                     <button class="vp-vbtn active" data-view="grid" onclick="VP.view('grid')" title="Grid">
@@ -248,13 +328,37 @@ function resolveVideo($car): array {
                     $carMileage = (int)   ($car->mileage ?? 0);
                     $carYear    = (int)   ($car->year    ?? date('Y'));
                     $carName    = $car->name ?? 'Vehicle';
-                    $carMake    = strtolower($car->make ?? '');
-                    $carTrans   = strtolower($car->transmission_type ?? 'Auto');
-                    $carFuel    = strtolower($car->fuel_type ?? 'Petrol');
-                    $carBody    = strtolower($car->body_type ?? '');
-                    $carCat     = strtolower($car->category ?? 'local');
+                    $carMakeRaw = $car->make ?? '';
+                    $carModelRaw= $car->model ?? '';
+                    $carVariant = $car->variant ?? '';
+                    $carMake    = strtolower($carMakeRaw);
+                    $carTrans   = strtolower($car->transmission ?? $car->transmission_type ?? '');
+                    $carFuel    = strtolower($car->fuel_type ?? '');
+                    $carBody    = strtolower($car->car_type ?? $car->body_type ?? '');
+                    $carCat     = strtolower($car->origin === 'import' ? 'imports' : ($car->category ?? 'local'));
                     $carLoc     = $car->location ?? 'Kenya';
                     $carId      = $car->id ?? 0;
+                    $carSource  = $car->source ?? null;
+
+                    $carSeats   = $car->seats ?? null;
+                    $carDoors   = $car->doors ?? null;
+                    $carDrive   = strtolower($car->drive ?? '');
+                    $carEngine  = $car->engine_size ?? null;
+                    $carHp      = $car->horse_power ?? null;
+                    $carHpNum   = (int) preg_replace('/[^0-9]/', '', (string) $carHp);
+                    $carKw      = $car->kilowatts ?? null;
+                    $carGears   = $car->gears ?? null;
+                    $carTorque  = $car->torque ?? null;
+                    $carAsp     = $car->aspiration ?? null;
+                    $carAccel   = $car->acceleration ?? null;
+                    $carCyl     = $car->cylinder_layout ?? null;
+                    $carFuelCon = $car->fuel_consumption ?? null;
+                    $carTank    = $car->fuel_tank_capacity ?? null;
+                    $carAvail   = $car->availability ?? null;
+
+                    $features   = activeFeatures($car);
+                    $costs      = runningCosts($car);
+                    $hasReport  = (bool) ($car->report ?? false);
                 @endphp
 
                 <article class="vp-card"
@@ -266,9 +370,14 @@ function resolveVideo($car): array {
                     data-body="{{ $carBody }}"
                     data-trans="{{ $carTrans }}"
                     data-fuel="{{ $carFuel }}"
+                    data-drive="{{ $carDrive }}"
+                    data-seats="{{ $carSeats }}"
+                    data-engine="{{ (int) preg_replace('/[^0-9]/', '', (string) $carEngine) }}"
+                    data-hp="{{ $carHpNum }}"
                     data-verified="{{ $isVerified ? 'true' : 'false' }}"
                     data-has-video="{{ $hasVideo ? 'true' : 'false' }}"
-                    data-name="{{ strtolower($carName) }}">
+                    data-has-report="{{ $hasReport ? 'true' : 'false' }}"
+                    data-name="{{ strtolower($carName.' '.$carMakeRaw.' '.$carModelRaw.' '.$carVariant) }}">
 
                     <a href="{{ route('vehicles.show', $carId) }}" class="vp-card-img-link">
                         <div class="vp-card-img">
@@ -292,6 +401,23 @@ function resolveVideo($car): array {
                                         Video
                                     </span>
                                 @endif
+                                @if($carAvail === 'Unavailable')
+                                    <span class="vp-badge vp-badge--sold">Unavailable</span>
+                                @endif
+                            </div>
+
+                            {{-- Share & Like quick actions --}}
+                            <div class="vp-quick-actions">
+                                <button type="button" class="vp-qa-btn"
+                                        onclick="VP.share(event,'{{ addslashes($carName) }}','{{ addslashes(route('vehicles.show', $carId)) }}')"
+                                        aria-label="Share this vehicle" title="Share">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.41" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                </button>
+                                <button type="button" class="vp-qa-btn vp-qa-like" id="js-like-{{ $carId }}"
+                                        onclick="VP.toggleLike(event,{{ (int) $carId }})"
+                                        aria-label="Save to favourites" title="Like">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                                </button>
                             </div>
 
                             @if(count($images) > 1)
@@ -313,21 +439,89 @@ function resolveVideo($car): array {
 
                     <div class="vp-card-body">
                         <div class="vp-card-top">
-                            <h3 class="vp-car-name">
-                                <a href="{{ route('vehicles.show', $carId) }}">{{ $carName }}</a>
-                            </h3>
+                            <div>
+                                <h3 class="vp-car-name">
+                                    <a href="{{ route('vehicles.show', $carId) }}">{{ $carName }}</a>
+                                </h3>
+                                @if($carVariant)
+                                    <div class="vp-variant">{{ $carVariant }}</div>
+                                @endif
+                            </div>
                             <div class="vp-price" data-base="{{ $carPrice }}">KSh {{ number_format($carPrice) }}</div>
                         </div>
 
+                        {{-- Primary meta row: always visible --}}
                         <div class="vp-meta">
                             <span>{{ $carYear }}</span>
                             <span class="vp-sep">·</span>
                             <span>{{ number_format($carMileage) }} km</span>
                             <span class="vp-sep">·</span>
-                            <span>{{ ucfirst($carTrans) }}</span>
+                            <span>{{ ucfirst($carTrans) ?: '—' }}</span>
                             <span class="vp-sep">·</span>
-                            <span>{{ ucfirst($carFuel) }}</span>
+                            <span>{{ ucfirst($carFuel) ?: '—' }}</span>
+                            @if($carSeats)
+                                <span class="vp-sep">·</span>
+                                <span>{{ $carSeats }} seats</span>
+                            @endif
                         </div>
+
+                        {{-- Spec chip row: the extra data buyers care about --}}
+                        <div class="vp-spec-chips">
+                            @if($carEngine)<span class="vp-spec-chip">🔧 {{ $carEngine }}cc</span>@endif
+                            @if($carHp)<span class="vp-spec-chip">💪 {{ $carHp }}</span>@endif
+                            @if($carDrive)<span class="vp-spec-chip">⚙️ {{ strtoupper($carDrive) }}</span>@endif
+                            @if($carDoors)<span class="vp-spec-chip">🚪 {{ $carDoors }} doors</span>@endif
+                            @if($carFuelCon)<span class="vp-spec-chip">⛽ {{ $carFuelCon }}</span>@endif
+                            @if($carAccel)<span class="vp-spec-chip">⏱️ 0-100: {{ $carAccel }}</span>@endif
+                        </div>
+
+                        {{-- Full spec panel: toggled open, holds everything else --}}
+                        @php
+                            $extraSpecs = array_filter([
+                                'Make'              => $carMakeRaw,
+                                'Model'             => $carModelRaw,
+                                'Torque'            => $carTorque,
+                                'Aspiration'        => $carAsp,
+                                'Cylinder Layout'   => $carCyl,
+                                'Kilowatts'         => $carKw,
+                                'Gears'             => $carGears,
+                                'Tank Capacity'     => $carTank,
+                                'Dealer / Source'   => $carSource,
+                                'Origin'            => $car->origin ? ucfirst($car->origin) : null,
+                                'Availability'      => $carAvail,
+                            ]);
+                        @endphp
+                        @if(count($extraSpecs) || count($features) || $costs['insurance'] || $costs['fuel_urban'] || $costs['fuel_hwy'])
+                        <button type="button" class="vp-specs-toggle" onclick="VP.toggleSpecs(this)">
+                            <span>Full specs &amp; features</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <div class="vp-specs-panel">
+                            @if(count($extraSpecs))
+                            <div class="vp-specs-grid">
+                                @foreach($extraSpecs as $label => $value)
+                                    <div class="vp-specs-row"><span>{{ $label }}</span><strong>{{ $value }}</strong></div>
+                                @endforeach
+                            </div>
+                            @endif
+
+                            @if(count($features))
+                            <div class="vp-feat-row">
+                                @foreach($features as $f)
+                                    <span class="vp-feat-pill">{{ $f['icon'] }} {{ $f['label'] }}</span>
+                                @endforeach
+                            </div>
+                            @endif
+
+                            @if($costs['insurance'] || $costs['fuel_urban'] || $costs['fuel_hwy'])
+                            <div class="vp-cost-row">
+                                @if($costs['insurance'])<span>Insurance/yr: <strong>KSh {{ number_format((float) $costs['insurance']) }}</strong></span>@endif
+                                @if($costs['fuel_urban'])<span>Fuel urban: <strong>{{ $costs['fuel_urban'] }} L/100km</strong></span>@endif
+                                @if($costs['fuel_hwy'])<span>Fuel hwy: <strong>{{ $costs['fuel_hwy'] }} L/100km</strong></span>@endif
+                            </div>
+                            @endif
+                        </div>
+                        @endif
 
                         <div class="vp-card-foot">
                             <span class="vp-loc">
@@ -345,7 +539,7 @@ function resolveVideo($car): array {
                         </button>
                         @endif
 
-                        @if($car->report ?? false)
+                        @if($hasReport)
                         <div class="vp-report-wrap">
                             @auth
                                 @php
@@ -540,7 +734,6 @@ a{text-decoration:none;color:inherit}
 button{font-family:var(--f);cursor:pointer;background:none;border:none}
 
 .vp{min-height:100vh}
-/* Push content below fixed/sticky navbar — adjust the value to match your navbar height */
 .vp-hero{margin-top:0}
 .vp-inner{max-width:1320px;margin:0 auto;padding:0 20px}
 
@@ -563,7 +756,6 @@ button{font-family:var(--f);cursor:pointer;background:none;border:none}
 /* ── Budget card ── */
 .vp-budget-card{display:flex;align-items:center;background:#fff;border:1.5px solid var(--bdr);border-radius:var(--r);padding:12px 16px;gap:16px;max-width:700px;margin:0 auto 16px;overflow:hidden}
 .vp-budget-left{flex-shrink:0;display:flex;flex-direction:column;gap:5px;min-width:100px}
-.vp-budget-label{display:none}
 .vp-budget-select-wrap{position:relative;display:flex;align-items:center}
 .vp-budget-select{border:none;outline:none;background:transparent;font-family:var(--f);font-size:13.5px;font-weight:500;color:var(--ink);cursor:pointer;appearance:none;padding-right:18px}
 .vp-budget-select-wrap svg{position:absolute;right:0;color:var(--ink3);pointer-events:none}
@@ -575,7 +767,7 @@ button{font-family:var(--f);cursor:pointer;background:none;border:none}
 .vp-bp.active{background:var(--acc);color:#fff;border-color:var(--acc)}
 
 /* ── Chips ── */
-.vp-chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:700px;margin:0 auto}
+.vp-chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:760px;margin:0 auto}
 .vp-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:1px solid var(--bdr);border-radius:100px;font-size:12.5px;font-weight:500;color:var(--ink2);background:#fff;transition:var(--tr);white-space:nowrap}
 .vp-chip:hover{border-color:var(--acc);color:var(--acc)}
 .vp-chip.active{background:var(--acc);color:#fff;border-color:var(--acc)}
@@ -583,11 +775,10 @@ button{font-family:var(--f);cursor:pointer;background:none;border:none}
 .vp-chip--more{margin-left:auto}
 .vp-chev{transition:transform .25s}
 .vp-chev.open{transform:rotate(180deg)}
-/* On mobile the grid overrides flex — SVG icons shrink to fit */
 .vp-chip svg{flex-shrink:0}
 
 /* ── Advanced filters ── */
-.vp-adv{max-height:0;overflow:hidden;transition:max-height .35s ease;max-width:700px;margin:0 auto}
+.vp-adv{max-height:0;overflow:hidden;transition:max-height .35s ease;max-width:760px;margin:0 auto}
 .vp-adv.open{padding-top:14px}
 .vp-adv-grid{background:#fff;border:1.5px solid var(--bdr);border-radius:var(--r);padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .vp-fg{display:flex;flex-direction:column;gap:5px}
@@ -637,20 +828,50 @@ button{font-family:var(--f);cursor:pointer;background:none;border:none}
 .vp-badge--ok{background:var(--grn);color:#fff}
 .vp-badge--feat{background:#b86a00;color:#fff}
 .vp-badge--vid{background:var(--ink);color:#fff}
+.vp-badge--sold{background:#7a7a7a;color:#fff}
 .vp-img-count{position:absolute;bottom:7px;left:7px;background:rgba(26,20,16,.55);color:#fff;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:600;display:flex;align-items:center;gap:3px}
 .vp-play-btn{position:absolute;bottom:8px;right:8px;width:36px;height:36px;background:var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;transition:var(--tr)}
 .vp-play-btn svg{margin-left:2px}
 .vp-play-btn:hover{background:var(--acc-h);transform:scale(1.08)}
 
+/* Quick actions (share / like) — top-right of card image */
+.vp-quick-actions{position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:3}
+.vp-qa-btn{width:30px;height:30px;background:rgba(255,255,255,.92);border:1px solid rgba(0,0,0,.06);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink2);transition:var(--tr);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.vp-qa-btn:hover{background:#fff;color:var(--acc);transform:scale(1.07)}
+.vp-qa-like.is-liked{color:#fff;background:var(--acc);border-color:var(--acc)}
+.vp-qa-like.is-liked svg{fill:currentColor}
+.vp-qa-like.is-liked:hover{background:var(--acc-h)}
+
 /* Card body */
-.vp-card-body{padding:14px;display:flex;flex-direction:column;gap:9px;flex:1}
+.vp-card-body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .vp-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.vp-car-name{font-size:13.5px;font-weight:500;line-height:1.35;flex:1}
+.vp-car-name{font-size:13.5px;font-weight:500;line-height:1.35}
 .vp-car-name a{color:var(--ink);transition:color .15s}
 .vp-car-name a:hover{color:var(--acc)}
+.vp-variant{font-size:11px;color:var(--ink3);margin-top:1px}
 .vp-price{font-size:15px;font-weight:600;color:var(--acc);white-space:nowrap}
 .vp-meta{font-size:11.5px;color:var(--ink3);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .vp-sep{color:var(--bdr2)}
+
+/* Spec chips: quick-glance extra data on every card */
+.vp-spec-chips{display:flex;flex-wrap:wrap;gap:5px}
+.vp-spec-chip{font-size:10.5px;font-weight:500;color:var(--ink2);background:var(--bg3);border:1px solid var(--bdr);border-radius:5px;padding:3px 7px;white-space:nowrap}
+
+/* Expandable full-spec panel */
+.vp-specs-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:7px 2px;font-size:11.5px;font-weight:600;color:var(--acc);border-top:1px dashed var(--bdr);margin-top:2px}
+.vp-specs-toggle svg{transition:transform .2s}
+.vp-specs-toggle.open svg{transform:rotate(180deg)}
+.vp-specs-panel{display:none;flex-direction:column;gap:10px;background:var(--bg);border-radius:8px;padding:10px 12px;margin-top:-2px}
+.vp-specs-panel.open{display:flex}
+.vp-specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 12px}
+.vp-specs-row{display:flex;justify-content:space-between;gap:6px;font-size:11px;border-bottom:1px dotted var(--bdr2);padding-bottom:3px}
+.vp-specs-row span{color:var(--ink3)}
+.vp-specs-row strong{color:var(--ink);font-weight:600;text-align:right}
+.vp-feat-row{display:flex;flex-wrap:wrap;gap:5px}
+.vp-feat-pill{font-size:10.5px;background:#fff;border:1px solid var(--bdr);border-radius:100px;padding:3px 8px;color:var(--ink2)}
+.vp-cost-row{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--ink2);border-top:1px dotted var(--bdr2);padding-top:8px}
+.vp-cost-row strong{color:var(--grn)}
+
 .vp-card-foot{display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid var(--bg3)}
 .vp-loc{font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:3px}
 .vp-view-link{font-size:12.5px;font-weight:500;color:var(--acc);transition:var(--tr)}
@@ -774,7 +995,6 @@ button{font-family:var(--f);cursor:pointer;background:none;border:none}
     .vp-budget-pills{display:none}
     .vp-budget-left{flex-direction:row;align-items:center;gap:10px;width:100%;min-width:0}
     .vp-budget-select{font-size:14px}
-    /* 3-per-row grid: row1 = All/InKenya/Imports, row2 = Verified/HasVideo/Filters */
     .vp-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
     .vp-chip{justify-content:center;padding:8px 4px;font-size:11.5px;white-space:nowrap}
     .vp-chip--more{margin-left:0;justify-content:center}
@@ -782,6 +1002,7 @@ button{font-family:var(--f);cursor:pointer;background:none;border:none}
     .vp-toolbar{flex-direction:column;align-items:flex-start;gap:12px}
     .vp-toolbar-right{width:100%;justify-content:space-between}
     .vp-adv-grid{grid-template-columns:repeat(2,1fr)}
+    .vp-specs-grid{grid-template-columns:1fr}
     .vpm-stage video{max-height:240px}
 }
 @media(max-width:400px){
@@ -803,6 +1024,7 @@ const VP = (() => {
     let payCarId    = null;
     let payCarName  = null;
     let payCarPrice = null;
+    const LIKE_KEY  = 'vp_liked_cars';
 
     const $  = id  => document.getElementById(id);
     const $$ = sel => document.querySelectorAll(sel);
@@ -813,23 +1035,35 @@ const VP = (() => {
         const bt = ($('js-body').value || '').toLowerCase();
         const tr = ($('js-trans').value || '').toLowerCase();
         const fu = ($('js-fuel').value || '').toLowerCase();
+        const dr = ($('js-drive').value || '').toLowerCase();
+        const st = $('js-seats').value;
         const yf = $('js-year-from').value;
         const yt = $('js-year-to').value;
         const mf = $('js-mil-from').value;
         const mt = $('js-mil-to').value;
+        const ef = $('js-eng-from').value;
+        const et = $('js-eng-to').value;
+        const hf = $('js-hp-from').value;
         let vis  = 0;
         $$('.vp-card').forEach(card => {
             const d = card.dataset;
             let ok = true;
-            if (quickFilter === 'local'    && d.category !== 'local')   ok = false;
-            if (quickFilter === 'imports'  && d.category !== 'imports') ok = false;
-            if (quickFilter === 'verified' && d.verified !== 'true')    ok = false;
-            if (quickFilter === 'has-video'&& d.hasVideo !== 'true')    ok = false;
+            if (quickFilter === 'local'     && d.category !== 'local')   ok = false;
+            if (quickFilter === 'imports'   && d.category !== 'imports') ok = false;
+            if (quickFilter === 'verified'  && d.verified !== 'true')    ok = false;
+            if (quickFilter === 'has-video' && d.hasVideo !== 'true')    ok = false;
+            if (quickFilter === 'has-report'&& d.hasReport !== 'true')   ok = false;
             if (q  && !(d.name||'').includes(q))   ok = false;
             if (mk && d.make  !== mk)              ok = false;
             if (bt && d.body  !== bt)              ok = false;
             if (tr && d.trans !== tr)              ok = false;
             if (fu && d.fuel  !== fu)              ok = false;
+            if (dr && d.drive !== dr)              ok = false;
+            if (st) {
+                const seats = parseInt(d.seats || '0');
+                if (st === '8') { if (seats < 8) ok = false; }
+                else if (seats !== parseInt(st)) ok = false;
+            }
             const yr = parseInt(d.year);
             if (yf && yr < parseInt(yf))           ok = false;
             if (yt && yr > parseInt(yt))           ok = false;
@@ -838,6 +1072,11 @@ const VP = (() => {
             const ml = parseInt(d.mileage);
             if (mf && ml < parseInt(mf))           ok = false;
             if (mt && ml > parseInt(mt))           ok = false;
+            const en = parseInt(d.engine || '0');
+            if (ef && en < parseInt(ef))           ok = false;
+            if (et && en > parseInt(et))           ok = false;
+            const hp = parseInt(d.hp || '0');
+            if (hf && hp < parseInt(hf))           ok = false;
             card.style.display = ok ? '' : 'none';
             if (ok) vis++;
         });
@@ -879,13 +1118,15 @@ const VP = (() => {
             if (v === 'year-new')    return +bd.year    - +ad.year;
             if (v === 'year-old')    return +ad.year    - +bd.year;
             if (v === 'mileage-low') return +ad.mileage - +bd.mileage;
+            if (v === 'hp-high')     return +bd.hp      - +ad.hp;
             return 0;
         }).forEach(c => con.appendChild(c));
     }
 
     function clear() {
-        ['js-search','js-make','js-body','js-trans','js-fuel',
-         'js-year-from','js-year-to','js-mil-from','js-mil-to'].forEach(id => {
+        ['js-search','js-make','js-body','js-trans','js-fuel','js-drive','js-seats',
+         'js-year-from','js-year-to','js-mil-from','js-mil-to',
+         'js-eng-from','js-eng-to','js-hp-from'].forEach(id => {
             const el = $(id); if (el) el.value = '';
         });
         priceMin = 0; priceMax = 99000000; quickFilter = 'all';
@@ -941,6 +1182,12 @@ const VP = (() => {
     function view(type) {
         $$('.vp-vbtn').forEach(b => b.classList.toggle('active', b.dataset.view === type));
         $('js-grid').classList.toggle('list-view', type === 'list');
+    }
+
+    function toggleSpecs(btn) {
+        btn.classList.toggle('open');
+        const panel = btn.nextElementSibling;
+        if (panel) panel.classList.toggle('open');
     }
 
     function openVideo(e, url, name) {
@@ -1062,6 +1309,57 @@ const VP = (() => {
         setTimeout(() => t.classList.remove('show'), 2000);
     }
 
+    /* ── Favourites (like) — stored locally so the heart works instantly
+       and stays in sync across reloads, without needing a backend route. ── */
+    function getLiked() {
+        try {
+            const raw = localStorage.getItem(LIKE_KEY);
+            const arr = raw ? JSON.parse(raw) : [];
+            return Array.isArray(arr) ? arr : [];
+        } catch (e) { return []; }
+    }
+
+    function setLiked(arr) {
+        try { localStorage.setItem(LIKE_KEY, JSON.stringify(arr)); } catch (e) {}
+    }
+
+    function toggleLike(e, carId) {
+        e.preventDefault(); e.stopPropagation();
+        const btn = $('js-like-' + carId);
+        if (!btn) return;
+        const liked = getLiked();
+        const idx = liked.indexOf(carId);
+        if (idx === -1) {
+            liked.push(carId);
+            btn.classList.add('is-liked');
+            toast('Saved to favourites');
+        } else {
+            liked.splice(idx, 1);
+            btn.classList.remove('is-liked');
+            toast('Removed from favourites');
+        }
+        setLiked(liked);
+    }
+
+    function initLikes() {
+        const liked = getLiked();
+        liked.forEach(id => {
+            const btn = $('js-like-' + id);
+            if (btn) btn.classList.add('is-liked');
+        });
+    }
+
+    function share(e, name, url) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        if (navigator.share) {
+            navigator.share({ title: name, text: 'Check out this ' + name, url: url })
+                .catch(() => {});
+        } else {
+            copy(url);
+            toast('Link copied — paste it anywhere to share');
+        }
+    }
+
     function initURL() {
         const p = new URLSearchParams(location.search);
         const q = p.get('query') || p.get('search') || '';
@@ -1087,11 +1385,13 @@ const VP = (() => {
             if ($('vp-mpesa-modal')?.classList.contains('open')) closePay();
         });
         initURL();
+        initLikes();
     });
 
     return { filter, pill, budgetSelect, quick, sort, clear, currency, toggleAdv,
-             view, openVideo, closeVideo, startVideo,
-             openPay, closePay, payStep, hideErr, submitPay, copy, copyAcct };
+             view, toggleSpecs, openVideo, closeVideo, startVideo,
+             openPay, closePay, payStep, hideErr, submitPay, copy, copyAcct,
+             toggleLike, share };
 })();
 </script>
 

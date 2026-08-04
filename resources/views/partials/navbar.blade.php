@@ -2,7 +2,7 @@
     {{-- Logo --}}
     <div class="navbar-logo">
         <a href="{{ url('/') }}">
-            <img src="{{ asset('images/rent-go.jpg') }}" alt="Logo" class="logo" />
+            <img src="{{ asset('images/rent-go.png') }}" alt="Logo" class="logo" />
         </a>
     </div>
 
@@ -73,7 +73,7 @@
     <div class="sidebar-header">
         <div class="sidebar-logo">
             <a href="{{ url('/') }}" onclick="toggleSidebar(false)">
-                <img src="{{ asset('images/rent-go.jpg') }}" alt="Logo" class="logo" />
+                <img src="{{ asset('images/rent-go.png') }}" alt="Logo" class="logo" />
             </a>
         </div>
         <button class="close-btn" onclick="toggleSidebar(false)">✖</button>
@@ -164,6 +164,24 @@
 </script>
 
 <style>
+    /* Logo sizing (added) */
+    .logo {
+        height: 65px;
+        width: auto;
+        max-width: none;
+        display: block;
+        object-fit: contain;
+    }
+
+    .navbar-logo {
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar-logo .logo {
+        height: 50px;
+    }
+
     /* User Profile Dropdown */
     .dropdown {
         position: relative;

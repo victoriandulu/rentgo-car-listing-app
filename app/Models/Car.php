@@ -17,6 +17,7 @@ class Car extends Model
         'name',
         'make',
         'model',
+        'variant',        // ← NEW: e.g. "Vx-L 2.8gd Auto"
         'year',
         'mileage',
         'price',
@@ -24,10 +25,17 @@ class Car extends Model
         'status',
         'availability',
         'car_type',
+        'seats',          // ← NEW: e.g. 7
+        'doors',          // ← NEW: e.g. 5
 
         // Specs
         'engine_size',
         'fuel_type',
+        'fuel_consumption',   // ← NEW: e.g. "7.9 l/100km"
+        'fuel_tank_capacity', // ← NEW: e.g. "150 l"
+        'cylinder_layout',    // ← NEW: e.g. "I4"
+        'kilowatts',          // ← NEW: e.g. "150 kW"
+        'gears',               // ← NEW: e.g. "6"
         'horse_power',
         'transmission',
         'torque',
@@ -66,6 +74,8 @@ class Car extends Model
         'images'        => 'array',
         'year'          => 'integer',
         'mileage'       => 'integer',
+        'seats'         => 'integer',
+        'doors'         => 'integer',
         'price'         => 'decimal:2',
         'report_price'  => 'decimal:2',
     ];

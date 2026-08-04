@@ -61,8 +61,8 @@
 
 
         <div class="footer-year">
-            © {{ date('Y') }} RentGo. All rights reserved.
-            <a href="https://www.galaxiescoders.co/"
+            © {{ date('Y') }} WeSellGaris. All rights reserved.
+            <a href="https://www.galaxiescoders.com/"
            class="footer-dev-link"
            target="_blank"
           >
