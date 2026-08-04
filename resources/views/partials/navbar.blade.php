@@ -164,50 +164,22 @@
 </script>
 
 <style>
-    /* CRITICAL: Prevent any clipping and force the logo size */
-    .navbar {
-        overflow: visible !important;
+    /* Logo sizing (added) - NOW MUCH BIGGER */
+    .logo {
+        height: 150px;      /* was 90px – now large and bold */
+        width: auto;
+        max-width: none;
+        display: block;
+        object-fit: contain;
     }
+
     .navbar-logo {
-        overflow: visible !important;
         display: flex;
         align-items: center;
-        flex-shrink: 0; /* Prevent it from being squished */
     }
 
-    /* Main logo: BIG on desktop */
-    .logo {
-        height: 150px !important;
-        min-height: 150px !important;
-        width: auto !important;
-        max-width: none !important;
-        display: block !important;
-        object-fit: contain !important;
-    }
-
-    /* Sidebar logo: also big on desktop */
     .sidebar-logo .logo {
-        height: 80px !important;
-        min-height: 80px !important;
-    }
-
-    /* ─── RESPONSIVE: shrink the header logo on small screens ─── */
-    @media (max-width: 768px) {
-        .logo {
-            height: 55px !important;      /* Much smaller for the navbar */
-            min-height: 55px !important;
-        }
-        .sidebar-logo .logo {
-            height: 40px !important;      /* Sidebar logo smaller too */
-            min-height: 40px !important;
-        }
-        /* Optional: keep navbar from getting too tall */
-        .navbar {
-            padding: 0.5rem 1rem !important;
-        }
-        .navbar-logo {
-            flex-shrink: 0;
-        }
+        height: 90px;       /* was 60px – scaled up for sidebar */
     }
 
     /* User Profile Dropdown */
