@@ -175,7 +175,7 @@
         flex-shrink: 0; /* Prevent it from being squished */
     }
 
-    /* Main logo: BIG and forced with !important */
+    /* Main logo: BIG on desktop */
     .logo {
         height: 150px !important;
         min-height: 150px !important;
@@ -185,10 +185,29 @@
         object-fit: contain !important;
     }
 
-    /* Sidebar logo */
+    /* Sidebar logo: also big on desktop */
     .sidebar-logo .logo {
         height: 80px !important;
         min-height: 80px !important;
+    }
+
+    /* ─── RESPONSIVE: shrink the header logo on small screens ─── */
+    @media (max-width: 768px) {
+        .logo {
+            height: 55px !important;      /* Much smaller for the navbar */
+            min-height: 55px !important;
+        }
+        .sidebar-logo .logo {
+            height: 40px !important;      /* Sidebar logo smaller too */
+            min-height: 40px !important;
+        }
+        /* Optional: keep navbar from getting too tall */
+        .navbar {
+            padding: 0.5rem 1rem !important;
+        }
+        .navbar-logo {
+            flex-shrink: 0;
+        }
     }
 
     /* User Profile Dropdown */
