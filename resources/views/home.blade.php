@@ -63,9 +63,21 @@
 
     </div>
 
-    {{-- Right: Car --}}
+    {{-- Right: Car Carousel (6 units) --}}
     <div class="hm-hero__right">
-      <img src="{{ asset('images/gwagon.png') }}" alt="Featured Vehicle" />
+      <div class="hm-carousel" id="heroCarousel">
+        <div class="hm-carousel__track" id="carouselTrack">
+          {{-- 6 vehicle images – adjust filenames to match your assets --}}
+          <div class="hm-carousel__slide"><img src="{{ asset('images/gwagon.png') }}" alt="Mercedes G-Wagon" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Luxury_Sedan.png') }}" alt="Luxury Sedan" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Sports_Coupe.png') }}" alt="Sports Coupe" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Electric_SUV.png') }}" alt="Electric SUV" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Offroad_Pickup.png') }}" alt="Offroad Pickup" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Compact_Hatchback.png') }}" alt="Compact Hatchback" /></div>
+        </div>
+        {{-- Navigation dots --}}
+        <div class="hm-carousel__dots" id="carouselDots"></div>
+      </div>
     </div>
 
   </section>
@@ -176,14 +188,78 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('submit', function (e) {
     const val = input.value.trim();
     if (!val) {
-      // Empty search → just go to /vehicles with no query param
       e.preventDefault();
       window.location.href = '{{ url('/vehicles') }}';
       return;
     }
-    // Non-empty: let the form submit normally to /vehicles?query=...
-    // The vehicles page controller reads $_GET['query'] and filters results
+    // Otherwise, let the form submit normally
   });
+
+  // --- Carousel logic ---
+  const track = document.getElementById('carouselTrack');
+  const dotsContainer = document.getElementById('carouselDots');
+  const slides = track.querySelectorAll('.hm-carousel__slide');
+  const totalSlides = slides.length;
+  let currentIndex = 0;
+  let interval = null;
+
+  // Create dots
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.classList.add('hm-carousel__dot');
+    if (i === 0) dot.classList.add('active');
+    dot.dataset.index = i;
+    dot.addEventListener('click', () => goToSlide(i));
+    dotsContainer.appendChild(dot);
+  }
+
+  const dots = dotsContainer.querySelectorAll('.hm-carousel__dot');
+
+  function goToSlide(index) {
+    if (index < 0) index = totalSlides - 1;
+    if (index >= totalSlides) index = 0;
+    currentIndex = index;
+    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
+  }
+
+  function nextSlide() {
+    goToSlide(currentIndex + 1);
+  }
+
+  function startAutoPlay() {
+    if (interval) clearInterval(interval);
+    interval = setInterval(nextSlide, 3500);
+  }
+
+  function stopAutoPlay() {
+    if (interval) clearInterval(interval);
+    interval = null;
+  }
+
+  // Pause on hover (optional, but nice)
+  const carousel = document.getElementById('heroCarousel');
+  carousel.addEventListener('mouseenter', stopAutoPlay);
+  carousel.addEventListener('mouseleave', startAutoPlay);
+
+  // Touch/swipe support for mobile
+  let touchStartX = 0;
+  let touchEndX = 0;
+  track.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+  track.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) goToSlide(currentIndex + 1);
+      else goToSlide(currentIndex - 1);
+    }
+  }, { passive: true });
+
+  // Initialise
+  goToSlide(0);
+  startAutoPlay();
 });
 </script>
 
@@ -345,23 +421,80 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .hm-stat__div { width: 1px; height: 38px; background: var(--peach-2); flex-shrink: 0; }
 
+/* ── Carousel ── */
 .hm-hero__right {
   position: relative; z-index: 2;
   height: 100%; min-height: 100vh;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
-.hm-hero__right img {
-  width: 110%; height: 100%;
-  object-fit: contain; object-position: center center;
-  transform: translateY(-2%) translateX(4%);
+
+.hm-carousel {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.hm-carousel__track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.hm-carousel__slide {
+  flex: 0 0 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hm-carousel__slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
   filter: drop-shadow(0 28px 56px rgba(61,43,31,0.13));
-  animation: carSlide 0.9s 0.12s cubic-bezier(0.22,1,0.36,1) both;
   transition: transform 0.55s ease, filter 0.4s ease;
 }
-.hm-hero__right img:hover {
-  transform: translateY(-4%) translateX(4%) scale(1.02);
+
+.hm-carousel__slide img:hover {
+  transform: scale(1.02);
   filter: drop-shadow(0 40px 72px rgba(61,43,31,0.17));
+}
+
+.hm-carousel__dots {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 5;
+}
+
+.hm-carousel__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.25s, transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.hm-carousel__dot.active {
+  background: var(--coral);
+  transform: scale(1.25);
+}
+
+.hm-carousel__dot:hover {
+  background: var(--coral-2);
+  transform: scale(1.15);
 }
 
 @keyframes fadeUp {
@@ -369,8 +502,8 @@ img { max-width: 100%; height: auto; display: block; }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes carSlide {
-  from { opacity: 0; transform: translateY(-2%) translateX(70px); }
-  to   { opacity: 1; transform: translateY(-2%) translateX(4%); }
+  from { opacity: 0; transform: translateX(70px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
 /* ── Search ── */
@@ -438,7 +571,6 @@ img { max-width: 100%; height: auto; display: block; }
   .hm-hero__left { padding: 90px var(--pad) 32px; }
   .hm-hero__left::after { display: none; }
   .hm-hero__right { min-height: 56vw; height: 56vw; }
-  .hm-hero__right img { transform: none; width: 100%; }
   .hm-select-row { grid-template-columns: 1fr 1fr; }
 }
 

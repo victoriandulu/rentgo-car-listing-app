@@ -679,14 +679,14 @@ textarea { resize: vertical; }
                         <div class="cl-card-desc">Listings with photos get 3× more views</div>
                     </div>
                 </div>
-                <span class="cl-card-badge">UP TO 10</span>
+                <span class="cl-card-badge">UP TO 30</span>
             </div>
             <div class="cl-card-body">
                 <div class="cl-upload-zone" id="uploadZone">
                     <input type="file" id="images" name="images[]" multiple accept="image/*">
                     <div class="cl-upload-zone-icon">🖼️</div>
                     <p class="cl-upload-zone-text">Click to upload or drag &amp; drop</p>
-                    <p class="cl-upload-zone-sub">JPG, PNG, WEBP · Max 10 photos · First photo = cover</p>
+                    <p class="cl-upload-zone-sub">JPG, PNG, WEBP · Max 30 photos · First photo = cover</p>
                 </div>
                 <div id="previews" class="cl-preview-grid"></div>
             </div>
@@ -1006,7 +1006,7 @@ zone.addEventListener('drop', e => {
 function addFiles(newFiles) {
     const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
     for (let f of newFiles) {
-        if (files.length >= 10) { alert('Maximum 10 photos allowed'); break; }
+        if (files.length >= 30) { alert('Maximum 30 photos allowed'); break; }
         if (allowed.includes(f.type)) files.push(f);
         else alert(`${f.name} is not supported`);
     }

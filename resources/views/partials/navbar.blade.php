@@ -164,22 +164,31 @@
 </script>
 
 <style>
-    /* Logo sizing (added) */
-    .logo {
-        height: 65px;
-        width: auto;
-        max-width: none;
-        display: block;
-        object-fit: contain;
+    /* CRITICAL: Prevent any clipping and force the logo size */
+    .navbar {
+        overflow: visible !important;
     }
-
     .navbar-logo {
+        overflow: visible !important;
         display: flex;
         align-items: center;
+        flex-shrink: 0; /* Prevent it from being squished */
     }
 
+    /* Main logo: BIG and forced with !important */
+    .logo {
+        height: 150px !important;
+        min-height: 150px !important;
+        width: auto !important;
+        max-width: none !important;
+        display: block !important;
+        object-fit: contain !important;
+    }
+
+    /* Sidebar logo */
     .sidebar-logo .logo {
-        height: 50px;
+        height: 80px !important;
+        min-height: 80px !important;
     }
 
     /* User Profile Dropdown */

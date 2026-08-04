@@ -16,7 +16,7 @@
     $hasVideo = !empty($car->video) && $car->video !== 'null';
     $videoUrl = $hasVideo ? asset('storage/' . ltrim($car->video, '/')) : '';
 
-    $whatsappNumber = '2547174753336';
+    $whatsappNumber = '254705558711';
     $whatsappMessage = urlencode('Hello! I am interested in the ' . ($car->name ?? 'vehicle') . ' listed at KSh ' . number_format($car->price ?? 0) . '. Please provide more details.');
     $whatsappUrl = 'https://wa.me/' . $whatsappNumber . '?text=' . $whatsappMessage;
 
