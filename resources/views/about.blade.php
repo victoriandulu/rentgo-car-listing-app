@@ -12,7 +12,7 @@
     <div class="ab-hero__inner">
       {{-- <span class="ab-tag">Est. 2018 · Premium Car Rentals</span> --}}
       <h1 class="ab-hero__title">Luxury car rentals,<br><em>redefined.</em></h1>
-      <p class="ab-hero__sub">RentGo places the world's finest automobiles at your fingertips — for the moments that deserve nothing less.</p>
+      <p class="ab-hero__sub">WeSellGaris places the world's finest automobiles at your fingertips — for the moments that deserve nothing less.</p>
       <div class="ab-hero__pills">
         <div class="ab-pill">🎯 5,000+ Happy Clients</div>
         <div class="ab-pill">⭐ 4.9 Avg Rating</div>
@@ -46,8 +46,8 @@
     </div>
     <div class="ab-story__text">
       <span class="ab-tag">Our Journey</span>
-      <h2 class="ab-section-title">The RentGo <em>story.</em></h2>
-      <p class="ab-body">Founded in 2018 with a small but handpicked collection of premium vehicles, RentGo set out to change what luxury car rental could feel like — seamless, personal, and worthy of the cars themselves.</p>
+      <h2 class="ab-section-title">The WesellGaris <em>story.</em></h2>
+      <p class="ab-body">Founded in 2018 with a small but handpicked collection of premium vehicles, WeSellGaris set out to change what luxury car rental could feel like — seamless, personal, and worthy of the cars themselves.</p>
       <p class="ab-body">Today we are one of the region's most trusted rental services. The principle stays the same: every journey deserves a vehicle as exceptional as the destination.</p>
     </div>
   </section>
@@ -110,7 +110,7 @@
   {{-- CTA --}}
   <section class="ab-cta">
     <div class="ab-cta__inner">
-      <h2 class="ab-cta__title">Ready to experience <em>RentGo?</em></h2>
+      <h2 class="ab-cta__title">Ready to experience <em>WeSellGaris?</em></h2>
       <p class="ab-cta__sub">Discover our premium fleet and book your dream car today.</p>
       <a href="#" class="ab-cta-btn">Browse Our Fleet <span>→</span></a>
     </div>
