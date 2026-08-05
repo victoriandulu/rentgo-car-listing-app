@@ -31,6 +31,26 @@
         Find a car that fits your personality, dream, and pocket — we'll handle the rest.
       </p>
 
+      {{-- Centered Search (single, always visible) --}}
+      <div class="hm-hero-search-wrap">
+        <form action="{{ url('/vehicles') }}" method="GET" class="hm-hero-search" id="search-form">
+          <div class="hm-search-box">
+            <input
+              type="text"
+              name="query"
+              class="hm-search-input"
+              placeholder="Make, model, or keyword…"
+              autocomplete="off"
+            />
+            <button type="submit" class="hm-search-btn" aria-label="Search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
       <div class="hm-hero__btns">
         <a href="{{ url('/vehicles') }}" class="hm-btn hm-btn--primary">
           Explore Vehicles
@@ -80,32 +100,6 @@
       </div>
     </div>
 
-  </section>
-
-  {{-- ── Search ── --}}
-  <section class="hm-search">
-    <div class="hm-container">
-      <span class="hm-tag hm-tag--coral">Find Your Vehicle</span>
-      <h2 class="hm-section-title">Search our <em>fleet.</em></h2>
-
-      {{-- ACTION points directly to /vehicles so the query lands on that page --}}
-      <form action="{{ url('/vehicles') }}" method="GET" class="hm-search__form" id="search-form">
-        <input
-          type="text"
-          name="query"
-          id="search-input"
-          class="hm-search__input"
-          placeholder="Search by make, model, or keyword…"
-          autocomplete="off"
-        />
-        <button type="submit" class="hm-btn hm-btn--primary hm-search__btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          Search
-        </button>
-      </form>
-    </div>
   </section>
 
   {{-- ── Filters ── --}}
@@ -182,20 +176,7 @@ function filterByBodyType(type) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('search-form');
-  const input = document.getElementById('search-input');
-
-  form.addEventListener('submit', function (e) {
-    const val = input.value.trim();
-    if (!val) {
-      e.preventDefault();
-      window.location.href = '{{ url('/vehicles') }}';
-      return;
-    }
-    // Otherwise, let the form submit normally
-  });
-
-  // --- Carousel logic ---
+  // --- Carousel logic (unchanged) ---
   const track = document.getElementById('carouselTrack');
   const dotsContainer = document.getElementById('carouselDots');
   const slides = track.querySelectorAll('.hm-carousel__slide');
@@ -237,12 +218,10 @@ document.addEventListener('DOMContentLoaded', function () {
     interval = null;
   }
 
-  // Pause on hover (optional, but nice)
   const carousel = document.getElementById('heroCarousel');
   carousel.addEventListener('mouseenter', stopAutoPlay);
   carousel.addEventListener('mouseleave', startAutoPlay);
 
-  // Touch/swipe support for mobile
   let touchStartX = 0;
   let touchEndX = 0;
   track.addEventListener('touchstart', (e) => {
@@ -257,7 +236,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }, { passive: true });
 
-  // Initialise
   goToSlide(0);
   startAutoPlay();
 });
@@ -360,6 +338,74 @@ img { max-width: 100%; height: auto; display: block; }
   );
 }
 
+/* ── Centered Search ── */
+.hm-hero-search-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.hm-hero-search {
+  width: 100%;
+  max-width: 460px; /* keeps it from stretching too wide */
+}
+
+.hm-search-box {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border-radius: 50px;
+  box-shadow: 0 8px 28px rgba(61,43,31,0.10);
+  transition: box-shadow 0.2s;
+  padding: 4px 4px 4px 20px;
+}
+
+.hm-search-box:focus-within {
+  box-shadow: 0 8px 28px rgba(61,43,31,0.18);
+}
+
+.hm-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-b);
+  font-size: 0.95rem;
+  color: var(--warm-dk);
+  padding: 14px 10px 14px 0;
+  min-width: 0;
+}
+.hm-search-input::placeholder {
+  color: var(--warm-lt);
+}
+
+.hm-search-btn {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: var(--coral);
+  color: var(--white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 4px 12px rgba(212,80,26,0.30);
+}
+.hm-search-btn:hover {
+  background: var(--coral-2);
+  transform: scale(1.03);
+}
+.hm-search-btn:active {
+  transform: scale(0.95);
+}
+.hm-search-btn svg {
+  stroke: currentColor;
+}
+
 .hm-hero__left {
   position: relative; z-index: 2;
   padding: clamp(80px, 9vw, 130px) clamp(24px, 5vw, 90px);
@@ -395,7 +441,7 @@ img { max-width: 100%; height: auto; display: block; }
 .hm-hero__sub {
   font-size: clamp(0.9rem, 1.5vw, 1.08rem);
   color: var(--warm-md); line-height: 1.8; font-weight: 300;
-  max-width: 400px; margin-bottom: 40px;
+  max-width: 400px; margin-bottom: 28px;
   animation: fadeUp 0.65s 0.1s ease both;
 }
 
@@ -506,21 +552,6 @@ img { max-width: 100%; height: auto; display: block; }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* ── Search ── */
-.hm-search { background: var(--cream); border-top: 1px solid var(--peach-2); }
-.hm-search__form { display: flex; flex-wrap: wrap; gap: 12px; max-width: 680px; }
-.hm-search__input {
-  flex: 1; min-width: 220px; padding: 15px 20px;
-  border: 1.5px solid var(--peach-2); border-radius: 50px;
-  font-size: 0.95rem; font-family: var(--font-b);
-  background: var(--white); color: var(--warm-dk);
-  transition: border-color 0.2s, box-shadow 0.2s;
-  min-height: 48px;
-}
-.hm-search__input:focus { outline: none; border-color: var(--coral); box-shadow: 0 0 0 3px rgba(212,80,26,0.12); }
-.hm-search__input::placeholder { color: var(--warm-lt); }
-.hm-search__btn { white-space: nowrap; }
-
 /* ── Filters ── */
 .hm-filters { background: var(--peach); border-top: 1px solid var(--peach-2); }
 .hm-filter-block { margin-bottom: 52px; }
@@ -581,6 +612,7 @@ img { max-width: 100%; height: auto; display: block; }
   .hm-select-row { grid-template-columns: 1fr; max-width: 100%; margin-bottom: 36px; }
   .hm-price-grid { grid-template-columns: repeat(2, 1fr); }
   .hm-hero__sub { max-width: 100%; }
+  .hm-hero-search { max-width: 100%; }
 }
 
 /* Phones */
@@ -589,9 +621,6 @@ img { max-width: 100%; height: auto; display: block; }
   .hm-hero__title { font-size: clamp(2rem, 8vw, 2.6rem); }
   .hm-hero__btns { flex-direction: column; max-width: 100%; }
   .hm-btn { width: 100%; }
-  .hm-search__form { flex-direction: column; }
-  .hm-search__input { min-width: 0; width: 100%; }
-  .hm-search__btn { width: 100%; }
   .hm-price-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
   .hm-price-btn { font-size: 0.82rem; padding: 12px 10px; }
   .hm-stats { gap: 14px; row-gap: 10px; }

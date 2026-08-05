@@ -164,25 +164,41 @@
 </script>
 
 <style>
-    /* Logo sizing (added) - NOW MUCH BIGGER */
-    .logo {
-        height: 150px;      /* was 90px – now large and bold */
-        width: auto;
-        max-width: none;
-        display: block;
-        object-fit: contain;
+    /* ── Navbar adjustments for visible logo ── */
+    .navbar {
+        overflow: visible; /* prevent clipping */
     }
 
     .navbar-logo {
         display: flex;
         align-items: center;
+        overflow: visible;  /* allow scaled logo to overflow */
+        padding-left: 10px; /* give a little breathing room */
     }
 
+    .logo {
+        height: 70px;               /* base height to keep navbar compact */
+        width: auto;
+        max-width: none;
+        display: block;
+        object-fit: contain;
+        transform: none;      /* visually larger, but not too huge */
+        transform-origin: left center; /* scale from left so it doesn't shift left */
+        transition: transform 0.2s;
+    }
+
+    .logo:hover {
+        transform: none;
+    }
+
+    /* Sidebar logo – slightly smaller scale to avoid overflow */
     .sidebar-logo .logo {
-        height: 90px;       /* was 60px – scaled up for sidebar */
+        height: 70px;
+        width: auto;
+    transform: none;
     }
 
-    /* User Profile Dropdown */
+    /* ── Existing styles (unchanged) ── */
     .dropdown {
         position: relative;
         cursor: pointer;
@@ -261,7 +277,6 @@
         background: #f3f4f6;
     }
 
-    /* Admin Link Styling - Desktop */
     .admin-link {
         background: #dc2626 ;
         color: white !important;
@@ -284,7 +299,6 @@
         stroke: white;
     }
 
-    /* Admin Dropdown Item */
     .admin-dropdown-item {
         display: flex;
         align-items: center;
@@ -302,7 +316,6 @@
         letter-spacing: 0.5px;
     }
 
-    /* Sidebar Admin Link */
     .admin-link-sidebar {
         background: #dc2626  !important;
         color: white !important;
@@ -371,7 +384,6 @@
         background: #fef2f2;
     }
 
-    /* Sidebar User */
     .sidebar-user {
         margin-top: 1rem;
         padding-top: 1rem;
@@ -420,7 +432,6 @@
         background: #fef2f2;
     }
 
-    /* Responsive Adjustments */
     @media (max-width: 768px) {
         .admin-link {
             display: none !important;

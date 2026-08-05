@@ -25,7 +25,7 @@
         <div class="ct-info-card__icon">📞</div>
         <div>
           <h3 class="ct-info-card__title">Call Us</h3>
-          <p class="ct-info-card__val">+254-717-475-336</p>
+          <p class="ct-info-card__val">+254-705-558-711</p>
           <p class="ct-info-card__sub">Mon–Fri: 9AM – 6PM</p>
         </div>
       </div>
@@ -33,7 +33,7 @@
         <div class="ct-info-card__icon">✉️</div>
         <div>
           <h3 class="ct-info-card__title">Email Us</h3>
-          <p class="ct-info-card__val">rentgo@gmail.com</p>
+          <p class="ct-info-card__val">wesellgaris.ke@gmail.com</p>
           <p class="ct-info-card__sub">We reply within 24 hours</p>
         </div>
       </div>
@@ -48,60 +48,47 @@
     </aside>
 
     {{-- Form --}}
-    <div class="ct-form-wrap">
-      @if(session('success'))
-        <div class="ct-success">
-          <div class="ct-success__icon">✓</div>
-          <h2 class="ct-success__title">Message sent!</h2>
-          <p class="ct-success__body">{{ session('success') }}</p>
-          <a href="{{ route('contact') }}" class="ct-btn ct-btn--outline">Send another message</a>
+    <div class="ct-form-wrap" id="formWrap">
+      <form class="ct-form" id="contactForm" onsubmit="sendToWhatsApp(event)">
+        @csrf
+        <h2 class="ct-form__title">Send us a message</h2>
+        <p class="ct-form__sub">Fill in the form and we'll get back to you shortly.</p>
+
+        <div class="ct-field">
+          <label class="ct-label" for="name">Full Name <span class="ct-req">*</span></label>
+          <input class="ct-input" type="text" name="name" id="name" placeholder="Enter your full name" required>
         </div>
-      @else
-        <form class="ct-form" method="POST" action="{{ route('contact.submit') }}">
-          @csrf
-          <h2 class="ct-form__title">Send us a message</h2>
-          <p class="ct-form__sub">Fill in the form and we'll get back to you shortly.</p>
 
+        <div class="ct-row">
           <div class="ct-field">
-            <label class="ct-label" for="name">Full Name <span class="ct-req">*</span></label>
-            <input class="ct-input @error('name') ct-input--err @enderror" type="text" name="name" id="name" value="{{ old('name') }}" placeholder="Enter your full name">
-            @error('name')<p class="ct-err">{{ $message }}</p>@enderror
+            <label class="ct-label" for="email">Email Address <span class="ct-req">*</span></label>
+            <input class="ct-input" type="email" name="email" id="email" placeholder="your@email.com" required>
           </div>
-
-          <div class="ct-row">
-            <div class="ct-field">
-              <label class="ct-label" for="email">Email Address <span class="ct-req">*</span></label>
-              <input class="ct-input @error('email') ct-input--err @enderror" type="email" name="email" id="email" value="{{ old('email') }}" placeholder="your@email.com">
-              @error('email')<p class="ct-err">{{ $message }}</p>@enderror
-            </div>
-            <div class="ct-field">
-              <label class="ct-label" for="phone">Phone <span class="ct-opt">(optional)</span></label>
-              <input class="ct-input @error('phone') ct-input--err @enderror" type="tel" name="phone" id="phone" value="{{ old('phone') }}" placeholder="+254 XXX XXX XXX">
-              @error('phone')<p class="ct-err">{{ $message }}</p>@enderror
-            </div>
-          </div>
-
           <div class="ct-field">
-            <label class="ct-label" for="subject">Subject</label>
-            <select class="ct-input ct-select" name="subject" id="subject">
-              <option value="General Inquiry"   {{ old('subject')=='General Inquiry'   ? 'selected' : '' }}>General Inquiry</option>
-              <option value="Car Rental"        {{ old('subject')=='Car Rental'        ? 'selected' : '' }}>Car Rental</option>
-              <option value="Luxury Fleet"      {{ old('subject')=='Luxury Fleet'      ? 'selected' : '' }}>Luxury Fleet</option>
-              <option value="Corporate Rentals" {{ old('subject')=='Corporate Rentals' ? 'selected' : '' }}>Corporate Rentals</option>
-              <option value="Technical Support" {{ old('subject')=='Technical Support' ? 'selected' : '' }}>Technical Support</option>
-              <option value="Feedback"          {{ old('subject')=='Feedback'          ? 'selected' : '' }}>Feedback</option>
-            </select>
+            <label class="ct-label" for="phone">Phone <span class="ct-opt">(optional)</span></label>
+            <input class="ct-input" type="tel" name="phone" id="phone" placeholder="+254 XXX XXX XXX">
           </div>
+        </div>
 
-          <div class="ct-field">
-            <label class="ct-label" for="message">Message <span class="ct-req">*</span></label>
-            <textarea class="ct-input ct-textarea @error('message') ct-input--err @enderror" name="message" id="message" rows="5" placeholder="Tell us how we can help you…">{{ old('message') }}</textarea>
-            @error('message')<p class="ct-err">{{ $message }}</p>@enderror
-          </div>
+        <div class="ct-field">
+          <label class="ct-label" for="subject">Subject</label>
+          <select class="ct-input ct-select" name="subject" id="subject">
+            <option value="General Inquiry">General Inquiry</option>
+            <option value="Car Rental">Car Rental</option>
+            <option value="Luxury Fleet">Luxury Fleet</option>
+            <option value="Corporate Rentals">Corporate Rentals</option>
+            <option value="Technical Support">Technical Support</option>
+            <option value="Feedback">Feedback</option>
+          </select>
+        </div>
 
-          <button type="submit" class="ct-btn ct-btn--primary">Send Message →</button>
-        </form>
-      @endif
+        <div class="ct-field">
+          <label class="ct-label" for="message">Message <span class="ct-req">*</span></label>
+          <textarea class="ct-input ct-textarea" name="message" id="message" rows="5" placeholder="Tell us how we can help you…" required></textarea>
+        </div>
+
+        <button type="submit" class="ct-btn ct-btn--primary">Send Message →</button>
+      </form>
     </div>
 
   </div>
@@ -246,7 +233,6 @@ body { background: var(--cream); }
   background: var(--white); box-shadow: 0 0 0 3px rgba(212,80,26,0.12);
 }
 .ct-input::placeholder { color: var(--warm-lt); }
-.ct-input--err { border-color: var(--coral); background: rgba(212,80,26,0.04); }
 .ct-select { cursor: pointer; }
 .ct-textarea { resize: vertical; min-height: 130px; }
 .ct-err { font-size: 0.82rem; color: var(--coral); margin-top: 6px; font-weight: 500; }
@@ -307,5 +293,69 @@ body { background: var(--cream); }
   .ct-row { grid-template-columns: 1fr; }
 }
 </style>
+
+{{-- WhatsApp Integration Script --}}
+<script>
+function sendToWhatsApp(event) {
+    event.preventDefault();
+
+    // Get form values
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const subject = document.getElementById('subject').value;
+    const message = document.getElementById('message').value.trim();
+
+    // Validate required fields
+    if (!name) {
+        alert('⚠️ Please enter your full name');
+        document.getElementById('name').focus();
+        return false;
+    }
+
+    if (!email) {
+        alert('⚠️ Please enter your email address');
+        document.getElementById('email').focus();
+        return false;
+    }
+
+    if (!message) {
+        alert('⚠️ Please enter your message');
+        document.getElementById('message').focus();
+        return false;
+    }
+
+    // Build WhatsApp message
+    let whatsappMsg = '';
+    whatsappMsg += '📧 *NEW CONTACT FORM MESSAGE*%0A%0A';
+    whatsappMsg += '👤 *Name:* ' + encodeURIComponent(name) + '%0A';
+    whatsappMsg += '📧 *Email:* ' + encodeURIComponent(email) + '%0A';
+    whatsappMsg += '📱 *Phone:* ' + (phone ? encodeURIComponent(phone) : 'Not provided') + '%0A';
+    whatsappMsg += '📋 *Subject:* ' + encodeURIComponent(subject) + '%0A%0A';
+    whatsappMsg += '📝 *Message:*%0A' + encodeURIComponent(message) + '%0A%0A';
+    whatsappMsg += '🕐 *Sent:* ' + encodeURIComponent(new Date().toLocaleString('en-KE', {
+        timeZone: 'Africa/Nairobi'
+    }));
+
+    // WhatsApp number (Kenya format - remove leading zero)
+    const phoneNumber = '254705558711';
+
+    // Open WhatsApp
+    const whatsappURL = 'https://wa.me/' + phoneNumber + '?text=' + whatsappMsg;
+    window.open(whatsappURL, '_blank');
+
+    // Show success message
+    const formWrap = document.getElementById('formWrap');
+    formWrap.innerHTML = `
+        <div class="ct-success">
+            <div class="ct-success__icon">✓</div>
+            <h2 class="ct-success__title">Message Ready!</h2>
+            <p class="ct-success__body">Your message has been prepared. Click "Send" on WhatsApp to complete.</p>
+            <br>
+            <a href="{{ url()->current() }}" class="ct-btn ct-btn--outline">Send Another Message</a>
+        </div>
+    `;
+}
+</script>
 
 @endsection

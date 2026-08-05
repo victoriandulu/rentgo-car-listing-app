@@ -77,7 +77,7 @@ function runningCosts($car): array {
                         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
                     <input id="js-search" type="text" placeholder="Make, model, variant or keyword…"
-                           oninput="VP.filter()" autocomplete="off" spellcheck="false">
+                           oninput="VP.filterDelayed()" autocomplete="off" spellcheck="false">
                     <div class="vp-currency-sel">
                         <select id="js-currency" onchange="VP.currency()">
                             <option value="KES" data-rate="1"      data-sym="KSh">KES</option>
@@ -707,7 +707,6 @@ function runningCosts($car): array {
 
 <div id="vp-toast" class="vp-toast"></div>
 
-
 <style>
 :root {
     --f: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
@@ -1026,9 +1025,12 @@ const VP = (() => {
     let payCarPrice = null;
     const LIKE_KEY  = 'vp_liked_cars';
 
+    let searchTimeout = null;  // for debounce
+
     const $  = id  => document.getElementById(id);
     const $$ = sel => document.querySelectorAll(sel);
 
+    // Core filter function
     function filter() {
         const q  = ($('js-search').value || '').toLowerCase().trim();
         const mk = ($('js-make').value || '').toLowerCase();
@@ -1045,15 +1047,40 @@ const VP = (() => {
         const et = $('js-eng-to').value;
         const hf = $('js-hp-from').value;
         let vis  = 0;
+
+        // Split search query into individual words
+        let searchTerms = [];
+        if (q) {
+            searchTerms = q.split(/\s+/);
+        }
+
         $$('.vp-card').forEach(card => {
             const d = card.dataset;
             let ok = true;
+
+            // Quick filters
             if (quickFilter === 'local'     && d.category !== 'local')   ok = false;
             if (quickFilter === 'imports'   && d.category !== 'imports') ok = false;
             if (quickFilter === 'verified'  && d.verified !== 'true')    ok = false;
             if (quickFilter === 'has-video' && d.hasVideo !== 'true')    ok = false;
             if (quickFilter === 'has-report'&& d.hasReport !== 'true')   ok = false;
-            if (q  && !(d.name||'').includes(q))   ok = false;
+
+            // 🔍 SEARCH – all visible text on the card (partial matching, case-insensitive)
+            if (q && searchTerms.length > 0) {
+                const allText = card.textContent.toLowerCase();
+                let allTermsFound = true;
+                for (let term of searchTerms) {
+                    if (!allText.includes(term)) {
+                        allTermsFound = false;
+                        break;
+                    }
+                }
+                if (!allTermsFound) {
+                    ok = false;
+                }
+            }
+
+            // Advanced filters
             if (mk && d.make  !== mk)              ok = false;
             if (bt && d.body  !== bt)              ok = false;
             if (tr && d.trans !== tr)              ok = false;
@@ -1081,6 +1108,12 @@ const VP = (() => {
             if (ok) vis++;
         });
         $('js-count').textContent = vis;
+    }
+
+    // Debounced version for the search input
+    function filterDelayed() {
+        if (searchTimeout) clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(filter, 300);
     }
 
     function pill(btn, min, max) {
@@ -1309,8 +1342,6 @@ const VP = (() => {
         setTimeout(() => t.classList.remove('show'), 2000);
     }
 
-    /* ── Favourites (like) — stored locally so the heart works instantly
-       and stays in sync across reloads, without needing a backend route. ── */
     function getLiked() {
         try {
             const raw = localStorage.getItem(LIKE_KEY);
@@ -1388,10 +1419,32 @@ const VP = (() => {
         initLikes();
     });
 
-    return { filter, pill, budgetSelect, quick, sort, clear, currency, toggleAdv,
-             view, toggleSpecs, openVideo, closeVideo, startVideo,
-             openPay, closePay, payStep, hideErr, submitPay, copy, copyAcct,
-             toggleLike, share };
+    // Expose the public API
+    return {
+        filter,
+        filterDelayed,   // <-- new debounced version
+        pill,
+        budgetSelect,
+        quick,
+        sort,
+        clear,
+        currency,
+        toggleAdv,
+        view,
+        toggleSpecs,
+        openVideo,
+        closeVideo,
+        startVideo,
+        openPay,
+        closePay,
+        payStep,
+        hideErr,
+        submitPay,
+        copy,
+        copyAcct,
+        toggleLike,
+        share
+    };
 })();
 </script>
 
