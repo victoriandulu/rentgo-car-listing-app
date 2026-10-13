@@ -29,9 +29,11 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
-            'name'     => $validated['firstName'] . ' ' . $validated['lastName'],
-            'email'    => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'name'       => $validated['firstName'] . ' ' . $validated['lastName'],
+            'first_name' => $validated['firstName'],
+            'last_name'  => $validated['lastName'],
+            'email'      => $validated['email'],
+            'password'   => Hash::make($validated['password']),
         ]);
 
         Auth::login($user);
@@ -99,15 +101,38 @@ class AuthController extends Controller
             // ✅ No ->stateless() here — must match redirectToGoogle()
             $googleUser = Socialite::driver('google')->user();
 
-            $user = User::updateOrCreate(
-                ['email' => $googleUser->getEmail()],
-                [
-                    'name'              => $googleUser->getName(),
-                    'google_id'         => $googleUser->getId(),
-                    'password'          => Hash::make(Str::random(24)),
-                    'email_verified_at' => now(),
-                ]
-            );
+            // Split the Google name into first / last (Google gives given_name / family_name)
+            $fullName  = trim((string) $googleUser->getName());
+            $nameParts = explode(' ', $fullName, 2);
+            $google    = is_array($googleUser->user ?? null) ? $googleUser->user : [];
+            $first     = $google['given_name']  ?? ($nameParts[0] !== '' ? $nameParts[0] : null);
+            $last      = $google['family_name'] ?? ($nameParts[1] ?? null);
+
+            $user = User::firstOrNew(['email' => $googleUser->getEmail()]);
+
+            if (!$user->exists) {
+                // Brand-new account: set everything, including a random password
+                $user->name       = $fullName;
+                $user->first_name = $first;
+                $user->last_name  = $last;
+                $user->password   = Hash::make(Str::random(24));
+            } else {
+                // Existing account: never overwrite a name the user already has
+                // (keeps profile edits) and never reset their password.
+                if (empty($user->getAttributes()['name'] ?? null)) {
+                    $user->name = $fullName;
+                }
+                if (empty($user->getAttributes()['first_name'] ?? null)) {
+                    $user->first_name = $first;
+                }
+                if (empty($user->getAttributes()['last_name'] ?? null)) {
+                    $user->last_name = $last;
+                }
+            }
+
+            $user->google_id         = $googleUser->getId();
+            $user->email_verified_at = $user->email_verified_at ?? now();
+            $user->save();
 
             Auth::login($user);
             $request->session()->regenerate();

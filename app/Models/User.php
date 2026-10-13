@@ -20,6 +20,7 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'email',
+        'phone',        // was missing: the profile form's phone number was silently not saved
         'password',
         'google_id',
         'avatar',
@@ -65,6 +66,35 @@ class User extends Authenticatable
                 $user->is_verified = true;
             }
         });
+    }
+
+    /**
+     * First name: use the saved value, otherwise derive it from "name".
+     * Fixes users who registered / logged in with Google (only "name" was saved).
+     */
+    public function getFirstNameAttribute($value)
+    {
+        if (!empty($value)) {
+            return $value;
+        }
+
+        $parts = explode(' ', trim($this->attributes['name'] ?? ''), 2);
+
+        return $parts[0] !== '' ? $parts[0] : null;
+    }
+
+    /**
+     * Last name: use the saved value, otherwise derive it from "name".
+     */
+    public function getLastNameAttribute($value)
+    {
+        if (!empty($value)) {
+            return $value;
+        }
+
+        $parts = explode(' ', trim($this->attributes['name'] ?? ''), 2);
+
+        return $parts[1] ?? null;
     }
 
     /**

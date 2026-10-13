@@ -528,7 +528,7 @@ function runningCosts($car): array {
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                                 {{ $carLoc }}
                             </span>
-                            <a href="{{ route('vehicles.show', $carId) }}" class="vp-view-link">Details →</a>
+                            <a href="{{ route('vehicles.show', $carId) }}" class="vp-view-link">View Details →</a>
                         </div>
 
                         @if($hasVideo)
@@ -604,6 +604,34 @@ function runningCosts($car): array {
 
     </div>
 </div>
+
+{{-- ── SELL YOUR CAR BANNER (flush against the site footer) ── --}}
+<section class="vp-sell">
+    <div class="vp-sell-inner">
+        <div class="vp-sell-art">
+            <img src="{{ asset('images/gwagon.png') }}" alt="Sell your car" loading="lazy" onerror="this.style.display='none'">
+        </div>
+        <div class="vp-sell-text">
+            <h2>Looking to Sell Your Car?</h2>
+            <p>Get a fair value, fast and hassle-free.</p>
+            <a href="{{ route('sell') }}" class="vp-sell-btn">Sell Your Car →</a>
+        </div>
+        <div class="vp-sell-points">
+            <div class="vp-sell-pt">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><polyline points="8.5 12 11 14.5 15.5 9.5"/></svg>
+                <span>Best Market Value</span>
+            </div>
+            <div class="vp-sell-pt">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>
+                <span>Hassle Free Process</span>
+            </div>
+            <div class="vp-sell-pt">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F5C400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Trusted Buyers</span>
+            </div>
+        </div>
+    </div>
+</section>
 
 {{-- ── VIDEO MODAL ── --}}
 <div id="vp-video-modal" class="vpm-overlay" onclick="if(event.target===this)VP.closeVideo()">
@@ -902,6 +930,58 @@ button{font-family:var(--f);cursor:pointer;background:none;border:none}
 .list-view .vp-card-body{padding:18px}
 .list-view .vp-car-name{font-size:15px}
 .list-view .vp-price{font-size:17px}
+
+/* ── Card look: inset rounded image, pill badges, orange price, dark button ── */
+.vp-card{background:#FCFAF7;border:1px solid #EAD9C6;border-radius:16px}
+.vp-card:hover{border-color:#C98B63;box-shadow:0 10px 30px rgba(58,41,32,.16)}
+.vp-card-img-link{padding:8px 8px 0}
+.list-view .vp-card-img-link{padding:8px}
+.vp-card-img{border-radius:12px;background:linear-gradient(135deg,#F5EBDD,#EAD9C6)}
+.vp-card-img img{object-fit:cover;background:transparent}
+.vp-badge{border-radius:100px;padding:5px 12px;font-size:10.5px}
+.vp-badge--feat{background:#F5C400;color:#3A2920}
+.vp-play-btn{background:#D94F16}
+.vp-play-btn:hover{background:#B94314}
+
+/* Body order: name, meta, price, spec chips, specs, location, button */
+.vp-card-body{padding:12px 14px 14px}
+.vp-card-top{display:contents}
+.vp-card-top>div{order:1}
+.vp-meta{order:2}
+.vp-price{order:3;font-size:20px;font-weight:700;color:#D94F16}
+.vp-spec-chips{order:4}
+.vp-specs-toggle{order:5}
+.vp-specs-panel{order:6}
+.vp-card-foot{order:7;flex-direction:column;align-items:stretch;gap:8px;border-top:none;padding-top:2px}
+.vp-video-bar{order:8}
+.vp-report-wrap{order:9}
+.vp-car-name{font-size:16px;font-weight:700}
+.vp-sep{font-size:0}
+.vp-sep::before{content:"|";font-size:11.5px}
+.vp-loc{order:1}
+.vp-view-link{order:2;display:block;text-align:center;background:#3A2920;color:#fff;padding:11px 12px;border-radius:8px;font-size:13px;font-weight:600}
+.vp-view-link:hover{background:#D94F16}
+.list-view .vp-price{font-size:22px}
+
+/* ── Sell your car banner (full width, touches the real footer) ── */
+.vp-results{padding-bottom:48px}
+.vp-sell{background:#3A2920;margin:0;overflow:hidden}
+.vp-sell-inner{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:minmax(240px,1.1fr) 1.2fr auto;align-items:center;gap:28px;min-height:170px}
+.vp-sell-art{align-self:stretch;position:relative;min-height:190px;background:transparent}
+.vp-sell-art img{position:absolute;inset:14px 10px;width:calc(100% - 20px);height:calc(100% - 28px);object-fit:contain;object-position:center}
+.vp-sell-text h2{font-family:var(--fs);font-size:28px;font-weight:400;color:#F5EBDD;line-height:1.15;margin-bottom:6px}
+.vp-sell-text p{font-size:14px;color:rgba(245,235,221,.75);margin-bottom:14px}
+.vp-sell-btn{display:inline-block;background:#F5C400;color:#3A2920;padding:10px 22px;border-radius:100px;font-size:13px;font-weight:600;transition:var(--tr)}
+.vp-sell-btn:hover{background:#fff}
+.vp-sell-points{display:flex;gap:26px;align-self:stretch;align-items:center;border-left:1px solid rgba(245,235,221,.15);padding:0 30px}
+.vp-sell-pt{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;font-size:11.5px;font-weight:500;color:#F5EBDD;max-width:90px}
+@media(max-width:900px){
+    .vp-card-img-link,.list-view .vp-card-img-link{padding:8px 8px 0}
+    .vp-sell-inner{grid-template-columns:1fr;gap:0}
+    .vp-sell-art{min-height:200px}
+    .vp-sell-text{padding:6px 22px 18px}
+    .vp-sell-points{border-left:none;border-top:1px solid rgba(245,235,221,.15);padding:18px 22px;justify-content:space-around}
+}
 
 /* ── Video modal ── */
 .vpm-overlay{display:none;position:fixed;inset:0;background:rgba(10,6,2,.85);z-index:9000;align-items:center;justify-content:center;padding:16px}

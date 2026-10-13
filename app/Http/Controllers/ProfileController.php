@@ -55,7 +55,9 @@ class ProfileController extends Controller
         ]);
 
         // ✅ Update user personal info
+        // "name" is kept in sync so the navbar and dashboard always show the same name.
         $user->update([
+            'name'       => trim($validated['first_name'] . ' ' . $validated['last_name']),
             'first_name' => $validated['first_name'],
             'last_name'  => $validated['last_name'],
             'email'      => $validated['email'],
