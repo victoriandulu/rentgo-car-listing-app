@@ -71,6 +71,22 @@
             </div>
         </a>
 
+        <!-- Home Slides Card -->
+        <a href="{{ route('admin.hero-slides.index') }}" class="stat-card slides">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Home Slides</h3>
+                <div class="stat-number">{{ \Illuminate\Support\Facades\Schema::hasTable('hero_slides') ? \App\Models\HeroSlide::count() : 0 }}</div>
+                <p class="stat-description">Manage home page images</p>
+            </div>
+        </a>
+
         <!-- NEW: Pending Payments Card -->
         <a href="#pending-payments-section" class="stat-card payments" onclick="scrollToPending(event)">
             <div class="stat-icon">
@@ -283,6 +299,7 @@
 .stat-card.cars .stat-icon,
 .stat-card.reports .stat-icon      { color: #f59e0b; }
 .stat-card.payments .stat-icon     { color: #7c3aed; }
+.stat-card.slides .stat-icon       { color: #D94F16; }
 
 .stat-icon {
     flex-shrink: 0; width: 70px; height: 70px;

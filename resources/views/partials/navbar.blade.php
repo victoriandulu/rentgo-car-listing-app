@@ -58,6 +58,9 @@
                     <a href="{{ url('/admin/dashboard') }}" class="admin-dropdown-item">
                         <span class="admin-badge">Admin</span> Dashboard
                     </a>
+                    <a href="{{ route('admin.hero-slides.index') }}" class="admin-dropdown-item">
+                        <span class="admin-badge">Admin</span> Home Slides
+                    </a>
                 @endif
                 <form method="POST" action="{{ route('auth.logout') }}">
                     @csrf
@@ -113,6 +116,10 @@
                         <circle cx="12" cy="12" r="4"/>
                     </svg>
                     Management Dashboard
+                    <span class="admin-badge-sidebar">Admin</span>
+                </a>
+                <a href="{{ route('admin.hero-slides.index') }}" class="admin-link-sidebar" onclick="toggleSidebar(false)">
+                    Home Slides
                     <span class="admin-badge-sidebar">Admin</span>
                 </a>
             @endif

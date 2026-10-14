@@ -14,7 +14,8 @@ use App\Http\Controllers\{
 };
 use App\Http\Controllers\Admin\{
     AdminController,
-    AdminAuthController
+    AdminAuthController,
+    HeroSlideController
 };
 
 /*
@@ -128,6 +129,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/verifications', [AdminController::class, 'verificationIndex'])
             ->name('verifications.index');
         Route::get('/reports', [AdminController::class, 'reportIndex'])->name('reports.index');
+
+        // Home page sliding images (admin managed)
+        Route::prefix('hero-slides')->name('hero-slides.')->group(function () {
+            Route::get('/', [HeroSlideController::class, 'index'])->name('index');
+            Route::post('/', [HeroSlideController::class, 'store'])->name('store');
+            Route::get('/{heroSlide}/edit', [HeroSlideController::class, 'edit'])->name('edit');
+            Route::put('/{heroSlide}', [HeroSlideController::class, 'update'])->name('update');
+            Route::patch('/{heroSlide}/toggle', [HeroSlideController::class, 'toggle'])->name('toggle');
+            Route::delete('/{heroSlide}', [HeroSlideController::class, 'destroy'])->name('destroy');
+        });
 
         Route::post('/report-payments/{payment}/verify', [AdminController::class, 'verifyReportPayment'])
             ->name('report-payments.verify');

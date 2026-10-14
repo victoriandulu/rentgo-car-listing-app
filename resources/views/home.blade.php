@@ -49,13 +49,29 @@
       </svg>
       {{-- Optional photo: save a desert-mountain photo as public/images/hills.jpg and it replaces the drawn hills --}}
       <img class="hm-hills-photo" src="{{ asset('images/hills.jpg') }}" alt="" onerror="this.remove()" />
+      @php
+        // Slides are managed by the admin (Admin → Home Slides). If the table is empty
+        // or not migrated yet, the original built-in cars below are shown instead.
+        try { $heroSlides = \App\Models\HeroSlide::active()->get(); }
+        catch (\Throwable $e) { $heroSlides = collect(); }
+      @endphp
       <div class="hm-carousel__track" id="carouselTrack">
-        <div class="hm-carousel__slide"><img src="{{ asset('images/gwagon.png') }}" alt="Mercedes G-Wagon" /></div>
-        <div class="hm-carousel__slide"><img src="{{ asset('images/Luxury_Sedan.png') }}" alt="Luxury Sedan" /></div>
-        <div class="hm-carousel__slide"><img src="{{ asset('images/Sports_Coupe.png') }}" alt="Sports Coupe" /></div>
-        <div class="hm-carousel__slide"><img src="{{ asset('images/Electric_SUV.png') }}" alt="Electric SUV" /></div>
-        <div class="hm-carousel__slide"><img src="{{ asset('images/Offroad_Pickup.png') }}" alt="Offroad Pickup" /></div>
-        <div class="hm-carousel__slide"><img src="{{ asset('images/Compact_Hatchback.png') }}" alt="Compact Hatchback" /></div>
+        @forelse($heroSlides as $slide)
+          <div class="hm-carousel__slide">
+            @if($slide->link_url)
+              <a href="{{ $slide->link_url }}" style="display:block;width:100%"><img src="{{ $slide->image_url }}" alt="{{ $slide->title ?? 'Featured vehicle' }}" /></a>
+            @else
+              <img src="{{ $slide->image_url }}" alt="{{ $slide->title ?? 'Featured vehicle' }}" />
+            @endif
+          </div>
+        @empty
+          <div class="hm-carousel__slide"><img src="{{ asset('images/gwagon.png') }}" alt="Mercedes G-Wagon" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Luxury_Sedan.png') }}" alt="Luxury Sedan" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Sports_Coupe.png') }}" alt="Sports Coupe" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Electric_SUV.png') }}" alt="Electric SUV" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Offroad_Pickup.png') }}" alt="Offroad Pickup" /></div>
+          <div class="hm-carousel__slide"><img src="{{ asset('images/Compact_Hatchback.png') }}" alt="Compact Hatchback" /></div>
+        @endforelse
       </div>
       <div class="hm-carousel__dots" id="carouselDots"></div>
     </div>
