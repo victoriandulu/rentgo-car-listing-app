@@ -11,7 +11,7 @@ class AdminSeeder extends Seeder
     public function run()
     {
        User::updateOrCreate(
-    ['email' => 'victoriamuithyatech@gmail.com'],
+    ['email' => 'rentgoke@gmail.com'],
     [
         'name' => 'Rentgo Admin',
         'password' => Hash::make('password1234'),
