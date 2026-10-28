@@ -20,6 +20,25 @@ use App\Http\Controllers\Admin\{
 
 /*
 |--------------------------------------------------------------------------
+| Uploaded files (images, videos, reports)
+|--------------------------------------------------------------------------
+| Serves files from storage/app/public at /storage/...
+| Works on cPanel without a symbolic link. Only files inside
+| storage/app/public can ever be served.
+*/
+Route::get('/storage/{path}', function (string $path) {
+    $base = realpath(storage_path('app/public'));
+    $file = $base ? realpath($base . DIRECTORY_SEPARATOR . $path) : false;
+
+    if (! $file || ! str_starts_with($file, $base . DIRECTORY_SEPARATOR) || ! is_file($file)) {
+        abort(404);
+    }
+
+    return response()->file($file, ['Cache-Control' => 'public, max-age=86400']);
+})->where('path', '.*')->name('storage.serve');
+
+/*
+|--------------------------------------------------------------------------
 | Public Pages
 |--------------------------------------------------------------------------
 */
@@ -87,7 +106,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/sell/dashboard', [SellController::class, 'showSellPage'])->name('sell.auth');
 
-    // ✅ Report routes — ALL require login
+    // Report routes — ALL require login
     Route::post('/vehicles/{car}/submit-report-payment', [VehicleController::class, 'submitReportPayment'])
         ->name('vehicles.submitReportPayment');
 
